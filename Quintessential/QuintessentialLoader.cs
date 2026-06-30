@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using YamlDotNet.Core.Tokens;
 
 namespace Quintessential;
 
@@ -321,9 +320,7 @@ SomeZipIDontLike.zip");
                 string filename = Path.GetFileName(item);
                 if (filename.EndsWith(".campaign.yaml"))
                 {
-                    using StreamReader reader = new(item);
-
-                    CampaignModel c = YamlHelper.Deserializer.Deserialize<CampaignModel>(reader);
+                    CampaignModel c = DataSerializer.Deserialize<CampaignModel>(item);
                     Logger.Log($"Campaign \"{c.Title}\" ({c.Name}) has {c.Chapters.Count} chapters.");
                     c.Path = Path.GetDirectoryName(item);
                     ModCampaignModels.Add(c);
@@ -331,9 +328,7 @@ SomeZipIDontLike.zip");
 
                 if (filename.EndsWith(".journal.yaml"))
                 {
-                    using StreamReader reader = new(item);
-
-                    JournalModel c = YamlHelper.Deserializer.Deserialize<JournalModel>(reader);
+                    JournalModel c = DataSerializer.Deserialize<JournalModel>(item);
                     Logger.Log($"Journal \"{c.Title}\" has {c.Chapters.Count} chapters.");
                     foreach (var chapter in new List<JournalChapterModel>(c.Chapters))
                     {
@@ -369,9 +364,7 @@ SomeZipIDontLike.zip");
             var savePath = Path.Combine(PathModSaves, mod.Meta.Name + ".yaml");
             if (File.Exists(savePath))
             {
-                using StreamReader reader = new(savePath);
-
-                var settings = YamlHelper.Deserializer.Deserialize(reader, mod.SettingsType);
+                var settings = DataSerializer.Deserialize(savePath, mod.SettingsType);
                 if (settings != null)
                 {
                     mod.Settings = settings;
@@ -448,7 +441,7 @@ SomeZipIDontLike.zip");
             {
                 if (!reader.EndOfStream)
                 {
-                    meta = YamlHelper.Deserializer.Deserialize<ModMeta>(reader);
+                    meta = DataSerializer.Deserialize<ModMeta>(metaPath);
                     meta.Name = meta.Name.Trim().Replace(" ", "_");
                     meta.PathDirectory = dir;
                     if (!string.IsNullOrEmpty(zipName))
@@ -676,16 +669,15 @@ SomeZipIDontLike.zip");
         try
         {
             string baseName = Path.Combine(basePath, puzzleName);
-            if (File.Exists(baseName + ".puzzle"))
-            {
+            if (File.Exists(baseName + ".puzzle")) {
                 puzzle = Puzzle.method_1249(baseName + ".puzzle");
-            }
-            else if (File.Exists(baseName + ".puzzle.yaml"))
-            {
-                puzzle = PuzzleModel.FromModel(YamlHelper.Deserializer.Deserialize<PuzzleModel>(File.ReadAllText(baseName + ".puzzle.yaml")));
-            }
-            else
-            {
+            } else if (File.Exists(baseName + ".puzzle.jsonc")) {
+                puzzle = PuzzleModel.FromModel(DataSerializer.Deserialize<PuzzleModel>(baseName + ".puzzle.jsonc"));
+            } else if (File.Exists(baseName + ".puzzle.json")) {
+                puzzle = PuzzleModel.FromModel(DataSerializer.Deserialize<PuzzleModel>(baseName + ".puzzle.json"));
+            } else if (File.Exists(baseName + ".puzzle.yaml")) {
+                puzzle = PuzzleModel.FromModel(DataSerializer.Deserialize<PuzzleModel>(baseName + ".puzzle.yaml"));
+            } else {
                 Logger.Log($"Puzzle \"{puzzleName}\" from \"{campaignTitle}\" doesn't exist, ignoring");
                 puzzle = null;
                 return false;
@@ -768,14 +760,12 @@ SomeZipIDontLike.zip");
         foreach (var p in Puzzles.field_2816)
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
-            string yaml = YamlHelper.Serializer.Serialize(m);
-            File.WriteAllText(Path.Combine(outDir, m.ID + ".yaml"), yaml);
+            DataSerializer.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"), m);
         }
         foreach (var p in JournalVolumes.field_2572.SelectMany(k => k.field_2571))
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
-            string yaml = YamlHelper.Serializer.Serialize(m);
-            File.WriteAllText(Path.Combine(outDir, "X" + m.ID + ".yaml"), yaml);
+            DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m);
         }
         Logger.Log($"Dumped puzzles to {outDir}");
         UI.OpenScreen(new NoticeScreen("Puzzle Dumping", $"Saved puzzles to \"{outDir.Replace('\\', '/')}\""));
