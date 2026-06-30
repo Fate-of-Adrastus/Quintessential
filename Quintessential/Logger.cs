@@ -14,10 +14,12 @@ public static class Logger {
 	} = false;
 
 	public static void Init() {
-		LogPath = Path.Combine(QuintessentialLoader.PathLightning, "log.txt");
-		File.Delete(LogPath);
-		Log("Quintessential log");
-		Setup = true;
+		if (!Setup) {
+			LogPath = Path.Combine(QuintessentialLoader.PathLightning, "log.txt");
+			File.Delete(LogPath);
+			Log("Quintessential log");
+			Setup = true;
+		}
 	}
 
 	public static void Log(string text) {

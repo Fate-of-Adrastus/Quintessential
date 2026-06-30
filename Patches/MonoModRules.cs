@@ -2,15 +2,16 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.InlineRT;
-using Quintessential;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MonoMod;
 
 [MonoModCustomMethodAttribute(nameof(MonoModRules.PatchSettingsStaticInit))]
 class PatchSettingsStaticInit : Attribute { }
+
+[MonoModCustomAttribute(nameof(MonoModRules.RemoveReadOnly))]
+class RemoveReadOnly : Attribute { }
 
 [MonoModCustomMethodAttribute(nameof(MonoModRules.PatchPuzzleIdWrite))]
 class PatchPuzzleIdWrite : Attribute { }
@@ -56,9 +57,9 @@ static class MonoModRules
     public static void PatchSettingsStaticInit(MethodDefinition method, CustomAttribute attrib)
     {
         MonoModRule.Modder.Log("Patching settings static init");
-        // Set "class_110.field_1012" (Steam support) to false
-        if (method.HasBody)
-        {
+        if (method.HasBody) {
+
+            // Set "class_110.field_1012" (Steam support) to false
             ILCursor cursor = new(new ILContext(method));
             if (cursor.TryGotoNext(MoveType.Before,
                    instr => instr.MatchLdcI4(1),
@@ -78,6 +79,10 @@ static class MonoModRules
             Console.WriteLine("Failed to disable Steam setting in class_110!");
             throw new Exception();
         }
+    }
+
+    public static void RemoveReadOnly(FieldDefinition field, CustomAttribute attrib) {
+        field.IsInitOnly = false;
     }
 
     public static void PatchPuzzleIdWrite(MethodDefinition method, CustomAttribute attrib)

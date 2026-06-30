@@ -13,4 +13,16 @@ class patch_Settings {
 	public static void cctor() {
 		orig_cctor();
 	}
+
+    [RemoveReadOnly]
+    public static readonly bool field_1010; // isDevEnv
+
+    [RemoveReadOnly]
+    public static readonly bool field_1014; // showLogWindow
+
+    [RemoveReadOnly]
+    public static readonly bool field_1022; // allowPseudo
+
+    [RemoveReadOnly]
+    public static readonly bool field_1026; // logSimulationState
 }

@@ -1,0 +1,16 @@
+{
+    "profiles": {
+        "Quintessential": {
+            "commandName": "Project"
+        },
+        "Run With Quintrunner": {
+            "commandName": "Executable",
+            "executablePath": "D:\\C#_projects\\Quintrunner\\bin\\Debug\\Quintrunner.exe",
+            "nativeDebugging": false
+        },
+        "Run OM": {
+            "commandName": "Executable",
+            "executablePath": "D:\\C#_projects\\Quintessential\\bin\\Debug\\net452\\TestEnvironment\\ModdedLightning.exe"
+        }
+    }
+}
