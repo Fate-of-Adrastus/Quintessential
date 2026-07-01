@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Bond = class_277;
 using BondType = enum_126;
@@ -12,28 +13,37 @@ using Vial = class_128;
 using AtomTypes = class_175;
 
 namespace Quintessential.Serialization;
-
+[DataContract]
 public class PuzzleModel {
 
-	// display name, internal name, journal author
-	public string Name, ID, Author;
-	// the inputs
-	public List<PuzzleIoM> Inputs = new();
-	// the outputs
-	public List<PuzzleIoM> Outputs = new();
-	// output multiplier
-	public int OutputMultiplier = 1;
-	// vanilla permission info
-	public PermissionFlags PermissionFlags;
-	// modded permisisons, can be used for parts, instructions, or anything else
-	public HashSet<string> CustomPermissions = new();
-	// set of highlighted hexes
-	public HashSet<HexIndexM> Highlights = new();
-	// production-related stuff, or null for non-production puzzles
-	public ProductionInfoM ProductionInfo = null;
-
-	public List<ConduitM> Conduits = null;
-	public PayloadsM Payloads = null;
+    // display name, internal name, journal author
+    [DataMember]
+    public string Name, ID, Author;
+    // the inputs
+    [DataMember]
+    public List<PuzzleIoM> Inputs = new();
+    // the outputs
+    [DataMember]
+    public List<PuzzleIoM> Outputs = new();
+    // output multiplier
+    [DataMember(EmitDefaultValue = false)]
+    public int OutputMultiplier = 1;
+    // vanilla permission info
+    [DataMember]
+    public PermissionFlags PermissionFlags;
+    // modded permisisons, can be used for parts, instructions, or anything else
+    [DataMember]
+    public HashSet<string> CustomPermissions = new();
+    // set of highlighted hexes
+    [DataMember(EmitDefaultValue = false)]
+    public HashSet<HexIndexM> Highlights = new();
+    // production-related stuff, or null for non-production puzzles
+    [DataMember(EmitDefaultValue = false)]
+    public ProductionInfoM ProductionInfo = null;
+    [DataMember(EmitDefaultValue = false)]
+    public List<ConduitM> Conduits = null;
+    [DataMember(EmitDefaultValue = false)]
+    public PayloadsM Payloads = null;
 
 	public static PuzzleModel FromPuzzle(Puzzle puzzle) {
 		PuzzleModel model = new(){
@@ -103,8 +113,10 @@ public class PuzzleModel {
 		return ret;
 	}
 
-	public class HexIndexM {
-		public string Pos;
+    [DataContract]
+    public class HexIndexM {
+        [DataMember]
+        public string Pos;
 
 		public HexIndexM(HexIndex ind) {
 			Pos = ind.Q + "," + ind.R;
@@ -125,9 +137,12 @@ public class PuzzleModel {
 		}
 	}
 
-	public class PuzzleIoM {
-		public MoleculeM Molecule;
-		public int AmountOverride = 0;
+    [DataContract]
+    public class PuzzleIoM {
+        [DataMember]
+        public MoleculeM Molecule;
+        [DataMember(EmitDefaultValue = false)]
+        public int AmountOverride = 0;
 
 		public PuzzleIoM(PuzzleInputOutput io) {
 			Molecule = new MoleculeM(io.field_2813);
@@ -143,10 +158,14 @@ public class PuzzleModel {
 		}
 	}
 
-	public class MoleculeM {
-		public List<AtomM> Atoms = new();
-		public List<BondM> Bonds = new();
-		public string Name = "";
+    [DataContract]
+    public class MoleculeM {
+        [DataMember]
+        public List<AtomM> Atoms = new();
+        [DataMember]
+        public List<BondM> Bonds = new();
+        [DataMember]
+        public string Name = "";
 
 		public MoleculeM(Molecule mol) {
 			// Preserve the name
@@ -173,9 +192,12 @@ public class PuzzleModel {
 		}
 	}
 
-	public class AtomM {
-		public string AtomType;
-		public HexIndexM Position;
+    [DataContract]
+    public class AtomM {
+        [DataMember]
+        public string AtomType;
+        [DataMember]
+        public HexIndexM Position;
 
 		public AtomM(Atom atom, HexIndexM hex) {
 			AtomType = ((patch_AtomType)(object)atom.field_2275).QuintAtomType;
@@ -195,9 +217,12 @@ public class PuzzleModel {
 		}
 	}
 
-	public class BondM {
-		public HexIndexM A, B;
-		public HashSet<string> BondTypes = new();
+    [DataContract]
+    public class BondM {
+        [DataMember]
+        public HexIndexM A, B;
+        [DataMember]
+        public HashSet<string> BondTypes = new();
 
 		public BondM(Bond bond) {
 			A = new HexIndexM(bond.field_2187);
@@ -228,11 +253,16 @@ public class PuzzleModel {
 		}
 	}
 
-	public class ProductionInfoM {
-		public List<ChamberM> Chambers = new();
-		public List<ConduitM> Conduits = new();
-		public List<VialM> Vials = new();
-		public bool Isolation = false, ShrinkLeft = false, ShrinkRight = false;
+    [DataContract]
+    public class ProductionInfoM {
+        [DataMember]
+        public List<ChamberM> Chambers = new();
+        [DataMember]
+        public List<ConduitM> Conduits = new();
+        [DataMember]
+        public List<VialM> Vials = new();
+        [DataMember]
+        public bool Isolation = false, ShrinkLeft = false, ShrinkRight = false;
 
 		public ProductionInfoM(ProductionInfo info) {
 			foreach(var chamber in info.field_2071)
@@ -261,9 +291,12 @@ public class PuzzleModel {
 		}
 	}
 
-	public class ChamberM {
-		public string ChamberType;
-		public HexIndexM Position;
+    [DataContract]
+    public class ChamberM {
+        [DataMember]
+        public string ChamberType;
+        [DataMember]
+        public HexIndexM Position;
 
 		public ChamberM(Chamber chamber) {
 			ChamberType = chamber.field_1747.field_1727;
@@ -277,9 +310,12 @@ public class PuzzleModel {
 		}
 	}
 
-	public class ConduitM {
-		public HexIndexM PosA, PosB;
-		public List<HexIndexM> Shape = new();
+    [DataContract]
+    public class ConduitM {
+        [DataMember]
+        public HexIndexM PosA, PosB;
+        [DataMember]
+        public List<HexIndexM> Shape = new();
 
 		public ConduitM(){}
 
@@ -296,10 +332,14 @@ public class PuzzleModel {
 		}
 	}
 
-	public class VialM {
-		public HexIndexM Position;
-		public bool Top;
-		public List<Pair<string, string>> Sprites = new();
+    [DataContract]
+    public class VialM {
+        [DataMember]
+        public HexIndexM Position;
+        [DataMember]
+        public bool Top;
+        [DataMember]
+        public List<Pair<string, string>> Sprites = new();
 
 		public VialM(){}
 
@@ -322,13 +362,15 @@ public class PuzzleModel {
 			return name;
 		}
 	}
-	
-	public class PayloadsM
+
+    [DataContract]
+    public class PayloadsM
 	{
-		// change puzzle behaviour at runtime
-		//public List<PayloadM> PuzzleInitialization = new();
-		// changes new solutions
-		public List<PayloadM> SolutionInitialization = new();
+        // change puzzle behaviour at runtime
+        //public List<PayloadM> PuzzleInitialization = new();
+        // changes new solutions
+        [DataMember]
+        public List<PayloadM> SolutionInitialization = new();
 
 		public PayloadsM(){}
 
@@ -363,10 +405,12 @@ public class PuzzleModel {
 			return ret;
         }
     }
-    public class PayloadM
-    {
-		public string Address;
-		public string Data;
+    [DataContract]
+    public class PayloadM {
+        [DataMember]
+        public string Address;
+        [DataMember]
+        public string Data;
 
 		public PayloadM(){}
         public PayloadM(Payloads.Payload pl)

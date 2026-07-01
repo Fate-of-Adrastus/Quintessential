@@ -13,7 +13,7 @@
 
 	<PropertyGroup>
 		<!-- Path to Opus Magnum folder, Contains Lightning.exe et.al -->
-		<OpusDir>C:\Program Files (x86)\Steam\steamapps\common\Opus Magnum Old</OpusDir>
+		<OpusDir>D:\C#_projects\Quintessential\bin\Debug\net452\TestEnvironment</OpusDir>
 	</PropertyGroup>
 	
   <ItemGroup>

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
@@ -37,7 +35,7 @@ namespace Quintessential.Serialization {
             throw new SerializationException("Invalid file extension at: " + filePath);
         }
 
-        public static void Serialize<T>(string filePath, T data) {
+        public static void Serialize<T>(string filePath, T data, bool multilineFormat = false) {
             string filename = Path.GetFileName(filePath);
 
             if (filename.EndsWith(".yaml")) {
@@ -50,7 +48,9 @@ namespace Quintessential.Serialization {
 
                 var jsonSerializer = new DataContractJsonSerializer(typeof(T));
                 using FileStream fileStream = new(filePath, FileMode.OpenOrCreate);
-                jsonSerializer.WriteObject(fileStream,data);
+                using var writer = JsonReaderWriterFactory.CreateJsonWriter(fileStream, Encoding.UTF8, true, multilineFormat);
+                jsonSerializer.WriteObject(writer, data);
+                writer.Flush();
                 return;
             }
 

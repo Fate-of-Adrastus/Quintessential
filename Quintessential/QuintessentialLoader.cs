@@ -760,12 +760,12 @@ SomeZipIDontLike.zip");
         foreach (var p in Puzzles.field_2816)
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
-            DataSerializer.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"), m);
+            DataSerializer.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"), m, true);
         }
         foreach (var p in JournalVolumes.field_2572.SelectMany(k => k.field_2571))
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
-            DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m);
+            DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m, true);
         }
         Logger.Log($"Dumped puzzles to {outDir}");
         UI.OpenScreen(new NoticeScreen("Puzzle Dumping", $"Saved puzzles to \"{outDir.Replace('\\', '/')}\""));
