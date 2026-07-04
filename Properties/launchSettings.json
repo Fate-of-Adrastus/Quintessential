@@ -10,6 +10,7 @@
         },
         "Run OM": {
             "commandName": "Executable",
+            "WorkingDirectory": "D:\\C#_projects\\Quintessential\\bin\\Debug\\net452\\TestEnvironment",
             "executablePath": "D:\\C#_projects\\Quintessential\\bin\\Debug\\net452\\TestEnvironment\\ModdedLightning.exe"
         }
     }

@@ -40,8 +40,10 @@ class patch_Sim{
 		return struct_18.field_1431;
 	}
 
-	// Run custom behaviours
-	public extern void orig_method_1832(bool first);
+    // Run custom behaviours
+    public extern void orig_method_1832(bool first);
+    //public extern void RunCycleGlyphsMain(bool isCycleStart);
+	//[MonoModReplace]
 	public void method_1832(bool first){
 		// fill the list of grippers
 		List<Part> allParts = field_3818.method_502().field_3919;
@@ -51,9 +53,11 @@ class patch_Sim{
 			foreach(var gripper in part.field_2696)
 				if(simStates[gripper].field_2729.method_1085())
 					HeldGrippers.Add(gripper);
-		// run the cycle
-		orig_method_1832(first);
-		// and then process things that happen after
+        // run the cycle
+        //RunCycleGlyphsMain(first);
+        orig_method_1832(first);
+
+        // and then process things that happen after
 		foreach(var action in QApi.ToRunAfterCycle)
 			action((Sim)(object)this, first);
 	}

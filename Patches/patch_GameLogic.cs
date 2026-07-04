@@ -1,4 +1,5 @@
-﻿using Quintessential;
+﻿using MonoMod;
+using Quintessential;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 #pragma warning disable IDE1006 // Naming Styles
@@ -19,6 +20,7 @@ class patch_GameLogic{
 		orig_method_963(exitCode);
 	}
 
+	[PatchBondTypesInit]
 	public extern void orig_method_956();
 	public void method_956(){
 		orig_method_956();
