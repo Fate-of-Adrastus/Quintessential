@@ -32,6 +32,9 @@ public class PuzzleModel {
 	// production-related stuff, or null for non-production puzzles
 	public ProductionInfoM ProductionInfo = null;
 
+	public List<ConduitM> Conduits = null;
+	public PayloadsM Payloads = null;
+
 	public static PuzzleModel FromPuzzle(Puzzle puzzle) {
 		PuzzleModel model = new(){
 			ID = puzzle.field_2766,
@@ -48,7 +51,22 @@ public class PuzzleModel {
 		foreach(var item in puzzle.field_2774)
 			model.Highlights.Add(new HexIndexM(item));
 		if(puzzle.field_2779.method_1085())
+			// if there's production cabinet info, use that
 			model.ProductionInfo = new ProductionInfoM(puzzle.field_2779.method_1087());
+		else if (((patch_Puzzle)(object)puzzle).EngineConduits.method_1085())
+		{
+			// otherwise, populate the engine conduits
+			model.Conduits = new();
+			foreach (var conduit in ((patch_Puzzle)(object)puzzle).EngineConduits.method_1087())
+			{
+				model.Conduits.Add(new ConduitM(conduit));
+			}
+		}
+		if (((patch_Puzzle)(object)puzzle).Payloads.method_1085())
+		{
+			model.Payloads = new PayloadsM(((patch_Puzzle)(object)puzzle).Payloads.method_1087());
+		}
+
 		return model;
 	}
 
@@ -63,12 +81,25 @@ public class PuzzleModel {
 			field_2774 = model.Highlights.Select(k => k.FromModel()).ToArray(),
 			field_2780 = model.OutputMultiplier
 		};
-		if(model.ProductionInfo != null && model.ProductionInfo.Chambers.Count > 0){
-			ret.field_2779 = model.ProductionInfo.FromModel();
-			// Calculate bounds
-			ret.method_1247();
+		if(model.ProductionInfo != null) {
+			if (model.ProductionInfo.Chambers.Count > 0)
+			{
+				ret.field_2779 = model.ProductionInfo.FromModel();
+				// Calculate bounds
+				ret.method_1247();
+			}
+		}
+		else if (model.Conduits != null)
+		{
+			// if it's not a cabinet, use these
+			((patch_Puzzle)(object)ret).EngineConduits = model.Conduits.Select(c => c.FromModel()).ToArray();
 		}
 		((patch_Puzzle)(object)ret).CustomPermissions = model.CustomPermissions;
+
+		if (model.Payloads != null) {
+			((patch_Puzzle)(object)ret).Payloads = model.Payloads.FromModel();
+		}
+
 		return ret;
 	}
 
@@ -118,13 +149,14 @@ public class PuzzleModel {
 		public string Name = "";
 
 		public MoleculeM(Molecule mol) {
-			// clean molecules first
+			// Preserve the name
+			Name = mol.field_2639.method_1090(null)?.method_620() ?? "";
+			// Clean molecule
 			mol = MoleculeEditorScreen.method_1134(mol);
 			foreach(var atom in mol.method_1100())
 				Atoms.Add(new AtomM(atom.Value, new HexIndexM(atom.Key)));
 			foreach(var bond in mol.method_1101())
 				Bonds.Add(new BondM(bond));
-			Name = mol.field_2639.method_1090(null)?.method_620() ?? "";
 		}
 
 		public MoleculeM(){}
@@ -290,4 +322,66 @@ public class PuzzleModel {
 			return name;
 		}
 	}
+	
+	public class PayloadsM
+	{
+		// change puzzle behaviour at runtime
+		//public List<PayloadM> PuzzleInitialization = new();
+		// changes new solutions
+		public List<PayloadM> SolutionInitialization = new();
+
+		public PayloadsM(){}
+
+		public PayloadsM(Payloads p)
+		{
+			/*
+			foreach (Payloads.Payload pl in p.PuzzleInitialization)
+			{
+				PuzzleInitialization.Add(new(pl));
+			}
+			*/
+			foreach (Payloads.Payload pl in p.SolutionInitialization)
+			{
+				SolutionInitialization.Add(new(pl));
+			}
+		}
+
+        public Payloads FromModel()
+        {
+            Payloads ret = new();
+			/*
+			foreach (PayloadM pl in PuzzleInitialization)
+			{
+				ret.PuzzleInitialization.Add(pl.FromModel());
+			}
+			*/
+			foreach (PayloadM pl in SolutionInitialization)
+			{
+				ret.SolutionInitialization.Add(pl.FromModel());
+			}
+
+			return ret;
+        }
+    }
+    public class PayloadM
+    {
+		public string Address;
+		public string Data;
+
+		public PayloadM(){}
+        public PayloadM(Payloads.Payload pl)
+        {
+			Address = pl.Address;
+			Data = pl.Data;
+        }
+
+        public Payloads.Payload FromModel()
+        {
+			if (!QApi.SolutionPayloadHandler.Exists(sph => sph.Left == Address))
+			{
+	           throw new Exception("No payload handler for address \"" + Address + "\"");
+			}
+			return new(Address, Data);
+        }
+    }
 }
