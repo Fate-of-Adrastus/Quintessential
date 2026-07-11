@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using BondTextures = class_167;
-using OpusMagnumException = class_266;
-using BondTypeEnum = enum_126;
-using Assets = class_238;
-using Texture = class_256;
 
 namespace Quintessential.BondAPI {
     public static class BondTypes {
@@ -57,28 +52,28 @@ namespace Quintessential.BondAPI {
             bondTypes.Add("none", null);
             bondTypes.Add("standard", new BondType(
                 "standard",
-                BondTextures.field_1639,
-                Assets.field_1989.field_83.field_154,
+                BondTextures.standard,
+                Assets.textures.field_83.field_154,
                 new List<string>()
             ));
             bondTypes.Add("prisma0", new BondType(
                 "prisma0",
-                BondTextures.field_1640,
-                Assets.field_1989.field_83.field_156,
+                BondTextures.prisma0,
+                Assets.textures.field_83.field_156,
                 new List<string>() { "prisma1", "prisma2" },
                 - 10
             ));
             bondTypes.Add("prisma1", new BondType(
                 "prisma1",
-                BondTextures.field_1641,
-                Assets.field_1989.field_83.field_156,
+                BondTextures.prisma1,
+                Assets.textures.field_83.field_156,
                 new List<string>() { "prisma0", "prisma2" },
                 10
             ));
             bondTypes.Add("prisma2", new BondType(
                 "prisma2",
-                BondTextures.field_1642,
-                Assets.field_1989.field_83.field_156,
+                BondTextures.prisma2,
+                Assets.textures.field_83.field_156,
                 new List<string>() { "prisma0", "prisma1" }
             ));
             bondIds.Add("none");

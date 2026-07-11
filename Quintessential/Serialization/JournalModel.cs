@@ -4,8 +4,6 @@ using YamlDotNet.Serialization;
 
 namespace Quintessential.Serialization;
 
-using Texture = class_256;
-
 public class JournalModel {
 
 	public string Title { get; set; }

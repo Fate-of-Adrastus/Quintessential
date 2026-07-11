@@ -20,14 +20,14 @@ public class QuintessentialAsMod : QuintessentialMod {
             HexIndex position = new(int.Parse(parameters[0]), int.Parse(parameters[1]));
             HexRotation rotation = new(int.Parse(parameters[2]));
 
-            if (!class_191.method_498(parameters[3]).method_99(out class_139 partType))
+            if (!PartTypes.GetById(parameters[3]).GetOrDefault(out PartType partType))
             {
-                partType = class_191.field_1782;
+                partType = PartTypes.equilibriumGlyph;
             }
 
             Part part = new(partType, false);
-            solution.method_1939(part, position);
-            part.method_1197(solution, rotation);
+            solution.RepositionPart(part, position);
+            part.RotateBy(solution, rotation);
         });
     }
 

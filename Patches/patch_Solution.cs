@@ -6,20 +6,20 @@ public class patch_Solution
 {
     [MonoModIgnore]
     [PatchSolutionInitializer]
-    public static extern Solution method_1957(Puzzle param_5505, string param_5506);
+    public static extern Solution FromPuzzle(Puzzle puzzle, string solutionName);
 
-    public static bool GetConduits(Puzzle puzzle, out class_117[] conduits)
+    public static bool GetConduits(Puzzle puzzle, out PlacedConduit[] conduits)
     {
-        if (puzzle.field_2779.method_99(out class_261 cabinetInfo))  {
-            conduits = cabinetInfo.field_2072;
+        if (puzzle.productionInfo.GetOrDefault(out ProductionInfo cabinetInfo))  {
+            conduits = cabinetInfo.conduits;
             return true;
         }
-        return ((patch_Puzzle)(object)puzzle).EngineConduits.method_99(out conduits);
+        return ((patch_Puzzle)(object)puzzle).EngineConduits.GetOrDefault(out conduits);
     } 
 
     public static void ApplyChanges(Puzzle puzzle, Solution solution)
     {
-        if (((patch_Puzzle)(object)puzzle).Payloads.method_99(out Payloads payloads)) {
+        if (((patch_Puzzle)(object)puzzle).Payloads.GetOrDefault(out Payloads payloads)) {
             foreach (Payloads.Payload p in payloads.SolutionInitialization)
             {
                 foreach (var handler in QApi.SolutionPayloadHandler)

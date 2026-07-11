@@ -10,12 +10,12 @@ abstract class patch_SolutionEditorBase : SolutionEditorBase
     // renders parts
     // adds support for custom part renderers
 
-    public extern void orig_method_1996(Part part, Vector2 pos);
-    public void method_1996(Part part, Vector2 pos)
+    public extern void orig_RenderPartBase(Part part, Vector2 pos);
+    public void RenderPartBase(Part part, Vector2 pos)
     {
-        orig_method_1996(part, pos);
-        class_236 class195 = method_1989(part, pos);
-        class_195 renderer = new(class195.field_1984, class195.field_1985, Editor.method_922());
+        orig_RenderPartBase(part, pos);
+        IntermediatePartState class195 = GetIntermState(part, pos);
+        PartRenderer renderer = new(class195.pos, class195.rotation, Editor.method_922());
         foreach (var r in QApi.PartRenderers)
             if (r.Left(part))
                 r.Right(part, pos, this, renderer);
@@ -23,5 +23,5 @@ abstract class patch_SolutionEditorBase : SolutionEditorBase
 
     [MonoModIgnore]
     [PatchGlyphEffectRenderer]
-    public extern void method_2020(List<class_228> param_5625, Vector2 param_5626);
+    public extern void method_2451(List<PartRenderer> param_5625, Vector2 param_5626);
 }

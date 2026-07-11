@@ -3,15 +3,15 @@ using Quintessential;
 using System.Collections.Generic;
 using System.IO;
 
-[MonoModPatch("class_264")]
-class patch_LocVignette {
+[MonoModPatch("LocalizedVignette")]
+class patch_LocalizedVignette {
 
 	[MonoModConstructor]
-	public void ctor(string key) {
-		class_264 self = (class_264)(object)this;
+	public void ctor(string vignettePath) {
+        LocalizedVignette self = (LocalizedVignette)(object)this;
 
-		self.field_2091 = new Dictionary<Language, Vignette>();
-		self.field_2090 = key;
+		self.vignetteDict = new Dictionary<Language, Vignette>();
+		self.vignettePath = vignettePath;
         Language[] languages = {
             Language.English,
             Language.German,
@@ -27,25 +27,25 @@ class patch_LocVignette {
             Language.Czech
         };
         foreach(Language lang in languages) {
-            string path1 = Path.Combine("Content", "vignettes", $"{key}.{class_134.field_1498[lang]}.txt");
+            string path1 = Path.Combine("Content", "vignettes", $"{vignettePath}.{Translations.countryCodes[lang]}.txt");
 
             for(int i = 0; i < QuintessentialLoader.ModContentDirectories.Count && !File.Exists(path1); i++) {
                 string content = QuintessentialLoader.ModContentDirectories[i];
-                path1 = Path.Combine(content, "Content", "vignettes", $"{key}.{class_134.field_1498[Language.English]}.txt");
+                path1 = Path.Combine(content, "Content", "vignettes", $"{vignettePath}.{Translations.countryCodes[Language.English]}.txt");
             }
 
             string text = File.Exists(path1) ? File.ReadAllText(path1) : "";
 
-            self.field_2091[lang] = new Vignette(text, Path.GetFileNameWithoutExtension(path1), lang);
+            self.vignetteDict[lang] = new Vignette(text, Path.GetFileNameWithoutExtension(path1), lang);
             if(lang == Language.English) {
                 Vignette vignette = new(text, Path.GetFileNameWithoutExtension(path1), Language.Pseudo);
-                self.field_2091[Language.Pseudo] = vignette;
-                vignette.field_4124 = class_134.method_249(vignette.field_4124);
-                foreach(List<VignetteEvent> vignetteEventList in vignette.field_4125) {
+                self.vignetteDict[Language.Pseudo] = vignette;
+                vignette.data = Translations.ToPseudo(vignette.data);
+                foreach(List<VignetteEvent> vignetteEventList in vignette.events) {
                     for(int index = 0; index < vignetteEventList.Count; ++index) {
-                        if(vignetteEventList[index].method_2215()) {
-                            VignetteEvent.LineFields lineFields = vignetteEventList[index].method_2218();
-                            vignetteEventList[index] = VignetteEvent.method_2212(lineFields.field_4136, class_134.method_249(lineFields.field_4093));
+                        if(vignetteEventList[index].IsLineEvent()) {
+                            VignetteEvent.Line lineFields = vignetteEventList[index].ToLineEvent();
+                            vignetteEventList[index] = VignetteEvent.CreateLineEvent(lineFields.portrait, Translations.ToPseudo(lineFields.line));
                         }
                     }
                 }

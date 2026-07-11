@@ -4,8 +4,6 @@ using YamlDotNet.Serialization;
 
 namespace Quintessential;
 
-using Texture = class_256;
-
 public class ModMeta {
 
 	public string Name { get; set; }

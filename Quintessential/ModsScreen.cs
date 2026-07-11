@@ -7,12 +7,10 @@ using Quintessential.Settings;
 
 namespace Quintessential;
 
-using Scrollbar = class_262;
-
 class ModsScreen : IScreen {
 
 	private const int modButtonWidth = 300;
-	private static readonly class_256 verticalBarCentreTall = class_235.method_615("Quintessential/vertical_bar_centre_tall");
+	private static readonly Texture verticalBarCentreTall = AssetLoaderHelper.LoadTexture("Quintessential/vertical_bar_centre_tall");
 	
 	private ModMeta selected = QuintessentialLoader.QuintessentialModMeta;
 	private Scrollbar modsListScrollbar = new();
@@ -22,43 +20,45 @@ class ModsScreen : IScreen {
 		public float curY;
 	}
 
-	public bool method_1037() {
+	public bool PreventLowerScreenUpdates() {
 		return false;
 	}
 
-	public void method_47(bool param_4687) {
+	public void OnOpenOrClose(bool isOpening) {
 
 	}
 
-	public void method_48() {
+	public void Reset() {
 
 	}
 
 	// update & render
-	public void method_50(float time) {
+	public void RenderFrame(float deltaTime) {
 		Vector2 size = new(1220, 1000);
 		Vector2 pos = (Input.ScreenSize() / 2 - size / 2).Rounded();
 		Vector2 bgPos = pos + new Vector2(78, 88);
 		Vector2 bgSize = size - new Vector2(78 * 2, 77 * 2);
 
-		UI.DrawLargeUiBackground(bgPos, bgSize);
-		UI.DrawUiFrame(pos, size);
-		UI.DrawTexture(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
+        UI.DrawLargeUiBackground(bgPos, bgSize);
+        TextureRenderer.Render9Slice(Assets.textures.field_102.field_817, Color.White, pos, size);
+		//UI.DrawUiFrame(pos, size);
+        TextureRenderer.Render(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
+		//UI.DrawTexture(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
 
 		if(UI.DrawAndCheckCloseButton(pos, size, new Vector2(104, 98)))
 			UI.HandleCloseButton();
 
 		// draw mod buttons
-		using(var _ = modsListScrollbar.method_709(bgPos + new Vector2(0, 5), new(modButtonWidth + 60, (int)bgSize.Y - 10), 0, -30)){
+		using(var _ = modsListScrollbar.RenderScrollbar(bgPos + new Vector2(0, 5), new(modButtonWidth + 60, (int)bgSize.Y - 10), 0, -30)){
 			// clear scroll zone
 			class_226.method_600(Color.Transparent);
 			
-			int y = -(int)modsListScrollbar.field_2078;
+			int y = -(int)modsListScrollbar.scrollOffset;
 			UI.DrawHeader("Mods", new Vector2(20, size.Y - 200 - y), modButtonWidth, true, true);
 			
 			if(UI.DrawAndCheckSolutionButton("Quintessential", $"{QuintessentialLoader.VersionString} ({QuintessentialLoader.VersionNumber})", new Vector2(20, size.Y - 285 - y), modButtonWidth, selected == QuintessentialLoader.QuintessentialModMeta))
 				selected = QuintessentialLoader.QuintessentialModMeta;
-			class_135.method_275(class_238.field_1989.field_102.field_822, Color.White, Bounds2.WithSize(new Vector2(20, size.Y - 305 - y), new Vector2(modButtonWidth, 3f)));
+            TextureRenderer.Render9Slice(Assets.textures.field_102.field_822, Color.White, Bounds2.WithSize(new Vector2(20, size.Y - 305 - y), new Vector2(modButtonWidth, 3f)));
 			y += 100;
 			foreach(var mod in QuintessentialLoader.Mods)
 				if(mod != QuintessentialLoader.QuintessentialModMeta){
@@ -68,7 +68,7 @@ class ModsScreen : IScreen {
 				}
 			
 			// expand the scroll area to cover the entire displayed area
-			modsListScrollbar.method_707(y + 212);
+			modsListScrollbar.SetHeightAndClamp(y + 212);
 		}
 		
 		// draw mod options panel
@@ -86,15 +86,16 @@ class ModsScreen : IScreen {
 	private float DrawModLabel(ModMeta mod, Vector2 pos, Vector2 bgSize){
 		bool hasIcon = !string.IsNullOrWhiteSpace(mod.Icon);
 		Vector2 titlePos = hasIcon ? pos + new Vector2(140, -30) : pos;
-		if(mod.Icon != null)
-			UI.DrawTexture(mod.IconCache ??= class_235.method_615(mod.Icon), pos + new Vector2(20, bgSize.Y - 99f - 100));
-		UI.DrawText(mod.Title ?? mod.Name, titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, TextAlignment.Left);
+		if (mod.Icon != null)
+			TextureRenderer.Render(mod.IconCache ??= AssetLoaderHelper.LoadTexture(mod.Icon), pos + new Vector2(20, bgSize.Y - 99f - 100));
+        //UI.DrawTexture(mod.IconCache ??= AssetLoaderHelper.LoadTexture(mod.Icon), pos + new Vector2(20, bgSize.Y - 99f - 100));
+        UI.DrawText(mod.Title ?? mod.Name, titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, (TextAlignment)0);
 		string ver = mod.Version.ToString();
 		if(mod.Title != null)
 			ver = mod.Name + " - " + ver;
-		UI.DrawText(ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, TextAlignment.Left);
+		UI.DrawText(ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, (TextAlignment)0);
 		if(mod.Desc != null) {
-			var desc = UI.DrawText(mod.Desc, pos + new Vector2(20, bgSize.Y - 170f - (hasIcon ? 70 : 0)), UI.Text, UI.TextColor, TextAlignment.Left, maxWidth: 460);
+			var desc = UI.DrawText(mod.Desc, pos + new Vector2(20, bgSize.Y - 170f - (hasIcon ? 70 : 0)), UI.Text, UI.TextColor, (TextAlignment)0, maxWidth: 460);
 			return desc.Height + 80;
 		}
 		return 20;
@@ -129,7 +130,7 @@ class ModsScreen : IScreen {
 				y += 20;
 			} else if(field.FieldType == typeof(Keybinding)) {
 				Keybinding key = (Keybinding)field.GetValue(settings);
-				Bounds2 labelBounds = UI.DrawText(label + ": " + key.ControlKeysText(), pos + new Vector2(20, bgSize.Y - y - 15), UI.SubTitle, UI.TextColor, TextAlignment.Left);
+				Bounds2 labelBounds = UI.DrawText(label + ": " + key.ControlKeysText(), pos + new Vector2(20, bgSize.Y - y - 15), UI.SubTitle, UI.TextColor, (TextAlignment)0);
 				var text = !string.IsNullOrWhiteSpace(key.Key) ? key.Key : "None";
 				if(UI.DrawAndCheckSimpleButton(text, labelBounds.BottomRight + new Vector2(10, 0), new Vector2(50, (int)labelBounds.Height)))
 					UI.OpenScreen(new ChangeKeybindScreen(key, label, mod));
@@ -138,7 +139,7 @@ class ModsScreen : IScreen {
 				SettingsGroup group = (SettingsGroup)field.GetValue(settings);
 				var textPos = pos + new Vector2(20, bgSize.Y - y + 5);
 				if(group.Enabled) {
-					UI.DrawText("*" + label + "*", textPos, UI.SubTitle, UI.TextColor, TextAlignment.Left);
+					UI.DrawText("*" + label + "*", textPos, UI.SubTitle, UI.TextColor, (TextAlignment)0);
 					y += 25;
 					var progress = DrawSettingsObject(mod, field.GetValue(settings), pos + new Vector2(15, 0), bgSize, y);
 					settingsChanged |= progress.pressed;
@@ -154,17 +155,20 @@ class ModsScreen : IScreen {
 	[Obsolete("Use UI.DrawCheckbox instead")]
 	public static bool DrawCheckbox(Vector2 pos, string label, bool enabled) {
 		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
-		Bounds2 labelBounds = UI.DrawText(label, pos + new Vector2(45f, 13f), UI.SubTitle, UI.TextColor, TextAlignment.Left);
+		Bounds2 labelBounds = UI.DrawText(label, pos + new Vector2(45f, 13f), UI.SubTitle, UI.TextColor, (TextAlignment)0);
 		if(enabled)
-			UI.DrawTexture(class_238.field_1989.field_101.field_773, boxBounds.Min);
-		if(boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
-			UI.DrawTexture(class_238.field_1989.field_101.field_774, boxBounds.Min);
-			if(!Input.IsLeftClickPressed())
+			TextureRenderer.Render(Assets.textures.field_101.field_773, boxBounds.Min);
+        //UI.DrawTexture(Assets.textures.field_101.field_773, boxBounds.Min);
+        if (boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
+            TextureRenderer.Render(Assets.textures.field_101.field_774, boxBounds.Min);
+            //UI.DrawTexture(Assets.textures.field_101.field_774, boxBounds.Min);
+            if (!Input.IsLeftClickPressed())
 				return false;
-			class_238.field_1991.field_1821.method_28(1f);
+            Assets.sounds.field_1821.method_28(1f);
 			return true;
 		}
-		UI.DrawTexture(class_238.field_1989.field_101.field_772, boxBounds.Min);
+        TextureRenderer.Render(Assets.textures.field_101.field_772, boxBounds.Min);
+        //UI.DrawTexture(Assets.textures.field_101.field_772, boxBounds.Min);
 		return false;
 	}
 

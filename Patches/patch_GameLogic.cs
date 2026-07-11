@@ -7,23 +7,22 @@ using Quintessential;
 class patch_GameLogic{
 
 	// calls mod loading
-	public extern void orig_method_942();
-	public void method_942(){
+	public extern void orig_GameInit();
+	public void GameInit(){
 		QuintessentialLoader.PreInit();
-		orig_method_942();
+        orig_GameInit();
 		QuintessentialLoader.PostLoad();
 	}
-
-	public extern void orig_method_963(int exitCode);
-	public void method_963(int exitCode){
+    public extern void orig_GameUnload(int exitCode);
+	public void GameUnload(int exitCode){
 		QuintessentialLoader.Unload();
-		orig_method_963(exitCode);
+        orig_GameUnload(exitCode);
 	}
 
 	[PatchBondTypesInit]
-	public extern void orig_method_956();
-	public void method_956(){
-		orig_method_956();
+	public extern void orig_ContentInit();
+	public void ContentInit(){
+        orig_ContentInit();
 		QuintessentialLoader.LoadPuzzleContent();
 	}
 }

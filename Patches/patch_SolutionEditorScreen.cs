@@ -4,7 +4,7 @@ using System.Collections.Generic;
 class patch_SolutionEditorScreen
 {
     [MonoModReplace]
-    public static HexIndex method_2130(Solution param_5729, Part param_5730)
+    public static HexIndex method_2130(Solution solution, Part part)
     {
         // not the prettiest, but now it won't crash!
         HexIndex primaryResut = new(0, 0);
@@ -13,7 +13,7 @@ class patch_SolutionEditorScreen
         int maxDistance = 0;
         int bestX = int.MinValue;
         int bestY = int.MinValue;
-        foreach (HexIndex offset in method_2131(param_5729, param_5730))
+        foreach (HexIndex offset in GetInputOutputConduitHexes(solution, part))
         {
             bool alignedFlag = offset.Q == 0 || offset.R == 0 || offset.ImpliedS == 0;
             bool fartherFlag = offset.Length() > primaryResut.Length();
@@ -54,6 +54,6 @@ class patch_SolutionEditorScreen
     }
 
     [MonoModIgnore]
-    public static extern HashSet<HexIndex> method_2131(Solution param_5731, Part param_5732);
+    public static extern HashSet<HexIndex> GetInputOutputConduitHexes(Solution solution, Part part);
 
 }

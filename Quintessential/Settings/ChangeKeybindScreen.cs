@@ -30,19 +30,19 @@ class ChangeKeybindScreen : IScreen {
 		ToSave = save;
 	}
 
-	public bool method_1037(){
+	public bool PreventLowerScreenUpdates(){
 		return false;
 	}
-	public void method_47(bool param_4687){
+	public void OnOpenOrClose(bool isOpening) {
 		// Add gray BG
-		GameLogic.field_2434.field_2464 = true;
+		GameLogic.instance.fadeBackGround = true;
 	}
 
-	public void method_48(){}
+	public void Reset(){}
 
-	public void method_50(float param_4686){
+	public void RenderFrame(float deltaTime) {
 		// "Please enter a new key:"
-		UI.DrawText("Please enter a new key for: " + Label, (Input.ScreenSize() / 2) + new Vector2(0, 170), UI.Title, Color.White, TextAlignment.Centred);
+		UI.DrawText("Please enter a new key for: " + Label, (Input.ScreenSize() / 2) + new Vector2(0, 170), UI.Title, Color.White, (TextAlignment)1);
 		// display ctrl/shift
 		string preview = "";
 		bool shift = Input.IsShiftHeld();
@@ -55,10 +55,10 @@ class ChangeKeybindScreen : IScreen {
 		if(ctrl)
 			preview = "Control + " + preview;
 		if(!string.IsNullOrWhiteSpace(preview))
-			UI.DrawText(preview, Input.ScreenSize() / 2, UI.Title, class_181.field_1718, TextAlignment.Centred);
+			UI.DrawText(preview, Input.ScreenSize() / 2, UI.Title, class_181.field_1718, (TextAlignment)1);
 		// "press esc to CANCEL"
-		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (Input.ScreenSize() / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, TextAlignment.Centred);
-		if(Input.IsSdlKeyPressed(SDL.enum_160.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton("CANCEL", labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
+		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (Input.ScreenSize() / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, (TextAlignment)1);
+		if(Input.IsSdlKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton("CANCEL", labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
 			UI.HandleCloseButton();
 		// handle keypresses
 		string key = "";

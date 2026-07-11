@@ -1,8 +1,6 @@
 ﻿using MonoMod;
 using System;
 using System.Collections.Generic;
-using BondTexture = class_200;
-using Texture = class_256;
 
 
 namespace Quintessential.BondAPI {

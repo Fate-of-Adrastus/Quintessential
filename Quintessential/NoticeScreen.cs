@@ -14,23 +14,23 @@ public class NoticeScreen : IScreen {
 		Tooltip = tooltip;
 	}
 
-	public bool method_1037() {
+	public bool PreventLowerScreenUpdates() {
 		return false;
 	}
 
-	public void method_47(bool param_4687) {
+	public void OnOpenOrClose(bool isOpening) {
 		// Add gray BG
-		GameLogic.field_2434.field_2464 = true;
+		GameLogic.instance.fadeBackGround = true;
 	}
 
-	public void method_48() {
+	public void Reset() {
 		
 	}
 
-	public void method_50(float param_4686) {
-		UI.DrawText(Title, (Input.ScreenSize() / 2) + new Vector2(0, 120), UI.Title, Color.White, TextAlignment.Centred);
-		UI.DrawText(Tooltip, Input.ScreenSize() / 2, UI.SubTitle, class_181.field_1718, TextAlignment.Centred);
-		if(Input.IsSdlKeyPressed(SDL.enum_160.SDLK_ESCAPE) || UI.DrawAndCheckBoxButton("OK", (Input.ScreenSize() / 2) + new Vector2(-130, -160)))
+	public void RenderFrame(float deltaTime) {
+		UI.DrawText(Title, (Input.ScreenSize() / 2) + new Vector2(0, 120), UI.Title, Color.White, (TextAlignment)1);
+		UI.DrawText(Tooltip, Input.ScreenSize() / 2, UI.SubTitle, class_181.field_1718, (TextAlignment)1);
+		if(Input.IsSdlKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckBoxButton("OK", (Input.ScreenSize() / 2) + new Vector2(-130, -160)))
 			UI.CloseScreen();
 	}
 }

@@ -15,18 +15,18 @@ class patch_AtomType
     [MonoModReplace]
     public override int GetHashCode()
     {
-        return ((AtomType)(object)this).field_2283.GetHashCode() ^ QuintAtomType.GetHashCode();
+        return ((AtomType)(object)this).byteId.GetHashCode() ^ QuintAtomType.GetHashCode();
     }
 
     [MonoModReplace]
-    public static bool operator ==(patch_AtomType param_4426, patch_AtomType param_4427)
+    public static bool operator ==(patch_AtomType atomType1, patch_AtomType atomType2)
     {
-        return (((AtomType)(object)param_4426).field_2283 == ((AtomType)(object)param_4427).field_2283) && string.Equals(param_4426.QuintAtomType, param_4427.QuintAtomType);
+        return (((AtomType)(object)atomType1).byteId == ((AtomType)(object)atomType2).byteId) && string.Equals(atomType1.QuintAtomType, atomType2.QuintAtomType);
     }
 
     [MonoModReplace]
-    public static bool operator !=(patch_AtomType param_122, patch_AtomType param_3693)
+    public static bool operator !=(patch_AtomType atomType1, patch_AtomType atomType2)
     {
-        return !(param_122 == param_3693);
+        return !(atomType1 == atomType2);
     }
 }

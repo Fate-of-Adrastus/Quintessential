@@ -14,17 +14,17 @@ using Quintessential.Serialization;
 internal class patch_WorkshopManager{
 	
 	public void method_2230(){
-		((WorkshopManager)(object)this).method_2234();
-		((WorkshopManager)(object)this).method_2235();
+		((WorkshopManager)(object)this).ReloadWorkshopPuzzles();
+		((WorkshopManager)(object)this).ReloadCustomPuzzles();
 	}
 
 	// make the Browse button a no-op rather than crashing
-	public void method_2233(){}
+	public void ActivateWorkshopOverlay(){}
 
 	// load YAML-based puzzles alongside binary ones
-	private extern IEnumerable<Puzzle> orig_method_2236(string folder);
-	private IEnumerable<Puzzle> method_2236(string folder){
-		return orig_method_2236(folder).Concat(YamlPuzzles(folder));
+	private extern IEnumerable<Puzzle> orig_LoadPuzzlesOfFolder(string folder);
+	private IEnumerable<Puzzle> LoadPuzzlesOfFolder(string folder){
+		return orig_LoadPuzzlesOfFolder(folder).Concat(YamlPuzzles(folder));
 	}
 
 	private static IEnumerable<Puzzle> YamlPuzzles(string folder){
@@ -40,8 +40,8 @@ internal class patch_WorkshopManager{
 				continue;
 			}
 
-			fromModel.field_2783 = (uint)typeof(WorkshopManager).GetMethod("method_2238", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-				.Invoke(GameLogic.field_2434.field_2460, new object[]{puzzleFilePath});
+			fromModel.uniqueCustomVersion = (uint)typeof(WorkshopManager).GetMethod("GetCustomVersion", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+				.Invoke(GameLogic.instance.workshopManager, new object[]{puzzleFilePath});
 			// ReSharper disable once PossibleInvalidCastException
 			((patch_Puzzle)(object)fromModel).IsModdedPuzzle = true;
 			yield return fromModel;
@@ -50,11 +50,11 @@ internal class patch_WorkshopManager{
 	
 	// give YAML-based puzzles the right file location
 	// used for both finding and saving, though saving in the correct format is handled in `Puzzle`
-	private extern string orig_method_2237(Puzzle puzzle);
+	private extern string orig_CustomPuzzlePath(Puzzle puzzle);
 	[MonoModPublic]
-	public string method_2237(Puzzle puzzle){
+	public string CustomPuzzlePath(Puzzle puzzle){
 		return ((patch_Puzzle)(object)puzzle).IsModdedPuzzle
-			? Path.Combine(class_269.field_2102, "custom", puzzle.field_2766 + ".puzzle.yaml")
-			: orig_method_2237(puzzle);
+			? Path.Combine(class_269.field_2102, "custom", puzzle.puzzleId + ".puzzle.yaml")
+			: orig_CustomPuzzlePath(puzzle);
 	}
 }

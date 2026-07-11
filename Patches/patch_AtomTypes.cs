@@ -1,30 +1,29 @@
 ﻿using MonoMod;
-using AtomTypes = class_175;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 
-[MonoModPatch("class_175")]
+[MonoModPatch("AtomTypes")]
 class patch_AtomTypes{
 	
-	public static extern void orig_method_248();
+	public static extern void orig_Init();
 
-	public static void method_248(){
-		orig_method_248();
-		((patch_AtomType)(object)AtomTypes.field_1675).QuintAtomType = "salt";
-		((patch_AtomType)(object)AtomTypes.field_1676).QuintAtomType = "air";
-		((patch_AtomType)(object)AtomTypes.field_1677).QuintAtomType = "earth";
-		((patch_AtomType)(object)AtomTypes.field_1678).QuintAtomType = "fire";
-		((patch_AtomType)(object)AtomTypes.field_1679).QuintAtomType = "water";
-		((patch_AtomType)(object)AtomTypes.field_1680).QuintAtomType = "quicksilver";
-		((patch_AtomType)(object)AtomTypes.field_1681).QuintAtomType = "lead";
-		((patch_AtomType)(object)AtomTypes.field_1682).QuintAtomType = "copper";
-		((patch_AtomType)(object)AtomTypes.field_1683).QuintAtomType = "tin";
-		((patch_AtomType)(object)AtomTypes.field_1684).QuintAtomType = "iron";
-		((patch_AtomType)(object)AtomTypes.field_1685).QuintAtomType = "silver";
-		((patch_AtomType)(object)AtomTypes.field_1686).QuintAtomType = "gold";
-		((patch_AtomType)(object)AtomTypes.field_1687).QuintAtomType = "vitae";
-		((patch_AtomType)(object)AtomTypes.field_1688).QuintAtomType = "mors";
-		((patch_AtomType)(object)AtomTypes.field_1689).QuintAtomType = "repeat";
-		((patch_AtomType)(object)AtomTypes.field_1690).QuintAtomType = "quintessence";
+	public static void Init(){
+        orig_Init();
+		((patch_AtomType)(object)AtomTypes.salt).QuintAtomType = "salt";
+		((patch_AtomType)(object)AtomTypes.air).QuintAtomType = "air";
+		((patch_AtomType)(object)AtomTypes.earth).QuintAtomType = "earth";
+		((patch_AtomType)(object)AtomTypes.fire).QuintAtomType = "fire";
+		((patch_AtomType)(object)AtomTypes.water).QuintAtomType = "water";
+		((patch_AtomType)(object)AtomTypes.quicksilver).QuintAtomType = "quicksilver";
+		((patch_AtomType)(object)AtomTypes.lead).QuintAtomType = "lead";
+		((patch_AtomType)(object)AtomTypes.copper).QuintAtomType = "copper";
+		((patch_AtomType)(object)AtomTypes.tin).QuintAtomType = "tin";
+		((patch_AtomType)(object)AtomTypes.iron).QuintAtomType = "iron";
+		((patch_AtomType)(object)AtomTypes.silver).QuintAtomType = "silver";
+		((patch_AtomType)(object)AtomTypes.gold).QuintAtomType = "gold";
+		((patch_AtomType)(object)AtomTypes.vitae).QuintAtomType = "vitae";
+		((patch_AtomType)(object)AtomTypes.mors).QuintAtomType = "mors";
+		((patch_AtomType)(object)AtomTypes.repeat).QuintAtomType = "repeat";
+		((patch_AtomType)(object)AtomTypes.quintessence).QuintAtomType = "quintessence";
 	}
 }

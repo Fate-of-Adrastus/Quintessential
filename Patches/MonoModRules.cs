@@ -57,8 +57,9 @@ static class MonoModRules
         MonoModRule.Modder.Log("Patching OM");
     }
 
-    public static void PatchSettingsStaticInit(MethodDefinition method, CustomAttribute attrib)
-    {
+    public static void PatchSettingsStaticInit(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log(" !!! Skipping patch: PatchSettingsStaticInit");
+        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching settings static init");
         if (method.HasBody) {
 
@@ -66,20 +67,20 @@ static class MonoModRules
             ILCursor cursor = new(new ILContext(method));
             if (cursor.TryGotoNext(MoveType.Before,
                    instr => instr.MatchLdcI4(1),
-                   instr => instr.MatchStsfld("class_110", "field_1012")))
+                   instr => instr.MatchStsfld("AppConsts", "requireSteam")))
             {
                 cursor.Remove();
                 cursor.Emit(OpCodes.Ldc_I4_0);
             }
             else
             {
-                Console.WriteLine("Failed to disable Steam setting in class_110!");
+                Console.WriteLine("Failed to disable Steam setting in AppConsts!");
                 throw new Exception();
             }
         }
         else
         {
-            Console.WriteLine("Failed to disable Steam setting in class_110!");
+            Console.WriteLine("Failed to disable Steam setting in AppConsts!");
             throw new Exception();
         }
     }
@@ -142,10 +143,10 @@ static class MonoModRules
         if (method.HasBody)
         {
             ILCursor cursor = new(new ILContext(method));
-            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall("class_135", "method_272")))
+            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall("TextureRenderer", "Render")))
             {
                 // "class_135.method_272(class_238.field_1989.field_81.field_613.field_632, new Vector2());"
-                TypeDefinition holder = MonoModRule.Modder.FindType("class_250").Resolve();
+                TypeDefinition holder = MonoModRule.Modder.FindType("SolutionRecorderScreen").Resolve();
                 MethodDefinition to = holder.Methods.First(m => m.Name.Equals("MarkOnFrame"));
                 cursor.Emit(OpCodes.Call, to);
             }
@@ -162,8 +163,9 @@ static class MonoModRules
         }
     }
 
-    public static void PatchMoleculeEditorScreenAtomTray(MethodDefinition method, CustomAttribute attrib)
-    {
+    public static void PatchMoleculeEditorScreenAtomTray(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log(" !!! Skipping patch: PatchMoleculeEditorScreenAtomTray");
+        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching molecule editor screen atom tray");
         if (!method.HasBody)
         {
@@ -174,9 +176,9 @@ static class MonoModRules
         if (!cursor.TryGotoNext(MoveType.Before,
             instr => instr.MatchLdarg(0),
             instr => instr.MatchLdloc(7),
-            instr => instr.MatchLdsfld("class_175", "field_1675"),
+            instr => instr.MatchLdsfld("AtomTypes", "salt"),
             instr => instr.MatchLdcI4(1),
-            instr => instr.MatchCallvirt("MoleculeEditorScreen", "method_1130") // Move to the function call
+            instr => instr.MatchCallvirt("MoleculeEditorScreen", "AtomTypeSelector") // Move to the function call
         ))
         {
             Console.WriteLine("Failed to modify molecule editor rendering (no start match)!");
@@ -186,9 +188,9 @@ static class MonoModRules
         if (!cursor.TryGotoNext(MoveType.After,
             instr => instr.MatchLdarg(0),
             instr => instr.MatchLdloc(7),
-            instr => instr.MatchLdsfld("class_175", "field_1690"),
+            instr => instr.MatchLdsfld("AtomTypes", "quintessence"),
             instr => instr.MatchLdcI4(1),
-            instr => instr.MatchCallvirt("MoleculeEditorScreen", "method_1130") // Move to the function call
+            instr => instr.MatchCallvirt("MoleculeEditorScreen", "AtomTypeSelector") // Move to the function call
         ))
         {
             Console.WriteLine("Failed to modify molecule editor rendering (no near end match)!");
@@ -214,8 +216,9 @@ static class MonoModRules
         cursor.Emit(OpCodes.Callvirt, to);
     }
 
-    public static void PatchMoleculeEditorScreenMoleculeError(MethodDefinition method, CustomAttribute attrib)
-    {
+    public static void PatchMoleculeEditorScreenMoleculeError(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log(" !!! Skipping patch: PatchMoleculeEditorScreenMoleculeError");
+        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching molecule editor screen error detector");
         if (!method.HasBody)
         {
@@ -226,7 +229,7 @@ static class MonoModRules
 
         if (!cursor.TryGotoNext(MoveType.After,
             instr => instr.MatchLdarg(0),
-            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "field_2656",
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "molecule",
             instr => instr.OpCode == OpCodes.Callvirt,
             instr => instr.OpCode == OpCodes.Callvirt,
             instr => instr.MatchStloc(8),
@@ -252,8 +255,9 @@ static class MonoModRules
         start.Operand = end;
     }
 
-    public static void PatchPuzzleEditorScreen(MethodDefinition method, CustomAttribute attrib)
-    {
+    public static void PatchPuzzleEditorScreen(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log(" !!! Skipping patch: PatchPuzzleEditorScreen");
+        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching puzzle editor screen");
         if (!method.HasBody)
         {
@@ -274,8 +278,8 @@ static class MonoModRules
         cursor.Remove();
         cursor.Emit(OpCodes.Ldc_I4_0);
 
-        if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdflda("PuzzleEditorScreen", "field_2789"),
-                instr => instr.MatchCall(out MethodReference mref) && mref.Name.Equals("method_1085"),
+        if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdflda("PuzzleEditorScreen", "selectedPuzzle"),
+                instr => instr.MatchCall(out MethodReference mref) && mref.Name.Equals("HasValue"),
                 instr =>
                 {
                     bool ret = instr.OpCode == OpCodes.Brfalse;
@@ -300,7 +304,7 @@ static class MonoModRules
         // Ding!
 
         if (!cursor.TryGotoNext(MoveType.Before,
-            instr => instr.MatchLdfld(out FieldReference fr) && fr.Name == "field_2767",
+            instr => instr.MatchLdfld(out FieldReference fr) && fr.Name == "puzzleName",
             instr => instr.MatchCall(out MethodReference mr) && mr.Name == "op_Implicit",
             instr => instr.MatchLdloc(13)
             ))
@@ -476,7 +480,7 @@ static class MonoModRules
             throw new Exception();
         }
 
-        TypeDefinition holder = MonoModRule.Modder.FindType("class_228").Resolve();
+        TypeDefinition holder = MonoModRule.Modder.FindType("GlyphEffect").Resolve();
         FieldDefinition colorProp = holder.Fields.First((f) => f.Name == "Color");
 
         holder = MonoModRule.Modder.FindType("Color").Resolve();
@@ -521,7 +525,7 @@ static class MonoModRules
             throw new Exception();
         }
 
-        holder = MonoModRule.Modder.FindType("class_228").Resolve();
+        holder = MonoModRule.Modder.FindType("GlyphEffect").Resolve();
         FieldDefinition colorProp = holder.Fields.First((f) => f.Name == "Color");
 
         gremlin.Remove();
@@ -537,7 +541,7 @@ static class MonoModRules
         ILCursor cursor = new(new ILContext(method));
 
         if (!cursor.TryGotoNext(MoveType.After,
-            instr => instr.MatchCall("class_167", "method_471")
+            instr => instr.MatchCall("BondTextures", "Init")
         )) {
             throw new Exception("Unable to patch bond types init. (no call)");
         }

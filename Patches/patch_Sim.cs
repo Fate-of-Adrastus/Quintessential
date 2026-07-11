@@ -10,55 +10,55 @@ class patch_Sim{
 
 	// Make important fields public
 	[MonoModPublic]
-	public SolutionEditorBase field_3818;
+	public SolutionEditorBase solutionEditor;
 	[MonoModPublic]
-	public Dictionary<Part, PartSimState> field_3821;
+	public Dictionary<Part, PartSimState> simulationDict;
 	[MonoModPublic]
-	public Dictionary<Part, Sim.class_401> field_3822;
+	public Dictionary<Part, Sim.HolderMovementInfo> holderInfos;
 	[MonoModPublic]
-	public List<Molecule> field_3823;
+	public List<Molecule> molecules;
 	[MonoModPublic]
-	public List<Sim.struct_122> field_3826;
+	public List<Sim.Collider> additionalCollisions;
 	
 	// Hold onto held grippers
 	public List<Part> HeldGrippers;
 
 	// Helper methods to find held or unheld atoms
 	public Maybe<AtomReference> FindAtomRelative(Part part, HexIndex offset){
-		return FindAtom(part.method_1184(offset));
+		return FindAtom(part.InFrontBy(offset));
 	}
 	
 	public Maybe<AtomReference> FindAtom(HexIndex position){
-		var simStates = field_3821;
-		foreach(Molecule molecule in field_3823){
-			if(molecule.method_1100().TryGetValue(position, out Atom atom)){
-				bool isHeld = HeldGrippers != null && HeldGrippers.Any(part => simStates[part].field_2724 == position);
-				return new AtomReference(molecule, position, atom.field_2275, atom, isHeld);
+		var simStates = simulationDict;
+		foreach(Molecule molecule in molecules) {
+			if(molecule.GetAtoms().TryGetValue(position, out Atom atom)){
+				bool isHeld = HeldGrippers != null && HeldGrippers.Any(part => simStates[part].newPosition == position);
+				return new AtomReference(molecule, position, atom.atomType, atom, isHeld);
 			}
 		}
 
-		return struct_18.field_1431;
+		return MaybeHelper.empty;
 	}
 
     // Run custom behaviours
-    public extern void orig_method_1832(bool first);
+    public extern void orig_RunCycleGlyphs(bool isCycleStart);
     //public extern void RunCycleGlyphsMain(bool isCycleStart);
 	//[MonoModReplace]
-	public void method_1832(bool first){
+	public void RunCycleGlyphs(bool isCycleStart) {
 		// fill the list of grippers
-		List<Part> allParts = field_3818.method_502().field_3919;
-		Dictionary<Part, PartSimState> simStates = field_3821;
+		List<Part> allParts = solutionEditor.GetSolution().parts;
+		Dictionary<Part, PartSimState> simStates = simulationDict;
 		HeldGrippers = new();
 		foreach(var part in allParts)
-			foreach(var gripper in part.field_2696)
-				if(simStates[gripper].field_2729.method_1085())
+			foreach(var gripper in part.subparts)
+				if(simStates[gripper].heldMolecule.HasValue())
 					HeldGrippers.Add(gripper);
         // run the cycle
-        //RunCycleGlyphsMain(first);
-        orig_method_1832(first);
+        //RunCycleGlyphsMain(isCycleStart);
+        orig_RunCycleGlyphs(isCycleStart);
 
         // and then process things that happen after
 		foreach(var action in QApi.ToRunAfterCycle)
-			action((Sim)(object)this, first);
+			action((Sim)(object)this, isCycleStart);
 	}
 }

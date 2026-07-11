@@ -3,7 +3,7 @@ using Quintessential;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 
-using Texture = class_256;
+
 
 public class patch_JournalScreen{
 
@@ -12,33 +12,36 @@ public class patch_JournalScreen{
 	private static Texture JournalGoLeft, JournalGoLeftHover, JournalGoRight, JournalGoRightHover;
 	
 	// mirror real version
-	private static int field_2554;
+	private static int volumeCount;
 	
 	[PatchJournalScreen]
-	public extern void orig_method_50(float deltaTime);
-	public void method_50(float deltaTime){
-		orig_method_50(deltaTime);
+	public extern void orig_RenderFrame(float deltaTime);
+	public void RenderFrame(float deltaTime){
+        orig_RenderFrame(deltaTime);
 
 		if(QuintessentialLoader.AllJournals.Count == 1)
 			return;
 		
-		JournalGoLeft ??= class_235.method_615("Quintessential/journal_go_left");
-		JournalGoLeftHover ??= class_235.method_615("Quintessential/journal_go_left_hover");
-		JournalGoRight ??= class_235.method_615("Quintessential/journal_go_right");
-		JournalGoRightHover ??= class_235.method_615("Quintessential/journal_go_right_hover");
+		JournalGoLeft ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_left");
+		JournalGoLeftHover ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_left_hover");
+		JournalGoRight ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_right");
+		JournalGoRightHover ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_right_hover");
 		
 		Vector2 size = new Vector2(1516f, 922f);
 		Vector2 corner = (Input.ScreenSize() / 2 - size / 2 + new Vector2(-2f, -11f)).Rounded();
 		Vector2 lPos = corner + new Vector2(84, 812f);
 		Vector2 rPos = corner + new Vector2(188, 812f);
-		bool inLeftBound = Bounds2.WithSize(lPos, JournalGoLeft.field_2056.ToVector2()).Contains(Input.MousePos());
-		bool inRightBound = Bounds2.WithSize(rPos, JournalGoRight.field_2056.ToVector2()).Contains(Input.MousePos());
-		UI.DrawTexture(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
-		UI.DrawTexture(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
-		UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, TextAlignment.Centred);
+		bool inLeftBound = Bounds2.WithSize(lPos, JournalGoLeft.size.ToVector2()).Contains(Input.MousePos());
+		bool inRightBound = Bounds2.WithSize(rPos, JournalGoRight.size.ToVector2()).Contains(Input.MousePos());
+		TextureRenderer.Render(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
+        TextureRenderer.Render(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
+        UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, (TextAlignment)1);
+        //UI.DrawTexture(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
+        //UI.DrawTexture(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
+        //UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, TextAlignment.Centred);
 
 		if(Input.IsLeftClickPressed() && (inLeftBound || inRightBound)){
-			class_238.field_1991.field_1821.method_28(1f);
+            Assets.sounds.field_1821.method_28(1f);
 			
 			if(inLeftBound){
 				var next = currentJournal - 1;
@@ -54,8 +57,8 @@ public class patch_JournalScreen{
 				currentJournal = next;
 			}
 
-			JournalVolumes.field_2572 = QuintessentialLoader.AllJournals[currentJournal].ToArray();
-			field_2554 = JournalVolumes.field_2572.Length - 1;
+			JournalVolumes.volumes = QuintessentialLoader.AllJournals[currentJournal].ToArray();
+            volumeCount = JournalVolumes.volumes.Length - 1;
 			UI.InstantCloseScreen();
 			UI.OpenScreen(new JournalScreen(false));
 		}
@@ -63,11 +66,11 @@ public class patch_JournalScreen{
 
 	[MonoModIgnore]
 	[PatchJournalPuzzleBackgrounds]
-	private extern void method_1040(Puzzle puzzle, Vector2 pos, bool big);
+	private extern void RenderPuzzleSelect(Puzzle puzzle, Vector2 pos, bool isLarge);
 
 	public static void ResetPosition(){
 		currentJournal = 0;
-		field_2554 = JournalVolumes.field_2572.Length - 1;
+        volumeCount = JournalVolumes.volumes.Length - 1;
 	}
 
 	// found by name in MonoModRules
@@ -80,8 +83,8 @@ public class patch_JournalScreen{
 			return before;
 		var journal = QuintessentialLoader.ModJournalModels[currentJournal - 1];
 		return large switch{
-			true when !string.IsNullOrWhiteSpace(journal.PuzzleBackgroundLarge) => (journal.PuzzleBackgroundLargeTex ??= class_235.method_615(journal.PuzzleBackgroundLarge)),
-			false when !string.IsNullOrWhiteSpace(journal.PuzzleBackgroundSmall) => (journal.PuzzleBackgroundSmallTex ??= class_235.method_615(journal.PuzzleBackgroundSmall)),
+			true when !string.IsNullOrWhiteSpace(journal.PuzzleBackgroundLarge) => (journal.PuzzleBackgroundLargeTex ??= AssetLoaderHelper.LoadTexture(journal.PuzzleBackgroundLarge)),
+			false when !string.IsNullOrWhiteSpace(journal.PuzzleBackgroundSmall) => (journal.PuzzleBackgroundSmallTex ??= AssetLoaderHelper.LoadTexture(journal.PuzzleBackgroundSmall)),
 			_ => before
 		};
 	}

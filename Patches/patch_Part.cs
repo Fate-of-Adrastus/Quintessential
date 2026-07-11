@@ -1,44 +1,42 @@
 ﻿using MonoMod;
 
-using PartType = class_139;
-
 class patch_Part{
 	// this part type
 	[MonoModIgnore]
-	public extern PartType method_1159();
+	public extern PartType GetType();
 	// this IO index
 	[MonoModIgnore]
-	public extern int method_1167();
+	public extern int GetInputOutputIndex();
 	// setter for output amount
 	[MonoModIgnore]
-	private extern void method_1170(int param_2840);
+	private extern void SetOutputCount(int requiredCount);
 	
 	// handle output count overrides
-	public extern void orig_method_1176(Solution solution, int param_4911);
+	public extern void orig_SetupInputOutputFromSolution(Solution solution, int inputOutputIndex);
 
-	public void method_1176(Solution solution, int param_4911){
-		orig_method_1176(solution, param_4911);
+	public void SetupInputOutputFromSolution(Solution solution, int inputOutputIndex) {
+        orig_SetupInputOutputFromSolution(solution, inputOutputIndex);
 		
-		bool isPolymer = this.method_1159().field_1554;
+		bool isPolymer = this.GetType().isRepOutput;
 		if(!isPolymer){
-			PuzzleInputOutput[] list = (!method_1159().field_1541 ? solution.method_1934().field_2771 : solution.method_1934().field_2770);
-			if(list == null || list.Length <= method_1167())
+			PuzzleInputOutput[] list = (!GetType().isInput ? solution.GetPuzzle().outputs : solution.GetPuzzle().inputs);
+			if(list == null || list.Length <= GetInputOutputIndex())
 				return;
 
-			PuzzleInputOutput io = list[method_1167()];
+			PuzzleInputOutput io = list[GetInputOutputIndex()];
 			if(io == null)
 				return;
 
 			int amount = ((patch_PuzzleInputOutput)(object)io).AmountOverride;
 			if(amount > 0)
-				method_1170(amount);
+                SetOutputCount(amount);
 		}
 	}
 
     [MonoModReplace]
-	public bool method_1203()
+	public bool IsNotConduit()
     {
-        PartType t = method_1159();
-        return !(t.field_1543 || ((patch_PartType)(object)t).IsForced);
+        PartType t = GetType();
+        return !(t.isConduit || ((patch_PartType)(object)t).IsForced);
     }
 }

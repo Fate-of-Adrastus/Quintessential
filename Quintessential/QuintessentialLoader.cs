@@ -534,7 +534,7 @@ SomeZipIDontLike.zip");
     {
         AllCampaigns.Clear();
 
-        VanillaCampaign = Campaigns.field_2330;
+        VanillaCampaign = Campaigns.opusMagnum;
         ((patch_Campaign)(object)VanillaCampaign).QuintTitle = "Opus Magnum";
         AllCampaigns.Add(VanillaCampaign);
 
@@ -542,7 +542,7 @@ SomeZipIDontLike.zip");
         {
             var campaign = new Campaign
             {
-                field_2309 = new CampaignChapter[c.Chapters.Count]
+                chapters = new CampaignChapter[c.Chapters.Count]
             };
 
             ((patch_Campaign)(object)campaign).QuintTitle = c.Title;
@@ -550,22 +550,22 @@ SomeZipIDontLike.zip");
             for (int j = 0; j < c.Chapters.Count; j++)
             {
                 ChapterModel chapter = c.Chapters[j];
-                campaign.field_2309[j] = new CampaignChapter(
-                    class_134.method_253(chapter.Title, string.Empty),
-                    class_134.method_253(chapter.Subtitle, string.Empty),
-                    class_134.method_253(chapter.Place, string.Empty),
-                    chapter.Background != null ? class_235.method_615(chapter.Background) : Campaigns.field_2330.field_2309[j].field_2315,
-                    Campaigns.field_2330.field_2309[j].field_2316,
-                    Campaigns.field_2330.field_2309[j].field_2317,
-                    Campaigns.field_2330.field_2309[j].field_2318,
-                    Campaigns.field_2330.field_2309[j].field_2319,
-                    Campaigns.field_2330.field_2309[j].field_2320,
-                    false
+                campaign.chapters[j] = new CampaignChapter(
+                    Translations.Translate(chapter.Title),
+                    Translations.Translate(chapter.Subtitle),
+                    Translations.Translate(chapter.Place),
+                    chapter.Background != null ? AssetLoaderHelper.LoadTexture(chapter.Background) : Campaigns.opusMagnum.chapters[j].background,
+                    Campaigns.opusMagnum.chapters[j].lockedIcon,
+                    Campaigns.opusMagnum.chapters[j].unlockedIcon,
+                    Campaigns.opusMagnum.chapters[j].hoverIcon,
+                    Campaigns.opusMagnum.chapters[j].gemIcon,
+                    Campaigns.opusMagnum.chapters[j].buttonOffset,
+                    (ChapterAlignment)1
                 );
 
                 foreach (var entry in chapter.Entries)
                 {
-                    class_259 requirement = string.IsNullOrEmpty(entry.Requires) ? (class_259)new class_174() : new class_243(entry.Requires);
+                    UnlockRequirement requirement = string.IsNullOrEmpty(entry.Requires) ? (UnlockRequirement)new UnlockReqNothing() : new UnlockReqCompleteCampaignItem(entry.Requires);
 
                     var lower = entry.Type.ToLowerInvariant();
                     CampaignItem cItem;
@@ -576,26 +576,26 @@ SomeZipIDontLike.zip");
                                 if (!TryLoadPuzzle(c.Path, entry.Puzzle, c.Title, out var puzzle))
                                     continue;
 
-                                puzzle.field_2766 = entry.ID;
+                                puzzle.puzzleId = entry.ID;
                                 // ensure all inputs/outputs have names
-                                foreach (PuzzleInputOutput io in puzzle.field_2770.Union(puzzle.field_2771))
+                                foreach (PuzzleInputOutput io in puzzle.inputs.Union(puzzle.outputs))
                                 {
-                                    if (!io.field_2813.field_2639.method_1085())
+                                    if (!io.molecule.displayName.HasValue())
                                     {
-                                        io.field_2813.field_2639 = class_134.method_253("Molecule", string.Empty);
+                                        io.molecule.displayName = Translations.Translate("Molecule");
                                     }
                                 }
 
                                 // TODO: optimize
-                                cItem = AddEntryToCampaign(campaign, j, entry.ID, class_134.method_253(entry.Title, string.Empty), (enum_129)0, struct_18.field_1431, puzzle, class_238.field_1992.field_972, class_238.field_1991.field_1832, requirement, entry.NoStoryPanel);
-                                Array.Resize(ref Puzzles.field_2816, Puzzles.field_2816.Length + 1);
-                                Puzzles.field_2816[Puzzles.field_2816.Length - 1] = puzzle;
+                                cItem = AddEntryToCampaign(campaign, j, entry.ID, Translations.Translate(entry.Title), (CampaignItemType)0, MaybeHelper.empty, puzzle, Assets.musicTracks.field_972, Assets.sounds.field_1832, requirement, entry.NoStoryPanel);
+                                Array.Resize(ref Puzzles.campaignPuzzles, Puzzles.campaignPuzzles.Length + 1);
+                                Puzzles.campaignPuzzles[Puzzles.campaignPuzzles.Length - 1] = puzzle;
                                 break;
                             }
                         case "solitaire":
                             {
-                                cItem = new(entry.ID, class_134.method_253("Sigmar's Garden", string.Empty), (enum_129)3, struct_18.field_1431, requirement, class_238.field_1992.field_970, class_238.field_1991.field_1830);
-                                campaign.field_2309[j].field_2314.Add(cItem);
+                                cItem = new(entry.ID, Translations.Translate("Sigmar's Garden"), (CampaignItemType)3, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.field_1830, campaign);
+                                campaign.chapters[j].campaignItems.Add(cItem);
                                 break;
                             }
                         default:
@@ -610,14 +610,14 @@ SomeZipIDontLike.zip");
                     // probably not great to reload the images every time, in the case that a campaign uses the same image on every puzzle?
                     // but these are small, and we can definitely handle the case where every puzzle has a unique icon
                     if (!string.IsNullOrWhiteSpace(entry.Icon))
-                        conv.Icon = class_235.method_615(entry.Icon);
+                        conv.Icon = AssetLoaderHelper.LoadTexture(entry.Icon);
                     if (!string.IsNullOrWhiteSpace(entry.IconSmall))
-                        conv.IconSmall = class_235.method_615(entry.IconSmall);
+                        conv.IconSmall = AssetLoaderHelper.LoadTexture(entry.IconSmall);
                 }
             }
 
-            for (int index = 0; index < campaign.field_2309.Length; ++index)
-                campaign.field_2309[index].field_2310 = index;
+            for (int index = 0; index < campaign.chapters.Length; ++index)
+                campaign.chapters[index].chapterNumber = index;
 
             AllCampaigns.Add(campaign);
         }
@@ -627,7 +627,7 @@ SomeZipIDontLike.zip");
     {
         AllJournals.Clear();
 
-        VanillaJournal = JournalVolumes.field_2572.ToList();
+        VanillaJournal = JournalVolumes.volumes.ToList();
         AllJournals.Add(VanillaJournal);
 
         foreach (JournalModel journal in ModJournalModels)
@@ -637,28 +637,28 @@ SomeZipIDontLike.zip");
             List<JournalVolume> volumes = journal.Chapters.Select(chapter =>
                 new JournalVolume
                 {
-                    field_2569 = chapter.Title,
-                    field_2570 = chapter.Description,
-                    field_2571 = chapter.Puzzles.SelectMany(puzzleName =>
+                    issueName = Translations.Translate(chapter.Title),
+                    flavorText = Translations.Translate(chapter.Description),
+                    puzzles = chapter.Puzzles.SelectMany(puzzleName =>
                         TryLoadPuzzle(journal.Path, puzzleName, journal.Title, out var puzzle) ? new[] { puzzle } : new Puzzle[0]).ToArray()
                 }).ToList();
 
             // add journal puzzles to list of puzzles
             foreach (JournalVolume volume in volumes)
             {
-                int l = Puzzles.field_2816.Length;
-                Array.Resize(ref Puzzles.field_2816, l + volume.field_2571.Length /* should always be 5, but better safe than sorry. */  );
+                int l = Puzzles.campaignPuzzles.Length;
+                Array.Resize(ref Puzzles.campaignPuzzles, l + volume.puzzles.Length /* should always be 5, but better safe than sorry. */  );
                 int i = 0;
-                foreach (var puzzle in volume.field_2571)
+                foreach (var puzzle in volume.puzzles)
                 {
-                    Puzzles.field_2816[l + i] = puzzle;
+                    Puzzles.campaignPuzzles[l + i] = puzzle;
                     i++;
                 } // this is a little bit of a patchy method of doing it, i'm not sure the exact form the journal puzzle array takes and i'm a little bit tired from testing it, also taken from icwass RMC journal code
             }
             // log journals
             foreach (JournalVolume jv in volumes)
             {
-                Logger.Log($"Journal {jv.field_2569} has {jv.field_2571.Length} puzzles");
+                Logger.Log($"Journal {jv.issueName} has {jv.puzzles.Length} puzzles");
             }
             AllJournals.Add(volumes);
         }
@@ -670,7 +670,7 @@ SomeZipIDontLike.zip");
         {
             string baseName = Path.Combine(basePath, puzzleName);
             if (File.Exists(baseName + ".puzzle")) {
-                puzzle = Puzzle.method_1249(baseName + ".puzzle");
+                puzzle = Puzzle.LoadFromFile(baseName + ".puzzle");
             } else if (File.Exists(baseName + ".puzzle.jsonc")) {
                 puzzle = PuzzleModel.FromModel(DataSerializer.Deserialize<PuzzleModel>(baseName + ".puzzle.jsonc"));
             } else if (File.Exists(baseName + ".puzzle.json")) {
@@ -700,7 +700,7 @@ SomeZipIDontLike.zip");
 
     public static void CheckCampaignReload()
     {
-        if (QuintessentialSettings.Instance.HotReloadCampaigns.Pressed() && GameLogic.field_2434.method_938() is PuzzleSelectScreen)
+        if (QuintessentialSettings.Instance.HotReloadCampaigns.Pressed() && GameLogic.instance.GetLastScreen() is PuzzleSelectScreen)
         {
             Logger.Log("Reloading campaigns and journals!");
 
@@ -708,9 +708,9 @@ SomeZipIDontLike.zip");
             ModCampaignModels.Clear();
             ModJournalModels.Clear();
 
-            Campaigns.field_2330 = VanillaCampaign;
-            Campaigns.field_2331[0] = VanillaCampaign;
-            JournalVolumes.field_2572 = VanillaJournal.ToArray();
+            Campaigns.opusMagnum = VanillaCampaign;
+            Campaigns.campaigns[0] = VanillaCampaign;
+            JournalVolumes.volumes = VanillaJournal.ToArray();
             patch_PuzzleSelectScreen.ResetPosition();
             patch_JournalScreen.ResetPosition();
 
@@ -728,27 +728,27 @@ SomeZipIDontLike.zip");
     private static CampaignItem AddEntryToCampaign(
             Campaign campaign,
             int chapter,
-            string entryId,
-            LocString entryTitle,
-            enum_129 type,
-            Maybe<class_215> param_4485,
+            string itemId,
+            LocString itemName,
+            CampaignItemType itemType,
+            Maybe<Tip> puzzleTip,
             Maybe<Puzzle> puzzle,
-            class_186 param_4487,
-            Sound clickSound,
-            class_259 requirement,
+            MusicTrack musicTrack,
+            Sound fanfare,
+            UnlockRequirement requirement,
             bool noStoryPanel
     )
     {
-        if (puzzle.method_1085())
+        if (puzzle.HasValue())
         {
             //puzzle.method_1087().field_2767 = entryTitle;
-            puzzle.method_1087().field_2769 = param_4485;
+            puzzle.GetValue().puzzleTip = puzzleTip;
         }
-        CampaignItem campaignItem = new(entryId, entryTitle, type, puzzle, requirement, param_4487, clickSound);
-        campaign.field_2309[chapter].field_2314.Add(campaignItem);
+        CampaignItem campaignItem = new(itemId, itemName, itemType, puzzle, requirement, musicTrack, fanfare, campaign);
+        campaign.chapters[chapter].campaignItems.Add(campaignItem);
         // no cutscene to see here
         if (noStoryPanel)
-            campaignItem.field_2327 = struct_18.field_1431;
+            campaignItem.vignette = MaybeHelper.empty;
 
         return campaignItem;
     }
@@ -757,12 +757,12 @@ SomeZipIDontLike.zip");
     {
         string outDir = Path.Combine(PathModSaves, "Quintessential", "DumpedPuzzles");
         Directory.CreateDirectory(outDir);
-        foreach (var p in Puzzles.field_2816)
+        foreach (var p in Puzzles.campaignPuzzles)
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
             DataSerializer.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"), m, true);
         }
-        foreach (var p in JournalVolumes.field_2572.SelectMany(k => k.field_2571))
+        foreach (var p in JournalVolumes.volumes.SelectMany(k => k.puzzles))
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
             DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m, true);
@@ -775,10 +775,10 @@ SomeZipIDontLike.zip");
     {
         string outDir = Path.Combine(PathModSaves, "Quintessential", "DumpedAtomSprites");
         Directory.CreateDirectory(outDir);
-        foreach (AtomType atomType in class_175.field_1691)
+        foreach (AtomType atomType in AtomTypes.atoms)
         {
             RenderTargetHandle v = RenderAtomToTarget(atomType);
-            Renderer.method_1313(v.method_1351().field_937).method_735(Path.Combine(outDir, ((patch_AtomType)(object)atomType).QuintAtomType.Replace(":", "_") + ".png"));
+            Renderer.PngFromTexture(v.GetTarget().renderedTexture).Save(Path.Combine(outDir, ((patch_AtomType)(object)atomType).QuintAtomType.Replace(":", "_") + ".png"));
         }
         Logger.Log($"Dumped atom sprites to {outDir}");
         UI.OpenScreen(new NoticeScreen("Sprite Dumping", $"Saved atom sprites to \"{outDir.Replace('\\', '/')}\""));
@@ -787,18 +787,18 @@ SomeZipIDontLike.zip");
     internal static RenderTargetHandle RenderAtomToTarget(AtomType type)
     {
         RenderTargetHandle renderTargetHandle = new RenderTargetHandle();
-        Bounds2 bounds = Bounds2.CenteredOn(class_187.field_1742.method_491(new HexIndex(0, 0), Vector2.Zero), class_187.field_1742.field_1744.X, class_187.field_1742.field_1744.Y * 1.3f);
+        Bounds2 bounds = Bounds2.CenteredOn(HexGrid.standardGrid.ToWorldCoords(new HexIndex(0, 0), Vector2.Zero), HexGrid.standardGrid.hexSize.X, HexGrid.standardGrid.hexSize.Y * 1.3f);
         Index2 size = bounds.Size.CeilingToInt() + new Index2(20 * 2, 20 * 2);
         Vector2 pos = size.ToVector2() / 2 / 1f - bounds.Center;
         pos.Y = -pos.Y;
-        renderTargetHandle.field_2987 = size;
-        class_95 class95 = renderTargetHandle.method_1352(out var flag);
+        renderTargetHandle.targetSize = size;
+        RenderTarget class95 = renderTargetHandle.GetTarget(out var flag);
         if (flag)
         {
-            using (class_226.method_597(class95, Matrix4.method_1074(new Vector3(1, -1, 1))))
+            using (class_226.method_597(class95, Matrix4.GetScale(new Vector3(1, -1, 1))))
             {
                 class_226.method_600(Color.Transparent);
-                Editor.method_927(type, pos, 1, 1, 1, 1, -21, 0, class_238.field_1989.field_71, null, false);
+                Editor.RenderAtom(type, pos, 1, 1, 1, 1, -21, 0, Assets.textures.white, null, false);
             }
         }
 

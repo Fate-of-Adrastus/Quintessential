@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net481</TargetFramework>
     <RootNamespace />
     <AssemblyName>Quintessential</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -13,7 +13,7 @@
 
 	<PropertyGroup>
 		<!-- Path to Opus Magnum folder, Contains Lightning.exe et.al -->
-		<OpusDir>D:\C#_projects\Quintessential\bin\Debug\net452\TestEnvironment</OpusDir>
+		<OpusDir>D:\C#_projects\Quintessential\bin\Debug\TestEnvironment</OpusDir>
 	</PropertyGroup>
 	
   <ItemGroup>
@@ -30,7 +30,7 @@
       <CopyLocal>False</CopyLocal>
     </Reference>
     <Reference Include="Lightning">
-      <HintPath>$(OpusDir)\IntermediaryLightning.exe</HintPath>
+      <HintPath>$(OpusDir)\QuintDevLightning.exe</HintPath>
       <Private>false</Private>
       <CopyLocal>False</CopyLocal>
     </Reference>

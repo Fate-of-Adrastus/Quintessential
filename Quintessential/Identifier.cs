@@ -1,5 +1,4 @@
-﻿using OpusMagnumException = class_266;
-
+﻿
 namespace Quintessential;
 struct Identifier {
     string namespc, name;

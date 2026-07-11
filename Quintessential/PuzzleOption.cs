@@ -2,10 +2,6 @@
 
 namespace Quintessential;
 
-using PartType = class_139;
-using PartTypes = class_191;
-using AtomTypes = class_175;
-
 public class PuzzleOption{
 	
 	// Puzzle options are always saved as strings
@@ -71,8 +67,8 @@ public class PuzzleOption{
 
 	public PartType PartIn(Puzzle from){
 		string choice = ChoiceIn(from);
-		foreach(PartType type in PartTypes.field_1785)
-			if(type.field_1528.Equals(choice))
+		foreach(PartType type in PartTypes.partTypes)
+			if(type.id.Equals(choice))
 				return type;
 
 		return null;
@@ -80,7 +76,7 @@ public class PuzzleOption{
 
 	public AtomType AtomIn(Puzzle from){
 		string choice = ChoiceIn(from);
-		foreach(AtomType type in AtomTypes.field_1691)
+		foreach(AtomType type in AtomTypes.atoms)
 			if(Convert(type).QuintAtomType.Equals(choice))
 				return type;
 
@@ -105,7 +101,7 @@ public class PuzzleOption{
 	}
 
 	public void SetPartIn(Puzzle from, PartType part){
-		SetChoiceIn(from, part.field_1528);
+		SetChoiceIn(from, part.id);
 	}
 
 	private static patch_Puzzle Convert(Puzzle from){

@@ -1,5 +1,4 @@
 ﻿using MonoMod;
-using MonoMod.Utils;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -8,18 +7,18 @@ using System.Linq;
 
 public class patch_CompiledProgramGrid
 {
-	[MonoModIgnore]
-	Dictionary<Part, CompiledProgram> field_2368;
+    [MonoModIgnore]
+	Dictionary<Part, CompiledProgram> programDict;
 
-	public extern int orig_method_853(int param_4510);
+	public extern int orig_GetLoopedCycle(int instructionIndex);
 
-	public int method_853(int param_4510)
+	public int GetLoopedCycle(int instructionIndex)
 	{
-		if (this.field_2368.Count == 0) return 0;
+		if (this.programDict.Count == 0) return 0;
 
-		int num = this.field_2368.Values.First().field_2367.Length;
+		int num = this.programDict.Values.First().instructions.Length;
 		if (num == 0) return 0;
 		
-		return param_4510 % num;
+		return instructionIndex % num;
 	}
 }

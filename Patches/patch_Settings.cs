@@ -1,6 +1,6 @@
 ﻿using MonoMod;
 
-[MonoModPatch("class_110")]
+[MonoModPatch("AppConsts")]
 class patch_Settings {
 
 	// settings init
@@ -15,14 +15,14 @@ class patch_Settings {
 	}
 
     [RemoveReadOnly]
-    public static readonly bool field_1010; // isDevEnv
+    public static readonly bool isDevEnv; // isDevEnv
 
     [RemoveReadOnly]
-    public static readonly bool field_1014; // showLogWindow
+    public static readonly bool showLogWindow; // showLogWindow
 
     [RemoveReadOnly]
-    public static readonly bool field_1022; // allowPseudo
+    public static readonly bool allowPseudo; // allowPseudo
 
     [RemoveReadOnly]
-    public static readonly bool field_1026; // logSimulationState
+    public static readonly bool logSimulationState; // logSimulationState
 }

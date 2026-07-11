@@ -3,15 +3,9 @@ using System.Collections.Generic;
 
 namespace Quintessential;
 
-using PartType = class_139;
-using RenderHelper = class_195;
-using PartTypes = class_191;
-using AtomTypes = class_175;
-using ChamberType = class_183;
-
 public static class QApi {
 
-	public static readonly List<Pair<Predicate<Part>, PartRenderer>> PartRenderers = new();
+	public static readonly List<Pair<Predicate<Part>, PartRendererDelegate>> PartRenderers = new();
 	public static readonly List<Pair<PartType, PartType>> PanelParts = new();
 	public static readonly List<AtomType> ModAtomTypes = new();
 	public static readonly List<Action<Sim, bool>> ToRunAfterCycle = new();
@@ -29,7 +23,7 @@ public static class QApi {
 	/// <param name="type">The part type to be added.</param>
 	/// <param name="mechanism">Whether to add to the mechanisms section or the glyphs section.</param>
 	public static void AddPartTypeToPanel(PartType type, bool mechanism){
-		AddPartTypeToPanel(type, mechanism ? PartTypes.field_1771 : PartTypes.field_1782);
+		AddPartTypeToPanel(type, mechanism ? PartTypes.berlosWheel : PartTypes.equilibriumGlyph);
 	}
 
 	/// <summary>
@@ -51,8 +45,8 @@ public static class QApi {
 	/// </summary>
 	/// <param name="renderer">The PartRenderer to be added and displayed.</param>
 	/// <param name="typeChecker">A predicate that determines which parts the renderer should try to display.</param>
-	public static void AddPartTypesRenderer(PartRenderer renderer, Predicate<Part> typeChecker) {
-		PartRenderers.Add(new Pair<Predicate<Part>, PartRenderer>(typeChecker, renderer));
+	public static void AddPartTypesRenderer(PartRendererDelegate renderer, Predicate<Part> typeChecker) {
+		PartRenderers.Add(new Pair<Predicate<Part>, PartRendererDelegate>(typeChecker, renderer));
 	}
 
 	/// <summary>
@@ -60,8 +54,8 @@ public static class QApi {
 	/// </summary>
 	/// <param name="type">The part type to be added.</param>
 	public static void AddPartType(PartType type) {
-		Array.Resize(ref PartTypes.field_1785, PartTypes.field_1785.Length + 1);
-		PartTypes.field_1785[PartTypes.field_1785.Length - 1] = type;
+		Array.Resize(ref PartTypes.partTypes, PartTypes.partTypes.Length + 1);
+		PartTypes.partTypes[PartTypes.partTypes.Length - 1] = type;
 	}
 
 	/// <summary>
@@ -69,9 +63,9 @@ public static class QApi {
 	/// </summary>
 	/// <param name="type">The part type to be added.</param>
 	/// <param name="renderer">A PartRenderer to render instances of that part type.</param>
-	public static void AddPartType(PartType type, PartRenderer renderer) {
+	public static void AddPartType(PartType type, PartRendererDelegate renderer) {
 		AddPartType(type);
-		AddPartTypesRenderer(renderer, part => part.method_1159() == type);
+		AddPartTypesRenderer(renderer, part => part.GetType() == type);
 	}
 
 	/// <summary>
@@ -81,9 +75,9 @@ public static class QApi {
 	public static void AddAtomType(AtomType type) {
 		ModAtomTypes.Add(type);
 
-		Array.Resize(ref AtomTypes.field_1691, AtomTypes.field_1691.Length + 1);
-		var len = AtomTypes.field_1691.Length;
-		AtomTypes.field_1691[len - 1] = type;
+		Array.Resize(ref AtomTypes.atoms, AtomTypes.atoms.Length + 1);
+		var len = AtomTypes.atoms.Length;
+		AtomTypes.atoms[len - 1] = type;
 	}
 
 	/// <summary>
@@ -126,18 +120,18 @@ public static class QApi {
 	/// <summary>
 	/// Adds a chamber type, used by name in production puzzle files.
 	/// </summary>
-	/// <param name="chamberType">The chamber type to add.</param>
+	/// <param name="ProductionChamber">The chamber type to add.</param>
 	/// <param name="autoCentre">
 	/// Whether to automatically assign a centred offset for the chamber's overlay texture.
 	/// Otherwise, the chamber's <c>field_1730</c> must have its offset assigned by <c>UI.AssignOffset</c>, or the chamber will be visually incorrect.
 	/// </param>
-	public static void AddChamberType(ChamberType chamberType, bool autoCentre = true){
-		int length = Puzzles.field_2932.Length;
-		Array.Resize(ref Puzzles.field_2932, length + 1);
-		Puzzles.field_2932[length] = chamberType;
+	public static void AddProductionChamber(ProductionChamber ProductionChamber, bool autoCentre = true){
+		int length = Puzzles.prodChambers.Length;
+		Array.Resize(ref Puzzles.prodChambers, length + 1);
+		Puzzles.prodChambers[length] = ProductionChamber;
 
 		if(autoCentre)
-			UI.AssignOffset(chamberType.field_1730, -0.5f * chamberType.field_1730.field_2056.ToVector2());
+			UI.AssignOffset(ProductionChamber.borderTexture, -0.5f * ProductionChamber.borderTexture.size.ToVector2());
 	}
 
 	/// <summary>
@@ -162,7 +156,7 @@ public static class QApi {
 /// <param name="position">The position of the part.</param>
 /// <param name="editor">The solution editor that the part is being displayed in.</param>
 /// <param name="helper">An object containing functions for rendering images, at different positions/rotations and lightmaps.</param>
-public delegate void PartRenderer(Part part, Vector2 position, SolutionEditorBase editor, RenderHelper helper);
+public delegate void PartRendererDelegate(Part part, Vector2 position, SolutionEditorBase editor, PartRenderer helper);
 
 public delegate void SolutionPayloadHandler(Solution solution, string data);
 
@@ -171,14 +165,14 @@ public delegate void SolutionPayloadHandler(Solution solution, string data);
 /// </summary>
 public static class PartRendererExtensions {
 
-	public static PartRenderer Then(this PartRenderer first, PartRenderer second) {
+	public static PartRendererDelegate Then(this PartRendererDelegate first, PartRendererDelegate second) {
 		return (a, b, c, d) => {
 			first(a, b, c, d);
 			second(a, b, c, d);
 		};
 	}
 
-	public static PartRenderer WithOffsets(this PartRenderer renderer, params Vector2[] offsets) {
+	public static PartRendererDelegate WithOffsets(this PartRendererDelegate renderer, params Vector2[] offsets) {
 		return (part, pos, editor, helper) => {
 			foreach(var offset in offsets)
 				renderer(part, pos + offset, editor, helper);
@@ -190,14 +184,14 @@ public static class PartRendererExtensions {
 		return renderer.WithOffsets(offsets.Select(off => new Vector2((float)(off.Q + Math.Cos(angle) * off.R), -(float)(Math.Sin(angle) * off.R))).ToArray());
 	}*/
 
-	public static PartRenderer OfTexture(class_256 texture, params HexIndex[] hexes) {
+	public static PartRendererDelegate OfTexture(Texture texture, params HexIndex[] hexes) {
 		return (part, pos, editor, helper) => {
 			foreach(var hex in hexes)
 				helper.method_528(texture, hex, Vector2.Zero);
 		};
 	}
 
-	public static PartRenderer OfTexture(string texture, params HexIndex[] hexes) {
-		return OfTexture(class_235.method_615(texture), hexes);
+	public static PartRendererDelegate OfTexture(string texture, params HexIndex[] hexes) {
+		return OfTexture(AssetLoaderHelper.LoadTexture(texture), hexes);
 	}
 }

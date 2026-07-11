@@ -4,8 +4,6 @@ using MonoMod;
 using Quintessential;
 using Quintessential.Serialization;
 
-using Conduit = class_117;
-
 class patch_Puzzle{
 	
 	// Custom puzzle data
@@ -16,39 +14,39 @@ class patch_Puzzle{
 	// Don't set this if you don't know what you're doing!
 	public bool IsModdedPuzzle = false;
 
-	public Maybe<Conduit[]> EngineConduits = struct_18.field_1431;
-	public Maybe<Payloads> Payloads = struct_18.field_1431;
+	public Maybe<PlacedConduit[]> EngineConduits = MaybeHelper.empty;
+	public Maybe<Payloads> Payloads = MaybeHelper.empty;
 
 	// Save using the right format, and set Steam user ID to 0
 	[PatchPuzzleIdWrite]
-	public extern void orig_method_1248(string path);
+	public extern void orig_SaveToFile(string path);
 
 	// Save .puzzle or .puzzle.yaml
-	public void method_1248(string path){
+	public void SaveToFile(string path){
 		if(IsModdedPuzzle)
 			File.WriteAllText(path, YamlHelper.Serializer.Serialize(PuzzleModel.FromPuzzle((Puzzle)(object)this)));
 		else
-			orig_method_1248(path);
+            orig_SaveToFile(path);
 	}
 
-	public static extern Puzzle orig_method_1249(string path);
-	public static Puzzle method_1249(string path){
+	public static extern Puzzle orig_LoadFromFile(string path);
+	public static Puzzle LoadFromFile(string path){
 		if(Path.GetExtension(path) == ".yaml"){
 			Puzzle p = PuzzleModel.FromModel(YamlHelper.Deserializer.Deserialize<PuzzleModel>(File.ReadAllText(path)));
 			((patch_Puzzle)(object)p).IsModdedPuzzle = true;
 			return p;
 		}
-		return orig_method_1249(path);
+		return orig_LoadFromFile(path);
 	}
 
 	public void ConvertFormat(bool modded){
 		Puzzle self = (Puzzle)(object)this;
-		WorkshopManager wm = GameLogic.field_2434.field_2460;
+		WorkshopManager wm = GameLogic.instance.workshopManager;
 		// delete
-		File.Delete(((patch_WorkshopManager)(object)wm).method_2237(self));
+		File.Delete(((patch_WorkshopManager)(object)wm).CustomPuzzlePath(self));
 		// update
 		IsModdedPuzzle = modded;
 		// save
-		wm.method_2241(self);
+		wm.RegenCustomVersion(self);
 	}
 }
