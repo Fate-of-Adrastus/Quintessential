@@ -58,8 +58,7 @@ static class MonoModRules
     }
 
     public static void PatchSettingsStaticInit(MethodDefinition method, CustomAttribute attrib) {
-        MonoModRule.Modder.Log(" !!! Skipping patch: PatchSettingsStaticInit");
-        return; // Skipp patch for testing
+        return; // Keep steam enabeled
         MonoModRule.Modder.Log("Patching settings static init");
         if (method.HasBody) {
 
@@ -164,8 +163,6 @@ static class MonoModRules
     }
 
     public static void PatchMoleculeEditorScreenAtomTray(MethodDefinition method, CustomAttribute attrib) {
-        MonoModRule.Modder.Log(" !!! Skipping patch: PatchMoleculeEditorScreenAtomTray");
-        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching molecule editor screen atom tray");
         if (!method.HasBody)
         {
@@ -175,7 +172,7 @@ static class MonoModRules
         ILCursor cursor = new(new ILContext(method)); // Create cursor
         if (!cursor.TryGotoNext(MoveType.Before,
             instr => instr.MatchLdarg(0),
-            instr => instr.MatchLdloc(7),
+            instr => instr.MatchLdloc(9),
             instr => instr.MatchLdsfld("AtomTypes", "salt"),
             instr => instr.MatchLdcI4(1),
             instr => instr.MatchCallvirt("MoleculeEditorScreen", "AtomTypeSelector") // Move to the function call
@@ -187,7 +184,7 @@ static class MonoModRules
         int start = cursor.Index;
         if (!cursor.TryGotoNext(MoveType.After,
             instr => instr.MatchLdarg(0),
-            instr => instr.MatchLdloc(7),
+            instr => instr.MatchLdloc(9),
             instr => instr.MatchLdsfld("AtomTypes", "quintessence"),
             instr => instr.MatchLdcI4(1),
             instr => instr.MatchCallvirt("MoleculeEditorScreen", "AtomTypeSelector") // Move to the function call
@@ -211,14 +208,12 @@ static class MonoModRules
         cursor.Goto(start);
         cursor.RemoveRange(end - start); // Go bye with you
         cursor.Emit(OpCodes.Ldarg_0); // this
-        cursor.Emit(OpCodes.Ldloc, 7);
-        cursor.Emit(OpCodes.Ldloc, 6);
+        cursor.Emit(OpCodes.Ldloc, 9);
+        cursor.Emit(OpCodes.Ldloc, 8);
         cursor.Emit(OpCodes.Callvirt, to);
     }
 
     public static void PatchMoleculeEditorScreenMoleculeError(MethodDefinition method, CustomAttribute attrib) {
-        MonoModRule.Modder.Log(" !!! Skipping patch: PatchMoleculeEditorScreenMoleculeError");
-        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching molecule editor screen error detector");
         if (!method.HasBody)
         {
@@ -232,7 +227,7 @@ static class MonoModRules
             instr => instr.MatchLdfld(out FieldReference f) && f.Name == "molecule",
             instr => instr.OpCode == OpCodes.Callvirt,
             instr => instr.OpCode == OpCodes.Callvirt,
-            instr => instr.MatchStloc(8),
+            instr => instr.MatchStloc(1),
             instr => instr.OpCode == OpCodes.Br
         ))
         {
@@ -243,8 +238,10 @@ static class MonoModRules
         cursor.Goto((Instruction)cursor.Previous.Operand);
 
         if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdloc(1),
+            instr => instr.OpCode == OpCodes.Callvirt,
             instr => instr.OpCode == OpCodes.Brtrue,
-            instr => instr.OpCode == OpCodes.Leave_S
+            instr => instr.OpCode == OpCodes.Leave
         ))
         {
             Console.WriteLine("Failed to modify molecule editor error detector (no last leave)");
@@ -253,11 +250,34 @@ static class MonoModRules
         Instruction end = cursor.Previous;
         // Immediately leaves the loop
         start.Operand = end;
+
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdarg(0),
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "molecule",
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.MatchStloc(1),
+            instr => instr.OpCode == OpCodes.Br
+        )) {
+            Console.WriteLine("Failed to modify molecule editor error detector (second error)");
+            throw new Exception();
+        }
+        Instruction start2 = cursor.Previous;
+        cursor.Goto((Instruction)cursor.Previous.Operand);
+
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.OpCode == OpCodes.Brtrue,
+            instr => instr.OpCode == OpCodes.Leave_S
+        )) {
+            Console.WriteLine("Failed to modify molecule editor error detector (no second last leave)");
+            throw new Exception();
+        }
+        Instruction end2 = cursor.Previous;
+        // Immediately leaves the loop
+        start2.Operand = end2;
     }
 
     public static void PatchPuzzleEditorScreen(MethodDefinition method, CustomAttribute attrib) {
-        MonoModRule.Modder.Log(" !!! Skipping patch: PatchPuzzleEditorScreen");
-        return; // Skipp patch for testing
         MonoModRule.Modder.Log("Patching puzzle editor screen");
         if (!method.HasBody)
         {
@@ -269,46 +289,24 @@ static class MonoModRules
         Instruction target = null; // will definitely be set
 
         // kill off `flag5` and make the Upload puzzle button never clickable
-        if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdloc(27)))
-        {
-            Console.WriteLine("Failed to modify puzzle editor screen (no 1st match)!");
-            throw new Exception();
-        }
+        //if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdloc(27)))
+        //{
+        //    Console.WriteLine("Failed to modify puzzle editor screen (no 1st match)!");
+        //    throw new Exception();
+        //}
 
-        cursor.Remove();
-        cursor.Emit(OpCodes.Ldc_I4_0);
-
-        if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdflda("PuzzleEditorScreen", "selectedPuzzle"),
-                instr => instr.MatchCall(out MethodReference mref) && mref.Name.Equals("HasValue"),
-                instr =>
-                {
-                    bool ret = instr.OpCode == OpCodes.Brfalse;
-                    if (ret)
-                        target = (Instruction)instr.Operand;
-                    return ret;
-                }))
-        {
-            Console.WriteLine("Failed to modify puzzle editor screen (no 2nd match)!");
-            throw new Exception();
-        }
-
-        // "if(this.field_2789.method_1085()){" ... "} if (!this.field_2789.method_1085()){"
-        TypeDefinition holder = MonoModRule.Modder.FindType("PuzzleEditorScreen").Resolve();
-        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("DisplayEditorPanelScreen"));
-        cursor.Emit(OpCodes.Ldarg_0); // this
-        cursor.Emit(OpCodes.Call, to); // call reimplementation
-        cursor.Emit(OpCodes.Br, target); // skip rest of `if` statement
-
-        // Carriage Return
-        cursor.Index = 0;
-        // Ding!
-
+        //cursor.Remove();
+        //cursor.Emit(OpCodes.Ldc_I4_0);
+        //// Carriage Return
+        //cursor.Index = 0;
+        //// Ding!
+        
         if (!cursor.TryGotoNext(MoveType.Before,
             instr => instr.MatchLdfld(out FieldReference fr) && fr.Name == "puzzleName",
             instr => instr.MatchCall(out MethodReference mr) && mr.Name == "op_Implicit",
             instr => instr.MatchLdloc(13)
             ))
-        {
+            {
             Console.WriteLine("Failed to modify puzzle editor screen (no puzzle name found)");
             throw new Exception();
         }
@@ -318,7 +316,7 @@ static class MonoModRules
             instr => instr.OpCode == OpCodes.Call,
             instr => instr.MatchStloc(18),
             instr => instr.MatchLdloca(18)))
-        {
+            {
             Console.WriteLine("Failed to modify puzzle editor screen (no ButtonDrawLogic instantiation)");
             throw new Exception();
         }
@@ -326,14 +324,15 @@ static class MonoModRules
         cursor.RemoveRange(3);
 
         if (!cursor.TryGotoNext(MoveType.Before,
-            instr => instr.OpCode == OpCodes.Call,
-            instr => instr.OpCode == OpCodes.Brfalse,
+            instr => instr.MatchCall(out MethodReference mr) && mr.Name == "RenderAndCheckIfPressed",
+            instr => instr.OpCode == OpCodes.Brfalse_S,
             instr => instr.MatchLdloc(16)))
-        {
+            {
             Console.WriteLine("Failed to modify puzzle editor screen (no ButtonDrawLogic call)");
             throw new Exception();
         }
 
+        TypeDefinition holder = MonoModRule.Modder.FindType("PuzzleEditorScreen").Resolve();
         MethodDefinition getName = holder.Methods.First(m => m.Name.Equals("DrawPuzzleButton"));
         cursor.Remove();
         cursor.Emit(OpCodes.Call, getName);
