@@ -5,13 +5,13 @@
         },
         "Run With Quintrunner": {
             "commandName": "Executable",
-            "executablePath": "D:\\C#_projects\\Quintrunner\\bin\\Debug\\Quintrunner.exe",
+            "executablePath": "D:\\C#_projects\\Quintrunner\\bin\\Debug\\net10.0\\Quintrunner.exe",
             "nativeDebugging": false
         },
-        "Run OM": {
-            "commandName": "Executable",
-            "WorkingDirectory": "D:\\C#_projects\\Quintessential\\bin\\Debug\\net452\\TestEnvironment",
-            "executablePath": "D:\\C#_projects\\Quintessential\\bin\\Debug\\net452\\TestEnvironment\\ModdedLightning.exe"
-        }
+      "Run OM": {
+        "commandName": "Executable",
+        "WorkingDirectory": "D:\\C#_projects\\Quintessential\\bin\\Debug\\TestEnvironment",
+        "executablePath": "D:\\C#_projects\\Quintessential\\bin\\Debug\\TestEnvironment\\\\ModdedLightning.exe"
+      }
     }
 }
