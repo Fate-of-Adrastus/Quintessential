@@ -1,5 +1,4 @@
 ﻿using Ionic.Zip;
-using MonoMod.Utils;
 using Quintessential.Serialization;
 using System;
 using System.Collections;
@@ -488,7 +487,7 @@ SomeZipIDontLike.zip");
         catch (Exception e)
         {
             Logger.Log($"Failed reading assembly for {meta.Name}: {e}");
-            e.LogDetailed();
+            Logger.Log(e);
             return;
         }
 
@@ -639,8 +638,7 @@ SomeZipIDontLike.zip");
                 {
                     issueName = Translations.Translate(chapter.Title),
                     flavorText = Translations.Translate(chapter.Description),
-                    puzzles = chapter.Puzzles.SelectMany(puzzleName =>
-                        TryLoadPuzzle(journal.Path, puzzleName, journal.Title, out var puzzle) ? new[] { puzzle } : new Puzzle[0]).ToArray()
+                    puzzles = GetJournalPuzzles(chapter,journal)
                 }).ToList();
 
             // add journal puzzles to list of puzzles
@@ -662,6 +660,14 @@ SomeZipIDontLike.zip");
             }
             AllJournals.Add(volumes);
         }
+    }
+    public static Puzzle[] GetJournalPuzzles(JournalChapterModel chapter, JournalModel journal) {
+        IEnumerable<Puzzle> puzzles = new List<Puzzle>();
+        foreach( var puzzleName in chapter.Puzzles) {
+            Puzzle p = TryLoadPuzzle(journal.Path, puzzleName, journal.Title, out var puzzle) ? puzzle : new Puzzle();
+            puzzles.Concat(p);
+        }
+        return puzzles.ToArray();
     }
 
     private static bool TryLoadPuzzle(string basePath, string puzzleName, string campaignTitle, out Puzzle puzzle)
@@ -762,10 +768,12 @@ SomeZipIDontLike.zip");
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
             DataSerializer.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"), m, true);
         }
-        foreach (var p in JournalVolumes.volumes.SelectMany(k => k.puzzles))
+        foreach (var volume in JournalVolumes.volumes)
         {
-            PuzzleModel m = PuzzleModel.FromPuzzle(p);
-            DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m, true);
+            foreach (var p in volume.puzzles) {
+                PuzzleModel m = PuzzleModel.FromPuzzle(p);
+                DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m, true);
+            }
         }
         Logger.Log($"Dumped puzzles to {outDir}");
         UI.OpenScreen(new NoticeScreen("Puzzle Dumping", $"Saved puzzles to \"{outDir.Replace('\\', '/')}\""));
