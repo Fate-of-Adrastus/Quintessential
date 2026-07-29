@@ -40,7 +40,7 @@ class ModsScreen : IScreen {
 		Vector2 bgSize = size - new Vector2(78 * 2, 77 * 2);
 
         UI.DrawLargeUiBackground(bgPos, bgSize);
-        TextureRenderer.Render9Slice(Assets.textures.field_102.field_817, Color.White, pos, size);
+        TextureRenderer.Render9Slice(Assets.textures.window.frame, Color.White, pos, size);
 		//UI.DrawUiFrame(pos, size);
         TextureRenderer.Render(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
 		//UI.DrawTexture(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
@@ -58,7 +58,7 @@ class ModsScreen : IScreen {
 			
 			if(UI.DrawAndCheckSolutionButton("Quintessential", $"{QuintessentialLoader.VersionString} ({QuintessentialLoader.VersionNumber})", new Vector2(20, size.Y - 285 - y), modButtonWidth, selected == QuintessentialLoader.QuintessentialModMeta))
 				selected = QuintessentialLoader.QuintessentialModMeta;
-            TextureRenderer.Render9Slice(Assets.textures.field_102.field_822, Color.White, Bounds2.WithSize(new Vector2(20, size.Y - 305 - y), new Vector2(modButtonWidth, 3f)));
+            TextureRenderer.Render9Slice(Assets.textures.window.title_line_left, Color.White, Bounds2.WithSize(new Vector2(20, size.Y - 305 - y), new Vector2(modButtonWidth, 3f)));
 			y += 100;
 			foreach(var mod in QuintessentialLoader.Mods)
 				if(mod != QuintessentialLoader.QuintessentialModMeta){
@@ -157,18 +157,18 @@ class ModsScreen : IScreen {
 		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
 		Bounds2 labelBounds = UI.DrawText(label, pos + new Vector2(45f, 13f), UI.SubTitle, UI.TextColor, (TextAlignment)0);
 		if(enabled)
-			TextureRenderer.Render(Assets.textures.field_101.field_773, boxBounds.Min);
-        //UI.DrawTexture(Assets.textures.field_101.field_773, boxBounds.Min);
+			TextureRenderer.Render(Assets.textures.ui.checkbox_fill, boxBounds.Min);
+        //UI.DrawTexture(Assets.textures.UI.field_773, boxBounds.Min);
         if (boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
-            TextureRenderer.Render(Assets.textures.field_101.field_774, boxBounds.Min);
-            //UI.DrawTexture(Assets.textures.field_101.field_774, boxBounds.Min);
+            TextureRenderer.Render(Assets.textures.ui.checkbox_hover, boxBounds.Min);
+            //UI.DrawTexture(Assets.textures.UI.field_774, boxBounds.Min);
             if (!Input.IsLeftClickPressed())
 				return false;
-            Assets.sounds.field_1821.method_28(1f);
+            Assets.sounds.click_button.method_28(1f);
 			return true;
 		}
-        TextureRenderer.Render(Assets.textures.field_101.field_772, boxBounds.Min);
-        //UI.DrawTexture(Assets.textures.field_101.field_772, boxBounds.Min);
+        TextureRenderer.Render(Assets.textures.ui.checkbox, boxBounds.Min);
+        //UI.DrawTexture(Assets.textures.UI.field_772, boxBounds.Min);
 		return false;
 	}
 

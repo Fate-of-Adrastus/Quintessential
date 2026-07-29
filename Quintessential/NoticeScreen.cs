@@ -20,7 +20,7 @@ public class NoticeScreen : IScreen {
 
 	public void OnOpenOrClose(bool isOpening) {
 		// Add gray BG
-		GameLogic.instance.fadeBackGround = true;
+		GameLogic.instance.fadeBackground = true;
 	}
 
 	public void Reset() {

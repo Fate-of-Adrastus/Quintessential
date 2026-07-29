@@ -21,7 +21,7 @@ public class AtomSelectScreen : IScreen{
 
 	public void OnOpenOrClose(bool isOpening){
 		// Add gray BG
-		GameLogic.instance.fadeBackGround = true;
+		GameLogic.instance.fadeBackground = true;
 	}
 	
 	public void Reset(){}
@@ -48,21 +48,21 @@ public class AtomSelectScreen : IScreen{
 	
 	private static bool ClickableAtom(Vector2 pos, AtomType atom, bool selectable, bool selected){
 		float alpha = selectable ? 1 : .3f;
-		Vector2 centred = (pos - Assets.textures.field_89.field_117.size.ToVector2() / 2).Rounded();
+		Vector2 centred = (pos - Assets.textures.molecule_editor.atom_outline.size.ToVector2() / 2).Rounded();
 		// slot around the atom
-		TextureRenderer.Render(selected ? Assets.textures.field_89.field_118 : Assets.textures.field_89.field_117, Color.White.WithAlpha(alpha), centred);
+		TextureRenderer.Render(selected ? Assets.textures.molecule_editor.atom_selected : Assets.textures.molecule_editor.atom_outline, Color.White.WithAlpha(alpha), centred);
 		// draw the atom
 		Editor.RenderAtom(atom, pos, 1, alpha, 1, 1, -21, 0, null, null, false);
 		// are we hovering over it?
 		if(!selectable || Vector2.Distance(pos, Input.MousePos()) > 37)
 			return false;
 		// draw the hovering overlay
-		Vector2 outlineCentred = (pos - Assets.textures.field_89.field_124.size.ToVector2() / 2).Rounded();
-		TextureRenderer.Render(Assets.textures.field_89.field_124, outlineCentred);
+		Vector2 outlineCentred = (pos - Assets.textures.molecule_editor.grid_circle_hover.size.ToVector2() / 2).Rounded();
+		TextureRenderer.Render(Assets.textures.molecule_editor.grid_circle_hover, outlineCentred);
 		// are we clicking?
 		if(Input.IsLeftClickHeld()){
 			// make a sound
-			Assets.sounds.field_1821.method_28(1);
+			Assets.sounds.click_button.method_28(1);
 			return true;
 		}
 		return false;

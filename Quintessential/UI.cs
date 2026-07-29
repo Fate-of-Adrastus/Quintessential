@@ -7,9 +7,9 @@ public static class UI {
 
 	#region Constants
 
-	public static readonly LanguageSpecificFont Title = Assets.fonts.crimson_21;
-	public static readonly LanguageSpecificFont Text = Assets.fonts.crimson_16_5;
-	public static readonly LanguageSpecificFont SubTitle = Assets.fonts.crimson_13;
+	public static readonly LocalizedFont Title = Assets.fonts.crimson_21;
+	public static readonly LocalizedFont Text = Assets.fonts.crimson_16_5;
+	public static readonly LocalizedFont SubTitle = Assets.fonts.crimson_13;
 
 	public static readonly Color TextColor = class_181.field_1718;
 
@@ -35,7 +35,7 @@ public static class UI {
 
 	#region Text drawing methods
 
-	public static Bounds2 DrawText(string text, Vector2 pos, FontStyles font, Color color, TextAlignment alignment, float maxWidth = float.MaxValue, float ellipsesCutoff = float.MaxValue) {
+	public static Bounds2 DrawText(string text, Vector2 pos, StyleableFont font, Color color, TextAlignment alignment, float maxWidth = float.MaxValue, float ellipsesCutoff = float.MaxValue) {
 		return TextureRenderer.RenderText(text, pos, font, color, alignment, 1f, 0.6f, maxWidth, ellipsesCutoff, 0, new Color(), null, int.MaxValue, true, true);
 	}
 
@@ -70,11 +70,11 @@ public static class UI {
 	public static void HandleCloseButton() {
 		CloseScreen();
 		// Play close sound
-		Assets.sounds.field_1873.method_28(1f);
+		Assets.sounds.ui_modal_close.method_28(1f);
 	}
 
 	public static void CloseScreen() {
-		GameLogic.instance.fadeBackGround = false;
+		GameLogic.instance.fadeBackground = false;
 		GameLogic.instance.PopScreen();
 	}
 
@@ -91,7 +91,7 @@ public static class UI {
 	#region UI helpers
 
 	public static void DrawUiBackground(Vector2 pos, Vector2 size) {
-		DrawRepeatingTexture(Assets.textures.field_102.field_810, pos, size);
+		DrawRepeatingTexture(Assets.textures.window.background, pos, size);
 	}
 	
 	public static void DrawLargeUiBackground(Vector2 pos, Vector2 size) {
@@ -99,22 +99,22 @@ public static class UI {
 	}
 
 	public static void DrawUiFrame(Vector2 pos, Vector2 size) {
-		DrawResizableTexture(Assets.textures.field_102.field_817, pos, size);
+		DrawResizableTexture(Assets.textures.window.frame, pos, size);
 	}
 
 	public static bool DrawCheckbox(Vector2 pos, string label, bool enabled) {
 		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
 		Bounds2 labelBounds = DrawText(label, pos + new Vector2(45f, 13f), SubTitle, TextColor, (TextAlignment)0);
 		if(enabled)
-			DrawTexture(Assets.textures.field_101.field_773, boxBounds.Min);
+			DrawTexture(Assets.textures.ui.checkbox_fill, boxBounds.Min);
 		if(boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
-			DrawTexture(Assets.textures.field_101.field_774, boxBounds.Min);
+			DrawTexture(Assets.textures.ui.checkbox_hover, boxBounds.Min);
 			if(!Input.IsLeftClickPressed())
 				return false;
-            Assets.sounds.field_1821.method_28(1f);
+            Assets.sounds.click_button.method_28(1f);
 			return true;
 		}
-		DrawTexture(Assets.textures.field_101.field_772, boxBounds.Min);
+		DrawTexture(Assets.textures.ui.checkbox, boxBounds.Min);
 		return false;
 	}
 	
@@ -123,12 +123,12 @@ public static class UI {
 	#region Texture control methods
 
 	public static Texture AssignOffset(Texture tex, Vector2 offset){
-		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("field_996")[tex] = offset;
+		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("solution_editor6")[tex] = offset;
 		return tex;
 	}
 	
 	public static Texture AssignCentre(Texture tex, Vector2 offset){
-		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("field_997")[tex] = offset;
+		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("solution_editor7")[tex] = offset;
 		return tex;
 	}
 

@@ -55,7 +55,7 @@
 //                    AtomReference atomReference;
 //                    if (this.method_1850(class_.field_3841, new HexIndex(0, 0), list, false).method_99<AtomReference>(out atomReference) && atomReference.field_2280.field_2293) {
 //                        atomReference.field_2277.method_1106(class_175.field_1675, atomReference.field_2278);
-//                        atomReference.field_2279.field_2276 = new class_168(this.field_3818, (enum_7)0, (enum_132)0, atomReference.field_2280, class_238.field_1989.field_81.field_611, 30f);
+//                        atomReference.field_2279.field_2276 = new class_168(this.field_3818, (enum_7)0, (enum_132)0, atomReference.field_2280, class_238.field_1989.atoms.field_611, 30f);
 //                        Vector2 vector = class_187.field_1742.method_492(class_.field_3841.method_1161());
 //                        this.field_3818.field_3935.Add(new class_228(this.field_3818, (enum_7)1, vector, class_238.field_1989.field_90.field_233, 30f, Vector2.Zero, 0f));
 //                        this.method_1856(class_238.field_1991.field_1840);
@@ -65,7 +65,7 @@
 //                    AtomReference atomReference3;
 //                    if (this.method_1850(class_.field_3841, new HexIndex(0, 0), list, true).method_99<AtomReference>(out atomReference2) && atomReference2.field_2280.field_2293 && this.method_1850(class_.field_3841, new HexIndex(1, 0), list, false).method_99<AtomReference>(out atomReference3) && atomReference3.field_2280 == class_175.field_1675) {
 //                        atomReference3.field_2277.method_1106(atomReference2.field_2280, atomReference3.field_2278);
-//                        atomReference3.field_2279.field_2276 = new class_168(this.field_3818, (enum_7)0, (enum_132)0, class_175.field_1675, class_238.field_1989.field_81.field_612, 30f);
+//                        atomReference3.field_2279.field_2276 = new class_168(this.field_3818, (enum_7)0, (enum_132)0, class_175.field_1675, class_238.field_1989.atoms.field_612, 30f);
 //                        Vector2 vector2 = class_187.field_1742.method_492(class_.field_3841.method_1161() + new HexIndex(1, 0).Rotated(class_.field_3841.method_1163()));
 //                        this.field_3818.field_3935.Add(new class_228(this.field_3818, (enum_7)1, vector2, class_238.field_1989.field_90.field_256, 30f, Vector2.Zero, class_.field_3841.method_1163().ToRadians()));
 //                        this.method_1856(class_238.field_1991.field_1843);
@@ -78,7 +78,7 @@
 //                        atomReference4.field_2277.method_1106(atomType, atomReference4.field_2278);
 //                        atomReference5.field_2277.method_1107(atomReference5.field_2278);
 //                        this.field_3818.field_3937.Add(new class_286(this.field_3818, atomReference5.field_2278, class_175.field_1680));
-//                        atomReference4.field_2279.field_2276 = new class_168(this.field_3818, (enum_7)0, (enum_132)1, atomReference4.field_2280, class_238.field_1989.field_81.field_614, 30f);
+//                        atomReference4.field_2279.field_2276 = new class_168(this.field_3818, (enum_7)0, (enum_132)1, atomReference4.field_2280, class_238.field_1989.atoms.field_614, 30f);
 //                        Vector2 vector3 = class_187.field_1742.method_492(class_.field_3841.method_1161() + new HexIndex(1, 0).Rotated(class_.field_3841.method_1163()));
 //                        this.field_3818.field_3935.Add(new class_228(this.field_3818, (enum_7)1, vector3, class_238.field_1989.field_90.field_256, 30f, Vector2.Zero, class_.field_3841.method_1163().ToRadians()));
 //                        this.method_1856(class_238.field_1991.field_1844);

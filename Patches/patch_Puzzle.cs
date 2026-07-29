@@ -47,6 +47,6 @@ class patch_Puzzle{
 		// update
 		IsModdedPuzzle = modded;
 		// save
-		wm.RegenCustomVersion(self);
+		wm.RegenPuzzleId(self);
 	}
 }

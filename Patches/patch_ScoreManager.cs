@@ -8,7 +8,7 @@ class patch_ScoreManager {
 
 	[PatchScoreManagerLoad]
 	[MonoModIgnore]
-	public extern void method_1369(Puzzle param_5132, HistogramType param_5133, int param_5134);
+	public extern void method_1369(Puzzle param_5132, ScoreMetric param_5133, int param_5134);
 
 	public extern void orig_method_1370(string str);
 	public void method_1370(string str) {

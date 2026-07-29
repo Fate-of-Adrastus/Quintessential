@@ -71,14 +71,14 @@ class patch_PuzzleEditorScreen {
 
 				Texture @base;
 				if (enabled)
-					@base = Assets.textures.field_99.field_706.field_716;
+					@base = Assets.textures.solution_editor.program_panel.instruction;
 				else {
-					@base = Assets.textures.field_99.field_706.field_717;
+					@base = Assets.textures.solution_editor.program_panel.instruction_disabled;
 					istructionPos += new Vector2(3, -3);
 				}
 
 				bool hovered = Bounds2.WithSize(basePos, @base.size.ToVector2()).Contains(Input.MousePos());
-				Texture highlight = Assets.textures.field_99.field_706.field_720;
+				Texture highlight = Assets.textures.solution_editor.program_panel.instruction_highlight;
 
 				TextureRenderer.Render(@base, basePos);
 				TextureRenderer.Render(type.enabledTexture, istructionPos + new Vector2(1, 2));
@@ -87,7 +87,7 @@ class patch_PuzzleEditorScreen {
 
 				if (hovered && Input.IsLeftClickPressed()) {
 					puzzle.permissionFlags ^= type.permissionCategory;
-					GameLogic.instance.workshopManager.RegenCustomVersion(puzzle);
+					GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 				}
 
 				i++;
@@ -123,14 +123,14 @@ class patch_PuzzleEditorScreen {
 									conv.CustomPermissions.Remove(option.ID);
 								else
 									conv.CustomPermissions.Add(option.ID);
-								GameLogic.instance.workshopManager.RegenCustomVersion(puzzle);
+								GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 							}
 						} else if (option.Type == PuzzleOptionType.Atom) {
 							var currentChoice = option.AtomIn(puzzle);
 							if (DrawAtomSelector(selectorPos, option.Name, currentChoice ?? AtomTypes.repeat))
 								UI.OpenScreen(new AtomSelectScreen("Select: " + option.Name, type => {
 									option.SetAtomIn(puzzle, type);
-									GameLogic.instance.workshopManager.RegenCustomVersion(puzzle);
+									GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 								}, currentChoice));
 						}
 
@@ -162,10 +162,10 @@ class patch_PuzzleEditorScreen {
             for (int j = 0; j < 4; j++) {
                 Bounds2 bounds2 = Bounds2.WithSize(pos + new Vector2(495f, 588f) + new Vector2((float)(j * 236), (float)((i == 0) ? (-28) : (-281))), new Vector2(226f, 201f));
                 if (array.Length > j) {
-                    TextureRenderer.Render(isPersonal ? Assets.textures.field_94.field_805 : Assets.textures.field_94.field_808, bounds2.Min);
+                    TextureRenderer.Render(isPersonal ? Assets.textures.puzzle_editor.product : Assets.textures.puzzle_editor.product_no_close, bounds2.Min);
                     bool flag = false;
                     if (isPersonal) {
-                        Bounds2 bounds3 = Bounds2.WithSize(bounds2.Min + new Vector2(176f, 165f), Assets.textures.field_94.field_806.size.ToVector2());
+                        Bounds2 bounds3 = Bounds2.WithSize(bounds2.Min + new Vector2(176f, 165f), Assets.textures.puzzle_editor.product_close.size.ToVector2());
                         bool flag2 = bounds3.Contains(InputManager.MousePos());
                         if (!flag2 && bounds2.Contains(InputManager.MousePos())) {
                             flag = true;
@@ -174,18 +174,18 @@ class patch_PuzzleEditorScreen {
                                 int J = j;
                                 var moleculeEditorScreen = new MoleculeEditorScreen(array[J].molecule, I == 0, new Action<Molecule>(molecule => {
                                     (I == 0 ? puzzleCont.field_4622.outputs : puzzleCont.field_4622.inputs)[J].molecule = molecule;
-                                    GameLogic.instance.workshopManager.RegenCustomVersion(puzzleCont.field_4622);
+                                    GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                                 }));
                                 ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = (patch_Puzzle)(object)puzzle;
                                 screenOpened = true;
 
                                 GameLogic.instance.PushScreen(moleculeEditorScreen);
-                                Assets.sounds.field_1821.method_28(1f);
+                                Assets.sounds.click_button.method_28(1f);
                             }
                         }
-                        TextureRenderer.Render(Assets.textures.field_94.field_806, bounds3.Min);
+                        TextureRenderer.Render(Assets.textures.puzzle_editor.product_close, bounds3.Min);
                         if (flag2) {
-                            TextureRenderer.Render(Assets.textures.field_94.field_807, bounds3.Min);
+                            TextureRenderer.Render(Assets.textures.puzzle_editor.product_close_hover, bounds3.Min);
                             if (InputManager.IsClickPressed((MouseButtonType)1)) {
 
                                 int I = i;
@@ -197,9 +197,9 @@ class patch_PuzzleEditorScreen {
                                     } else {
                                         puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Take<PuzzleInputOutput>(J).Concat<PuzzleInputOutput>(puzzleCont.field_4622.inputs.Skip<PuzzleInputOutput>(J + 1)).ToArray<PuzzleInputOutput>();
                                     }
-                                    GameLogic.instance.workshopManager.RegenCustomVersion(puzzleCont.field_4622);
+                                    GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                                 }, () => { }));
-                                Assets.sounds.field_1821.method_28(1f);
+                                Assets.sounds.click_button.method_28(1f);
                             }
                         }
                     }
@@ -219,32 +219,32 @@ class patch_PuzzleEditorScreen {
                             int J = j;
                             GameLogic.instance.PushScreen(MessageBoxScreenEx.textbox(bounds, Translations.Translate("Please enter a new name for this " + (i == 0 ? "product:" : "reagent:")), array[j].molecule.displayName.HasValue() ? array[j].molecule.displayName.GetValue() : (isElement ? array[j].molecule.GetAtoms().Values.First().atomType.elementalName : ""), Translations.Translate("Rename " + (i == 0 ? "Product" : "Reagent")), (string s) => {
                                 array[J].molecule.displayName = Translations.Translate(s);
-                                GameLogic.instance.workshopManager.RegenCustomVersion(puzzle);
+                                GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
                             }));
-                            Assets.sounds.field_1821.method_28(1f);
+                            Assets.sounds.click_button.method_28(1f);
                         }
                     }
                 } else if (isPersonal) {
                     Vector2 vector3 = new Vector2(-2f, -3f);
-                    TextureRenderer.Render(Assets.textures.field_94.field_802, bounds2.Min + vector3);
+                    TextureRenderer.Render(Assets.textures.puzzle_editor.new_product, bounds2.Min + vector3);
                     TextureRenderer.RenderText(text, bounds2.Center + new Vector2(-6f, 0f), Assets.fonts.crimson_13, class_181.field_1718, (TextAlignment)1, 1f, 0.6f, 120f, float.MaxValue, 0, default(Color), null, int.MaxValue, false, true);
                     if (bounds2.Contains(InputManager.MousePos())) {
-                        TextureRenderer.Render(Assets.textures.field_94.field_803, bounds2.Min + vector3);
+                        TextureRenderer.Render(Assets.textures.puzzle_editor.new_product_hover, bounds2.Min + vector3);
                         if (InputManager.IsClickPressed((MouseButtonType)1)) {
 
                             int I = i;
                             var moleculeEditorScreen =new MoleculeEditorScreen(new Molecule(), i == 0, new Action<Molecule>(molecule => {
                                 if (I == 0) {
-                                    puzzleCont.field_4622.outputs = puzzleCont.field_4622.outputs.Concat(new PuzzleInputOutput(molecule)).ToArray<PuzzleInputOutput>();
+                                    puzzleCont.field_4622.outputs = puzzleCont.field_4622.outputs.Concat([new PuzzleInputOutput(molecule)]).ToArray<PuzzleInputOutput>();
                                 } else {
-                                    puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Concat(new PuzzleInputOutput(molecule)).ToArray<PuzzleInputOutput>();
+                                    puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Concat([new PuzzleInputOutput(molecule)]).ToArray<PuzzleInputOutput>();
                                 }
-                                GameLogic.instance.workshopManager.RegenCustomVersion(puzzleCont.field_4622);
+                                GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                             }));
                             ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = (patch_Puzzle)(object)puzzle;
 
 							GameLogic.instance.PushScreen(moleculeEditorScreen);
-                            Assets.sounds.field_1821.method_28(1f);
+                            Assets.sounds.click_button.method_28(1f);
                         }
                     }
                 }
@@ -282,11 +282,11 @@ class patch_PuzzleEditorScreen {
 		Editor.RenderAtom(atom, atomPos, scale, 1, 1, 1, -21, 0, null, null, false);
 
 		if(Vector2.Distance(atomPos, Input.MousePos()) < (37 * scale) || labelBounds.Contains(Input.MousePos())){
-			Vector2 outlinePos = (atomPos - Assets.textures.field_89.field_124.size.ToVector2() * scale / 2).Rounded();
-			var tex = Assets.textures.field_89.field_124;
+			Vector2 outlinePos = (atomPos - Assets.textures.molecule_editor.grid_circle_hover.size.ToVector2() * scale / 2).Rounded();
+			var tex = Assets.textures.molecule_editor.grid_circle_hover;
 			TextureRenderer.Render(tex, Color.White, outlinePos, tex.size.ToVector2() * 0.7f);
 			if(Input.IsLeftClickPressed()){
-				Assets.sounds.field_1821.method_28(1);
+				Assets.sounds.click_button.method_28(1);
 				return true;
 			}
 		}
@@ -303,7 +303,7 @@ class patch_PuzzleEditorScreen {
 		if (shift)
 		{
 			// draw hash line
-			TextureRenderer.RenderText("HASH: " + p.uniqueCustomVersion.ToString(), bdl.getBounds().Center + new Vector2(-15f, -24f), Assets.fonts.crimson_13, UI.TextColor, (TextAlignment)1, 1f, 0.6f, float.MaxValue, param_3025 - 75, 0, default, null, int.MaxValue, false, true);
+			TextureRenderer.RenderText("HASH: " + p.fileHash.ToString(), bdl.getBounds().Center + new Vector2(-15f, -24f), Assets.fonts.crimson_13, UI.TextColor, (TextAlignment)1, 1f, 0.6f, float.MaxValue, param_3025 - 75, 0, default, null, int.MaxValue, false, true);
 		}
         return flag;
     }

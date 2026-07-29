@@ -38,17 +38,17 @@ internal sealed class MessageBoxScreenEx : IScreen{
 
 	public void RenderFrame(float deltaTime){
 		if(field_2624){
-			TextureRenderer.RenderMasked(Assets.textures.field_102.field_819, Color.White, bounds.Min, Bounds2.WithSize(bounds.Min.X, bounds.Min.Y, bounds.Width - 27f, bounds.Height));
-			TextureRenderer.RenderMasked(Assets.textures.field_102.field_819, Color.White, bounds.Min, Bounds2.WithSize(bounds.Max.X - 27f, bounds.Min.Y, 27f, bounds.Height - 27f));
+			TextureRenderer.RenderMasked(Assets.textures.window.overlay, Color.White, bounds.Min, Bounds2.WithSize(bounds.Min.X, bounds.Min.Y, bounds.Width - 27f, bounds.Height));
+			TextureRenderer.RenderMasked(Assets.textures.window.overlay, Color.White, bounds.Min, Bounds2.WithSize(bounds.Max.X - 27f, bounds.Min.Y, 27f, bounds.Height - 27f));
 		}else
-			TextureRenderer.RenderMasked(Assets.textures.field_102.field_819, Color.White, bounds.Min, bounds);
+			TextureRenderer.RenderMasked(Assets.textures.window.overlay, Color.White, bounds.Min, bounds);
 
 		Vector2 centre = bounds.Center.Rounded();
 		if(isTextbox)
 			centre.Y -= 34f;
 		if(isTextbox){
 			TextureRenderer.RenderText(title, centre + new Vector2(4f, 100f), Assets.fonts.crimson_16_5, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
-			TextureRenderer.Render9Slice(Assets.textures.field_101.field_778, Color.White, Bounds2.WithSize(centre + new Vector2(-265f, 24f), new Vector2(532f, 48f)));
+			TextureRenderer.Render9Slice(Assets.textures.ui.dropdown_list, Color.White, Bounds2.WithSize(centre + new Vector2(-265f, 24f), new Vector2(532f, 48f)));
 			Bounds2 bounds2 = TextureRenderer.RenderText(text.Length == 0 ? " " : text, centre + new Vector2(0.0f, 43f), Assets.fonts.crimson_15, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, true, true);
 			cursorBlink = (cursorBlink + deltaTime) % cursorBlinkSpeed;
 			if(cursorBlink < cursorBlinkSpeed / 2.0)
@@ -82,7 +82,7 @@ internal sealed class MessageBoxScreenEx : IScreen{
 			if(buttonDrawingLogic.RenderAndCheckIfPressed(textValid, true) || pressedEnter){
 				onConfirm();
 				UI.CloseScreen();
-				Assets.sounds.field_1821.method_28(1f);
+				Assets.sounds.click_button.method_28(1f);
 			}
 		}
 
@@ -91,14 +91,14 @@ internal sealed class MessageBoxScreenEx : IScreen{
 		if(buttonDrawingLogic.RenderAndCheckIfPressed(true, true) || InputManager.IsKeyPressed(SDL.SDLKey.SDLK_ESCAPE)){
 			onCancel();
 			UI.CloseScreen();
-			Assets.sounds.field_1821.method_28(1f);
+			Assets.sounds.click_button.method_28(1f);
 		}
 
 		if(bounds.Contains(Input.MousePos()) || !Input.IsLeftClickPressed())
 			return;
 		onCancel();
 		UI.CloseScreen();
-		Assets.sounds.field_1821.method_28(1f);
+		Assets.sounds.click_button.method_28(1f);
 	}
 
 	public void OnOpenOrClose(bool isOpening){}

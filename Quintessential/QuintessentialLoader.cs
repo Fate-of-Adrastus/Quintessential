@@ -586,14 +586,14 @@ SomeZipIDontLike.zip");
                                 }
 
                                 // TODO: optimize
-                                cItem = AddEntryToCampaign(campaign, j, entry.ID, Translations.Translate(entry.Title), (CampaignItemType)0, MaybeHelper.empty, puzzle, Assets.musicTracks.field_972, Assets.sounds.field_1832, requirement, entry.NoStoryPanel);
+                                cItem = AddEntryToCampaign(campaign, j, entry.ID, Translations.Translate(entry.Title), (CampaignItemType)0, MaybeHelper.empty, puzzle, Assets.musicTracks.field_972, Assets.sounds.fanfare_solving3, requirement, entry.NoStoryPanel);
                                 Array.Resize(ref Puzzles.campaignPuzzles, Puzzles.campaignPuzzles.Length + 1);
                                 Puzzles.campaignPuzzles[Puzzles.campaignPuzzles.Length - 1] = puzzle;
                                 break;
                             }
                         case "solitaire":
                             {
-                                cItem = new(entry.ID, Translations.Translate("Sigmar's Garden"), (CampaignItemType)3, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.field_1830, campaign);
+                                cItem = new(entry.ID, Translations.Translate("Sigmar's Garden"), (CampaignItemType)3, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.fanfare_solving1, campaign);
                                 campaign.chapters[j].campaignItems.Add(cItem);
                                 break;
                             }
@@ -665,7 +665,7 @@ SomeZipIDontLike.zip");
         IEnumerable<Puzzle> puzzles = new List<Puzzle>();
         foreach( var puzzleName in chapter.Puzzles) {
             Puzzle p = TryLoadPuzzle(journal.Path, puzzleName, journal.Title, out var puzzle) ? puzzle : new Puzzle();
-            puzzles.Concat(p);
+            puzzles.Concat([p]);
         }
         return puzzles.ToArray();
     }
@@ -706,7 +706,7 @@ SomeZipIDontLike.zip");
 
     public static void CheckCampaignReload()
     {
-        if (QuintessentialSettings.Instance.HotReloadCampaigns.Pressed() && GameLogic.instance.GetLastScreen() is PuzzleSelectScreen)
+        if (QuintessentialSettings.Instance.HotReloadCampaigns.Pressed() && GameLogic.instance.GetCurrentScreen() is PuzzleSelectScreen)
         {
             Logger.Log("Reloading campaigns and journals!");
 
@@ -795,7 +795,7 @@ SomeZipIDontLike.zip");
     internal static RenderTargetHandle RenderAtomToTarget(AtomType type)
     {
         RenderTargetHandle renderTargetHandle = new RenderTargetHandle();
-        Bounds2 bounds = Bounds2.CenteredOn(HexGrid.standardGrid.ToWorldCoords(new HexIndex(0, 0), Vector2.Zero), HexGrid.standardGrid.hexSize.X, HexGrid.standardGrid.hexSize.Y * 1.3f);
+        Bounds2 bounds = Bounds2.CenteredOn(HexGrid.standardGrid.ToPixelCoords(new HexIndex(0, 0), Vector2.Zero), HexGrid.standardGrid.hexSize.X, HexGrid.standardGrid.hexSize.Y * 1.3f);
         Index2 size = bounds.Size.CeilingToInt() + new Index2(20 * 2, 20 * 2);
         Vector2 pos = size.ToVector2() / 2 / 1f - bounds.Center;
         pos.Y = -pos.Y;

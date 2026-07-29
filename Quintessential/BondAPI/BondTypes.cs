@@ -53,27 +53,27 @@ namespace Quintessential.BondAPI {
             bondTypes.Add("standard", new BondType(
                 "standard",
                 BondTextures.standard,
-                Assets.textures.field_83.field_154,
+                Assets.textures.bonds.unbond,
                 new List<string>()
             ));
             bondTypes.Add("prisma0", new BondType(
                 "prisma0",
                 BondTextures.prisma0,
-                Assets.textures.field_83.field_156,
+                Assets.textures.bonds.unbond_tri,
                 new List<string>() { "prisma1", "prisma2" },
                 - 10
             ));
             bondTypes.Add("prisma1", new BondType(
                 "prisma1",
                 BondTextures.prisma1,
-                Assets.textures.field_83.field_156,
+                Assets.textures.bonds.unbond_tri,
                 new List<string>() { "prisma0", "prisma2" },
                 10
             ));
             bondTypes.Add("prisma2", new BondType(
                 "prisma2",
                 BondTextures.prisma2,
-                Assets.textures.field_83.field_156,
+                Assets.textures.bonds.unbond_tri,
                 new List<string>() { "prisma0", "prisma1" }
             ));
             bondIds.Add("none");

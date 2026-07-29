@@ -36,11 +36,11 @@ internal class patch_WorkshopManager{
                 continue;
             }
 
-            fromModel.uniqueCustomVersion = (uint)typeof(WorkshopManager).GetMethod("GetCustomVersion", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            fromModel.fileHash = (uint)typeof(WorkshopManager).GetMethod("ComputeFileHash", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                 .Invoke(GameLogic.instance.workshopManager, new object[] { puzzleFilePath });
             // ReSharper disable once PossibleInvalidCastException
             ((patch_Puzzle)(object)fromModel).IsModdedPuzzle = true;
-            orig.Concat(fromModel);
+            orig.Concat([fromModel]);
         }
         return orig;
 	}

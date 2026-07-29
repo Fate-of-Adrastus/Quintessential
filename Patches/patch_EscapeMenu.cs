@@ -9,7 +9,7 @@ class patch_PauseScreen {
 	public extern void orig_RenderFrame(float deltaTime);
 
 	public void RenderFrame(float deltaTime) {
-		if(GameLogic.instance.GetLastScreen() is ModsScreen)
+		if(GameLogic.instance.GetCurrentScreen() is ModsScreen)
 			return;
         orig_RenderFrame(deltaTime);
 		float num = 65f;

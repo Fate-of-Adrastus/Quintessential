@@ -20,13 +20,13 @@ class patch_PuzzleSelectScreen {
 			Bounds2 leftBounds = Bounds2.WithSize(leftPos, new Vector2(36f, 37f));
 			Bounds2 rightBounds = Bounds2.WithSize(rightPos, new Vector2(36f, 37f));
 			if(leftBounds.Contains(Input.MousePos()))
-				TextureRenderer.Render(Assets.textures.field_101.field_774, Color.White.WithAlpha(0.7f), leftPos);
-			else TextureRenderer.Render(Assets.textures.field_101.field_772, Color.White.WithAlpha(0.7f), leftPos);
+				TextureRenderer.Render(Assets.textures.ui.checkbox_hover, Color.White.WithAlpha(0.7f), leftPos);
+			else TextureRenderer.Render(Assets.textures.ui.checkbox, Color.White.WithAlpha(0.7f), leftPos);
 			if(rightBounds.Contains(Input.MousePos()))
-				TextureRenderer.Render(Assets.textures.field_101.field_774, Color.White.WithAlpha(0.7f), rightPos);
-			else TextureRenderer.Render(Assets.textures.field_101.field_772, Color.White.WithAlpha(0.7f), rightPos);
-            TextureRenderer.Render(Assets.textures.field_87.field_669, leftPos);
-            TextureRenderer.Render(Assets.textures.field_87.field_668, rightPos);
+				TextureRenderer.Render(Assets.textures.ui.checkbox_hover, Color.White.WithAlpha(0.7f), rightPos);
+			else TextureRenderer.Render(Assets.textures.ui.checkbox, Color.White.WithAlpha(0.7f), rightPos);
+            TextureRenderer.Render(Assets.textures.instructions.track_retreat, leftPos);
+            TextureRenderer.Render(Assets.textures.instructions.track_advance, rightPos);
             // show the currently displayed campaign
             TextureRenderer.RenderText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(Input.ScreenSize().X / 2f, 20 + y1), Assets.fonts.crimson_16_5, Color.LightGray, (TextAlignment)1,1,0.6f,float.MaxValue,float.MaxValue,0,new Color(), null, int.MaxValue, false, true);
             //UI.DrawText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(Input.ScreenSize().X / 2f, 20 + y1), UI.Text, Color.LightGray, (TextAlignment)1);
@@ -36,7 +36,7 @@ class patch_PuzzleSelectScreen {
 			bool keyRight = settings.SwitchCampaignRight.Pressed();
 
 			if((leftBounds.Contains(Input.MousePos()) && Input.IsLeftClickPressed()) || keyLeft){
-				Assets.sounds.field_1821.method_28(1f);
+				Assets.sounds.click_button.method_28(1f);
 				var next = currentCampaign - 1;
 				if(next < 0)
 					next += QuintessentialLoader.AllCampaigns.Count;
@@ -46,7 +46,7 @@ class patch_PuzzleSelectScreen {
 				UI.InstantCloseScreen();
 				UI.OpenScreen(new PuzzleSelectScreen());
 			}else if((rightBounds.Contains(Input.MousePos()) && Input.IsLeftClickPressed()) || keyRight) {
-				Assets.sounds.field_1821.method_28(1f);
+				Assets.sounds.click_button.method_28(1f);
 				currentCampaign = (currentCampaign + 1) % QuintessentialLoader.AllCampaigns.Count;
 				Campaigns.opusMagnum = QuintessentialLoader.AllCampaigns[currentCampaign];
 				Campaigns.campaigns[0] = QuintessentialLoader.AllCampaigns[currentCampaign];

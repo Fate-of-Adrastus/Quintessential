@@ -27,26 +27,34 @@
       <CopyLocal>False</CopyLocal>
     </Reference>
     <Reference Include="Lightning">
-      <HintPath>$(OpusDir)\QuintDevLightning.exe</HintPath>
+      <HintPath>$(OpusDir)\modded\QuintDevLightning.dll</HintPath>
       <Private>false</Private>
       <CopyLocal>False</CopyLocal>
     </Reference>
     <Reference Include="Mono.Cecil">
-      <HintPath>$(OpusDir)\Mono.Cecil.dll</HintPath>
+      <HintPath>$(OpusDir)\modded\Mono.Cecil.dll</HintPath>
       <CopyLocal>False</CopyLocal>
     </Reference>
     <Reference Include="MonoMod">
-      <HintPath>$(OpusDir)\MonoMod.exe</HintPath>
+      <HintPath>$(OpusDir)\modded\MonoMod.Patcher.dll</HintPath>
       <CopyLocal>False</CopyLocal>
     </Reference>
     <Reference Include="MonoMod.Utils">
-      <HintPath>$(OpusDir)\MonoMod.Utils.dll</HintPath>
+      <HintPath>$(OpusDir)\modded\MonoMod.Utils.dll</HintPath>
       <CopyLocal>False</CopyLocal>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Content\missing.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

@@ -144,7 +144,7 @@ static class MonoModRules
             ILCursor cursor = new(new ILContext(method));
             if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall("TextureRenderer", "Render")))
             {
-                // "class_135.method_272(class_238.field_1989.field_81.field_613.field_632, new Vector2());"
+                // "class_135.method_272(class_238.field_1989.atoms.elements.field_632, new Vector2());"
                 TypeDefinition holder = MonoModRule.Modder.FindType("SolutionRecorderScreen").Resolve();
                 MethodDefinition to = holder.Methods.First(m => m.Name.Equals("MarkOnFrame"));
                 cursor.Emit(OpCodes.Call, to);

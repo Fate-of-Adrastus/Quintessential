@@ -57,7 +57,7 @@ class patch_MoleculeEditorScreen
         //UI.DrawText($"{currentPage + 1}/{LastPage + 1}", corner + new Vector2(262f, 800f), UI.Text, UI.TextColor, TextAlignment.Centred);
         if (Input.IsLeftClickPressed() && (inLeftBound || inRightBound))
         {
-            Assets.sounds.field_1821.method_28(1f);
+            Assets.sounds.click_button.method_28(1f);
 
             if (inLeftBound && currentPage > 0)
             {
