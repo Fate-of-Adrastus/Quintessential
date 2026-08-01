@@ -2,7 +2,6 @@
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 
-[MonoModPatch("AtomTypes")]
 class patch_AtomTypes{
 	
 	public static extern void orig_Init();

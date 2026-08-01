@@ -23,5 +23,5 @@ abstract class patch_SolutionEditorBase : SolutionEditorBase
 
     [MonoModIgnore]
     [PatchGlyphEffectRenderer]
-    public extern void method_2451(List<PartRenderer> param_5625, Vector2 param_5626);
+    public extern void method_2451(List<BaseEffect> param_8691, Vector2 param_8692);
 }

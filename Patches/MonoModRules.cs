@@ -142,24 +142,21 @@ static class MonoModRules
         if (method.HasBody)
         {
             ILCursor cursor = new(new ILContext(method));
-            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall("TextureRenderer", "Render")))
-            {
-                // "class_135.method_272(class_238.field_1989.atoms.elements.field_632, new Vector2());"
-                TypeDefinition holder = MonoModRule.Modder.FindType("SolutionRecorderScreen").Resolve();
-                MethodDefinition to = holder.Methods.First(m => m.Name.Equals("MarkOnFrame"));
-                cursor.Emit(OpCodes.Call, to);
+            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall("TextureRenderer", "Render"))) {
+
+                if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall("TextureRenderer", "Render"))) {
+                    // "class_135.method_272(class_238.field_1989.atoms.elements.field_632, new Vector2());"
+                    TypeDefinition holder = MonoModRule.Modder.FindType("SolutionRecorderScreen").Resolve();
+                    MethodDefinition to = holder.Methods.First(m => m.Name.Equals("MarkOnFrame"));
+                    cursor.Emit(OpCodes.Call, to);
+                    return;
+                }
             }
-            else
-            {
-                Console.WriteLine("Failed to modify GIF recorder frame rendering (no match)!");
-                throw new Exception();
-            }
-        }
-        else
-        {
-            Console.WriteLine("Failed to modify GIF recorder frame rendering (no body)!");
+            Console.WriteLine("Failed to modify GIF recorder frame rendering (no match)!");
             throw new Exception();
         }
+        Console.WriteLine("Failed to modify GIF recorder frame rendering (no body)!");
+        throw new Exception();
     }
 
     public static void PatchMoleculeEditorScreenAtomTray(MethodDefinition method, CustomAttribute attrib) {
@@ -494,6 +491,8 @@ static class MonoModRules
 
     public static void PatchGlyphEffectRenderer(MethodDefinition method, CustomAttribute attrib)
     {
+        // TODO: Reworke this to match new version changes
+        return;
         MonoModRule.Modder.Log("Patching glyph effect (2/2)");
 
         if (!method.HasBody)

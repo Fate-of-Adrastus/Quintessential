@@ -1,7 +1,6 @@
 ﻿using MonoMod;
 
-[MonoModPatch("AppConsts")]
-class patch_Settings {
+class patch_AppConsts {
 
 	// settings init
 	// disabling steam

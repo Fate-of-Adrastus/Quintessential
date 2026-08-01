@@ -8,9 +8,9 @@ class patch_Renderer {
 
 	// checks mods for textures before vanilla
 
-	public static extern bool orig_GetImageByExtension(Texture texture);
+	public static extern bool orig_ReloadTextureIfChanged(Texture texture);
 
-	public static bool GetImageByExtension(Texture texture) {
+	public static bool ReloadTextureIfChanged(Texture texture) {
 		string origPath = null;
 		if(texture.sourceFile.HasValue() /*Exists*/){
 			origPath = texture.sourceFile.GetValue();
@@ -19,7 +19,7 @@ class patch_Renderer {
 					string dir = QuintessentialLoader.ModContentDirectories[i];
 					try{
                         texture.sourceFile = Path.Combine(dir, origPath);
-						return orig_GetImageByExtension(texture);
+						return orig_ReloadTextureIfChanged(texture);
 					}catch(Exception e){
 						HandleException(e);
 					}finally {
@@ -29,7 +29,7 @@ class patch_Renderer {
 			}
 		}
 		try{
-			return orig_GetImageByExtension(texture);
+			return orig_ReloadTextureIfChanged(texture);
 		}catch(Exception e) {
 			HandleException(e);
 		}
@@ -37,7 +37,7 @@ class patch_Renderer {
 		try{
 			Logger.Log($"Texture {origPath} does not exist, using fallback texture");
             texture.sourceFile = Path.Combine(QuintessentialLoader.ModContentDirectories[0], "Content", "Quintessential", "missing");
-			return orig_GetImageByExtension(texture);
+			return orig_ReloadTextureIfChanged(texture);
 		}finally{
             texture.sourceFile = origPath;
 		}

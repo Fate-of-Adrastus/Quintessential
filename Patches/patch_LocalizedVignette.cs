@@ -3,7 +3,6 @@ using Quintessential;
 using System.Collections.Generic;
 using System.IO;
 
-[MonoModPatch("LocalizedVignette")]
 class patch_LocalizedVignette {
 
 	[MonoModConstructor]
