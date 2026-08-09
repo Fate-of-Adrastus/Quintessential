@@ -46,8 +46,11 @@ class PatchGlyphEffectConstructor : Attribute { }
 [MonoModCustomMethodAttribute(nameof(MonoModRules.PatchGlyphEffectRenderer))]
 class PatchGlyphEffectRenderer : Attribute { }
 
-[MonoModCustomMethodAttribute(nameof(MonoModRules.PatchBondTypesInit))]
-class PatchBondTypesInit : Attribute { }
+public static class QuintessentialPatches {
+
+    [MonoModCustomMethodAttribute(nameof(MonoModRules.PatchBondTypesInit))]
+    public class PatchBondTypesInit : Attribute { }
+}
 
 static class MonoModRules
 {
@@ -531,6 +534,7 @@ static class MonoModRules
         gremlin.Emit(OpCodes.Ldfld, colorProp);
     }
     public static void PatchBondTypesInit(MethodDefinition method, CustomAttribute attrib) {
+        //MonoModRule.Modder.Log("Patching bond type init");
 
         if (!method.HasBody) {
             throw new Exception("Unable to patch bond types init. (no body)");

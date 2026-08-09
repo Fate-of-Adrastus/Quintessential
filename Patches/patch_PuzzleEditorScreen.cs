@@ -87,7 +87,8 @@ class patch_PuzzleEditorScreen {
 
 				if (hovered && Input.IsLeftClickPressed()) {
 					puzzle.permissionFlags ^= type.permissionCategory;
-					GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
+                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                    //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 				}
 
 				i++;
@@ -123,14 +124,16 @@ class patch_PuzzleEditorScreen {
 									conv.CustomPermissions.Remove(option.ID);
 								else
 									conv.CustomPermissions.Add(option.ID);
-								GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
+                                puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 							}
 						} else if (option.Type == PuzzleOptionType.Atom) {
 							var currentChoice = option.AtomIn(puzzle);
 							if (DrawAtomSelector(selectorPos, option.Name, currentChoice ?? AtomTypes.repeat))
 								UI.OpenScreen(new AtomSelectScreen("Select: " + option.Name, type => {
 									option.SetAtomIn(puzzle, type);
-									GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
+                                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                    //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 								}, currentChoice));
 						}
 
@@ -174,7 +177,8 @@ class patch_PuzzleEditorScreen {
                                 int J = j;
                                 var moleculeEditorScreen = new MoleculeEditorScreen(array[J].molecule, I == 0, new Action<Molecule>(molecule => {
                                     (I == 0 ? puzzleCont.field_4622.outputs : puzzleCont.field_4622.inputs)[J].molecule = molecule;
-                                    GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
+                                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                    //GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                                 }));
                                 ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = (patch_Puzzle)(object)puzzle;
                                 screenOpened = true;
@@ -197,7 +201,8 @@ class patch_PuzzleEditorScreen {
                                     } else {
                                         puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Take<PuzzleInputOutput>(J).Concat<PuzzleInputOutput>(puzzleCont.field_4622.inputs.Skip<PuzzleInputOutput>(J + 1)).ToArray<PuzzleInputOutput>();
                                     }
-                                    GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
+                                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                    //GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                                 }, () => { }));
                                 Assets.sounds.click_button.method_28(1f);
                             }
@@ -219,7 +224,8 @@ class patch_PuzzleEditorScreen {
                             int J = j;
                             GameLogic.instance.PushScreen(MessageBoxScreenEx.textbox(bounds, Translations.Translate("Please enter a new name for this " + (i == 0 ? "product:" : "reagent:")), array[j].molecule.displayName.HasValue() ? array[j].molecule.displayName.GetValue() : (isElement ? array[j].molecule.GetAtoms().Values.First().atomType.elementalName : ""), Translations.Translate("Rename " + (i == 0 ? "Product" : "Reagent")), (string s) => {
                                 array[J].molecule.displayName = Translations.Translate(s);
-                                GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
+                                puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
                             }));
                             Assets.sounds.click_button.method_28(1f);
                         }
@@ -239,7 +245,8 @@ class patch_PuzzleEditorScreen {
                                 } else {
                                     puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Concat([new PuzzleInputOutput(molecule)]).ToArray<PuzzleInputOutput>();
                                 }
-                                GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
+                                puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                //GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                             }));
                             ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = (patch_Puzzle)(object)puzzle;
 

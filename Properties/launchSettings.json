@@ -7,6 +7,11 @@
       "commandName": "Executable",
       "executablePath": "D:\\C#_projects\\Quintessential\\bin\\Debug\\TestEnvironment\\OpusMutatum.exe",
       "workingDirectory": "D:\\C#_projects\\Quintessential\\bin\\Debug\\TestEnvironment"
+    },
+    "Run At Opus Mutatum": {
+      "commandName": "Executable",
+      "executablePath": "D:\\C#_projects\\OpusMutatum\\bin\\Debug\\net10.0\\\\OpusMutatum.exe",
+      "workingDirectory": "D:\\C#_projects\\OpusMutatum\\bin\\Debug\\net10.0"
     }
   }
 }

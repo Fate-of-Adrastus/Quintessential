@@ -46,7 +46,8 @@ class patch_Puzzle{
 		File.Delete(((patch_WorkshopManager)(object)wm).CustomPuzzlePath(self));
 		// update
 		IsModdedPuzzle = modded;
-		// save
-		wm.RegenPuzzleId(self);
+        // save
+        self.SaveToFile(((patch_WorkshopManager)(object)wm).CustomPuzzlePath(self));
+        //wm.RegenPuzzleId(self);
 	}
 }

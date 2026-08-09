@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using MonoMod;
+﻿using MonoMod;
 using Quintessential;
+using System.Collections.Generic;
+using System.Linq;
 
 #pragma warning disable CS0649 // Field is never assigned to
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
@@ -61,4 +61,11 @@ class patch_Sim{
 		foreach(var action in QApi.ToRunAfterCycle)
 			action((Sim)(object)this, isCycleStart);
 	}
+
+    //This was just a test, TODO remove once other places use MonoModWrapOperation
+    //[MonoModWrapOperation("BeginCycle", "Call", "Sim::ResetSimStates")]
+    //public void BeginCycle_WrapTest_First(Action<Sim> orig) {
+    //    Logger.Log("The Cycle is (1) : " + ((Sim)(object)this).GetCycle());
+    //    orig((Sim)(object)this);
+    //}
 }

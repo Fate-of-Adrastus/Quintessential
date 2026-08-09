@@ -22,7 +22,7 @@ internal class patch_WorkshopManager{
 	// load YAML-based puzzles alongside binary ones
 	private extern IEnumerable<Puzzle> orig_LoadPuzzlesOfFolder(string folder);
 	private IEnumerable<Puzzle> LoadPuzzlesOfFolder(string folder){
-        var orig = orig_LoadPuzzlesOfFolder(folder);
+        var orig = orig_LoadPuzzlesOfFolder(folder).ToList();
 
         string path = Path.Combine(class_269.field_2102, folder);
         foreach (var puzzleFilePath in Directory.EnumerateFiles(path, "*.puzzle.yaml")) {
@@ -40,7 +40,7 @@ internal class patch_WorkshopManager{
                 .Invoke(GameLogic.instance.workshopManager, new object[] { puzzleFilePath });
             // ReSharper disable once PossibleInvalidCastException
             ((patch_Puzzle)(object)fromModel).IsModdedPuzzle = true;
-            orig.Concat([fromModel]);
+            orig.Add(fromModel);
         }
         return orig;
 	}

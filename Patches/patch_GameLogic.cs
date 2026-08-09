@@ -1,5 +1,6 @@
 ﻿using MonoMod;
 using Quintessential;
+using static MonoMod.QuintessentialPatches;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 #pragma warning disable IDE1006 // Naming Styles
@@ -19,8 +20,8 @@ class patch_GameLogic{
         orig_GameUnload(exitCode);
 	}
 
-	[PatchBondTypesInit]
 	public extern void orig_ContentInit();
+	[MonoModILInject("QuintessentialPatches/" + nameof(PatchBondTypesInit))]
 	public void ContentInit(){
         orig_ContentInit();
 		QuintessentialLoader.LoadPuzzleContent();
