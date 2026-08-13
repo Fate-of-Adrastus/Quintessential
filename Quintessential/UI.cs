@@ -13,7 +13,7 @@ public static class UI {
 
 	public static readonly Color TextColor = class_181.field_1718;
 
-	public static readonly Texture BackgroundLarger = AssetLoaderHelper.LoadTexture("Quintessential/background_larger");
+	public static readonly Texture BackgroundLarger = AssetLoaderHelper.LoadTexture("textures/background_larger");
 
 	#endregion
 

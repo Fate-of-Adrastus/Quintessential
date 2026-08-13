@@ -22,10 +22,10 @@ public class patch_JournalScreen{
 		if(QuintessentialLoader.AllJournals.Count == 1)
 			return;
 		
-		JournalGoLeft ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_left");
-		JournalGoLeftHover ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_left_hover");
-		JournalGoRight ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_right");
-		JournalGoRightHover ??= AssetLoaderHelper.LoadTexture("Quintessential/journal_go_right_hover");
+		JournalGoLeft ??= AssetLoaderHelper.LoadTexture("textures/journal_go_left");
+		JournalGoLeftHover ??= AssetLoaderHelper.LoadTexture("textures/journal_go_left_hover");
+		JournalGoRight ??= AssetLoaderHelper.LoadTexture("textures/journal_go_right");
+		JournalGoRightHover ??= AssetLoaderHelper.LoadTexture("textures/journal_go_right_hover");
 		
 		Vector2 size = new Vector2(1516f, 922f);
 		Vector2 corner = (Input.ScreenSize() / 2 - size / 2 + new Vector2(-2f, -11f)).Rounded();

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using Quintessential.Internal;
 using Quintessential.Settings;
 
 namespace Quintessential;
@@ -10,9 +10,9 @@ namespace Quintessential;
 class ModsScreen : IScreen {
 
 	private const int modButtonWidth = 300;
-	private static readonly Texture verticalBarCentreTall = AssetLoaderHelper.LoadTexture("Quintessential/vertical_bar_centre_tall");
+	private static readonly Texture verticalBarCentreTall = AssetLoaderHelper.LoadTexture("textures/vertical_bar_centre_tall");
 	
-	private ModMeta selected = QuintessentialLoader.QuintessentialModMeta;
+	private ModMeta selected = QuintessentialAsMod.Instance.Meta;
 	private Scrollbar modsListScrollbar = new();
 
 	private struct DrawProgress {
@@ -56,16 +56,11 @@ class ModsScreen : IScreen {
 			int y = -(int)modsListScrollbar.scrollOffset;
 			UI.DrawHeader("Mods", new Vector2(20, size.Y - 200 - y), modButtonWidth, true, true);
 			
-			if(UI.DrawAndCheckSolutionButton("Quintessential", $"{QuintessentialLoader.VersionString} ({QuintessentialLoader.VersionNumber})", new Vector2(20, size.Y - 285 - y), modButtonWidth, selected == QuintessentialLoader.QuintessentialModMeta))
-				selected = QuintessentialLoader.QuintessentialModMeta;
-            TextureRenderer.Render9Slice(Assets.textures.window.title_line_left, Color.White, Bounds2.WithSize(new Vector2(20, size.Y - 305 - y), new Vector2(modButtonWidth, 3f)));
-			y += 100;
-			foreach(var mod in QuintessentialLoader.Mods)
-				if(mod != QuintessentialLoader.QuintessentialModMeta){
-					if(UI.DrawAndCheckSolutionButton(mod.Title ?? mod.Name, mod.Version.ToString(), new Vector2(20, size.Y - 290 - y), modButtonWidth, selected == mod))
-						selected = mod;
-					y += 70;
-				}
+			foreach(var mod in QuintessentialLoader.Mods) {
+                if (UI.DrawAndCheckSolutionButton(mod.Title ?? mod.Name, mod.Version.ToString(), new Vector2(20, size.Y - 290 - y), modButtonWidth, selected == mod))
+                    selected = mod;
+                y += 70;
+            }
 			
 			// expand the scroll area to cover the entire displayed area
 			modsListScrollbar.SetHeightAndClamp(y + 212);

@@ -1,85 +1,55 @@
-﻿using System;
-using System.IO;
-using YamlDotNet.Serialization;
+﻿using Quintessential.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quintessential;
 
 public class ModMeta {
 
-	public string Name { get; set; }
+    public string ModId { get; set; } = "";
 
-	public string Title { get; set; }
+    [JsonConverter(typeof(VersionJsonConverter))]
+    public Version Version { get; set; }
+    public string ModPageURL { get; set; } = "";
+    public string DLL { get; set; } = "";
+    public string[] Authors { get; set; } = [];
+    public string Icon { get; set; } = "";
+    public string Mappings { get; set; } = "";
+    public Dictionary<string, VersionRange> Dependencies { get; set; } = [];
+    public string[] Conflicts { get; set; } = [];
 
-	public string Icon { get; set; }
 
-	public string Desc { get; set; }
+    [JsonIgnore] public string Name { get; set; } = "Missing.";
+    [JsonIgnore] public string Title { get; set; } = "Missing.";
+    [JsonIgnore] public string Desc { get; set; } = "Missing.";
 
-	public string DLL { get; set; }
 
-	public string Mappings { get; set; }
-
-	public Dependency[] Dependencies { get; set; } = new Dependency[0];
-
-	public Dependency[] OptionalDependencies { get; set; } = new Dependency[0];
-
-	[YamlIgnore]
-	public string PathArchive { get; set; }
-
-	[YamlIgnore]
-	public string PathDirectory { get; set; }
-
-	[YamlIgnore]
-	public Version Version { get; set; } = new Version(1, 0);
-	private string _VersionString;
-
-	[YamlIgnore]
+    [JsonIgnore]
+    public string PathToDirectory;
+    [JsonIgnore]
 	public Texture IconCache = null;
+}
 
-	[YamlMember(Alias = "Version")]
-	public string VersionString {
-		get {
-			return _VersionString;
-		}
-		set {
-			_VersionString = value;
-			int versionSplitIndex = value.IndexOf('-');
-			if(versionSplitIndex == -1)
-				Version = new Version(value);
-			else
-				Version = new Version(value.Substring(0, versionSplitIndex));
-		}
-	}
+[JsonConverter(typeof(VersionRangeJsonConverter))]
+public class VersionRange {
+    public bool InclusiveMin;
+    public Version VersionMin;
+    public bool InclusiveMax;
+    public Version VersionMax;
 
-	public override string ToString() {
-		return Name + " " + Version;
-	}
+    public bool Contains(Version version) =>
+        (VersionMin == null || VersionMin < version || (InclusiveMin && VersionMin == version)) &&
+        (VersionMax == null || VersionMax > version || (InclusiveMax && VersionMax == version));
 
-	public void PostParse() {
-		if(!string.IsNullOrEmpty(DLL) && !string.IsNullOrEmpty(PathDirectory) && !File.Exists(DLL))
-			DLL = Path.Combine(PathDirectory, DLL.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar));
-	}
-
-	public class Dependency {
-
-		public string Name { get; set; }
-
-		[YamlIgnore]
-		public Version Version { get; set; } = new Version(1, 0);
-		private string _VersionString;
-
-		[YamlMember(Alias = "Version")]
-		public string VersionString {
-			get {
-				return _VersionString;
-			}
-			set {
-				_VersionString = value;
-				int versionSplitIndex = value.IndexOf('-');
-				if(versionSplitIndex == -1)
-					Version = new Version(value);
-				else
-					Version = new Version(value.Substring(0, versionSplitIndex));
-			}
-		}
-	}
+    public override string ToString() {
+        StringBuilder builder = new();
+        builder.Append(InclusiveMin ? '[' : '(');
+        if (VersionMin != null) builder.Append(VersionMin.ToString());
+        builder.Append(',');
+        if (VersionMax != null) builder.Append(VersionMax.ToString());
+        builder.Append(InclusiveMax ? ']' : ')');
+        return builder.ToString();
+    }
 }

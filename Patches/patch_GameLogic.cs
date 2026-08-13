@@ -6,21 +6,22 @@ using static MonoMod.QuintessentialPatches;
 #pragma warning disable IDE1006 // Naming Styles
 
 class patch_GameLogic{
-
-	// calls mod loading
 	public extern void orig_GameInit();
+    public extern void orig_GameUnload(int exitCode);
+	public extern void orig_ContentInit();
+
+
 	public void GameInit(){
 		QuintessentialLoader.PreInit();
         orig_GameInit();
-		QuintessentialLoader.PostLoad();
+		QuintessentialLoader.PostInit();
 	}
-    public extern void orig_GameUnload(int exitCode);
+
 	public void GameUnload(int exitCode){
 		QuintessentialLoader.Unload();
         orig_GameUnload(exitCode);
 	}
 
-	public extern void orig_ContentInit();
 	[MonoModILInject("QuintessentialPatches/" + nameof(PatchBondTypesInit))]
 	public void ContentInit(){
         orig_ContentInit();

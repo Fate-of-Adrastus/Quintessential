@@ -65,7 +65,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] background_larger_png {
             get {
-                object obj = ResourceManager.GetObject("background_larger.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/background_larger.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -75,7 +75,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] editor_go_left_faded_png {
             get {
-                object obj = ResourceManager.GetObject("editor_go_left_faded.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/editor_go_left_faded.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -85,7 +85,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] editor_go_left_hover_png {
             get {
-                object obj = ResourceManager.GetObject("editor_go_left_hover.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/editor_go_left_hover.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -95,7 +95,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] editor_go_left_png {
             get {
-                object obj = ResourceManager.GetObject("editor_go_left.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/editor_go_left.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -105,7 +105,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] editor_go_right_faded_png {
             get {
-                object obj = ResourceManager.GetObject("editor_go_right_faded.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/editor_go_right_faded.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -115,7 +115,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] editor_go_right_hover_png {
             get {
-                object obj = ResourceManager.GetObject("editor_go_right_hover.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/editor_go_right_hover.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -125,7 +125,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] editor_go_right_png {
             get {
-                object obj = ResourceManager.GetObject("editor_go_right.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/editor_go_right.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -135,7 +135,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] journal_go_left_hover_png {
             get {
-                object obj = ResourceManager.GetObject("journal_go_left_hover.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/journal_go_left_hover.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -145,7 +145,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] journal_go_left_png {
             get {
-                object obj = ResourceManager.GetObject("journal_go_left.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/journal_go_left.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -155,7 +155,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] journal_go_right_hover_png {
             get {
-                object obj = ResourceManager.GetObject("journal_go_right_hover.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/journal_go_right_hover.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -165,7 +165,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] journal_go_right_png {
             get {
-                object obj = ResourceManager.GetObject("journal_go_right.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/journal_go_right.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -175,7 +175,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] missing_png {
             get {
-                object obj = ResourceManager.GetObject("missing.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/missing.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -185,7 +185,7 @@ namespace Properties {
         /// </summary>
         internal static byte[] vertical_bar_centre_tall_png {
             get {
-                object obj = ResourceManager.GetObject("vertical_bar_centre_tall.png", resourceCulture);
+                object obj = ResourceManager.GetObject("textures/vertical_bar_centre_tall.png", resourceCulture);
                 return ((byte[])(obj));
             }
         }

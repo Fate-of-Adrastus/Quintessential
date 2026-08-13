@@ -12,12 +12,12 @@ class patch_MoleculeEditorScreen
 
     internal patch_Puzzle editing;
 
-    private static readonly Texture prevAtoms = AssetLoaderHelper.LoadTexture("Quintessential/editor_go_left");
-    private static readonly Texture prevAtomsFaded = AssetLoaderHelper.LoadTexture("Quintessential/editor_go_left_faded");
-    private static readonly Texture prevAtomsHover = AssetLoaderHelper.LoadTexture("Quintessential/editor_go_left_hover");
-    private static readonly Texture nextAtoms = AssetLoaderHelper.LoadTexture("Quintessential/editor_go_right");
-    private static readonly Texture nextAtomsFaded = AssetLoaderHelper.LoadTexture("Quintessential/editor_go_right_faded");
-    private static readonly Texture nextAtomsHover = AssetLoaderHelper.LoadTexture("Quintessential/editor_go_right_hover");
+    private static readonly Texture prevAtoms = AssetLoaderHelper.LoadTexture("textures/editor_go_left");
+    private static readonly Texture prevAtomsFaded = AssetLoaderHelper.LoadTexture("textures/editor_go_left_faded");
+    private static readonly Texture prevAtomsHover = AssetLoaderHelper.LoadTexture("textures/editor_go_left_hover");
+    private static readonly Texture nextAtoms = AssetLoaderHelper.LoadTexture("textures/editor_go_right");
+    private static readonly Texture nextAtomsFaded = AssetLoaderHelper.LoadTexture("textures/editor_go_right_faded");
+    private static readonly Texture nextAtomsHover = AssetLoaderHelper.LoadTexture("textures/editor_go_right_hover");
     // for measuring stuff in debugging
     //private static readonly Texture dot = class_235.method_618(Color.Red);
 

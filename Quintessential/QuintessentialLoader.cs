@@ -1,13 +1,13 @@
-﻿using Ionic.Zip;
+﻿using Quintessential.Internal;
 using Quintessential.Serialization;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Resources;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 
 namespace Quintessential;
 
@@ -15,262 +15,86 @@ public class QuintessentialLoader
 {
 
     public static readonly string VersionString = "0.5.6";
-    public static readonly int VersionNumber = 13;
 
     public static string PathLightning;
-    public static string PathMods, PathUnpackedMods;
-    public static string PathBlacklist;
+    public static string PathUnpackedMods;
     public static string PathModSaves;
     public static string PathScreenshots;
 
-    public static List<QuintessentialMod> CodeMods = new();
-    public static List<ModMeta> Mods = new();
-    public static List<string> ModContentDirectories = new();
-    public static List<string> ModPuzzleDirectories = new();
+    public static List<QuintessentialMod> CodeMods = [];
+    public static QuintessentialMod CodeModById(string modId) => CodeMods.SingleOrDefault(mod => mod.ModId == modId, null);
+    public static List<ModMeta> Mods = [];
+    public static ModMeta ModById(string modId) => Mods.SingleOrDefault(mod => mod.ModId == modId, null);
+    public static List<string> ModContentDirectories = [];
+    public static List<string> ModPuzzleDirectories = [];
 
-    public static List<Campaign> AllCampaigns = new();
+    public static List<Campaign> AllCampaigns = [];
     public static Campaign VanillaCampaign;
-    public static List<List<JournalVolume>> AllJournals = new();
+    public static List<List<JournalVolume>> AllJournals = [];
     public static List<JournalVolume> VanillaJournal;
 
-    public static ModMeta QuintessentialModMeta;
-    public static QuintessentialMod QuintessentialAsMod;
-
-    public static List<CampaignModel> ModCampaignModels = new();
-    public static List<JournalModel> ModJournalModels = new();
-
-    private static List<string> blacklisted = new();
-    private static List<ModMeta> loaded = new();
-    private static List<ModMeta> waiting = new();
-
-    private static readonly string zipExtractSuffix = "__quintessential_from_zip";
-    private static readonly string quintAssetFolder = "__quintessential_assets";
+    public static List<CampaignModel> ModCampaignModels = [];
+    public static List<JournalModel> ModJournalModels = [];
 
     public static void PreInit()
     {
         try
         {
             PathLightning = Path.GetDirectoryName(typeof(GameLogic).Assembly.Location);
-            PathMods = Path.Combine(PathLightning, "Mods");
             PathUnpackedMods = Path.Combine(PathLightning, "UnpackedMods");
             PathScreenshots = Path.Combine(PathLightning, "Screenshots");
+            PathUnpackedMods = Path.Combine(PathLightning, "UnpackedMods");
+
 
             Logger.Init();
-            Logger.Log($"Quintessential v{VersionString} ({VersionNumber})");
             Logger.Log("Starting pre-init loading.");
-
             QApi.Init();
 
-            if (!Directory.Exists(PathMods))
-                Directory.CreateDirectory(PathMods);
+            // Instantiate code mods
+            var modTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => typeof(QuintessentialMod).IsAssignableFrom(t) && !t.IsAbstract);
+            List<QuintessentialMod> collectedCodeMods = [];
+            HashSet<string> idCheckSet = [];
 
-            if (Directory.Exists(PathUnpackedMods))
-                Directory.Delete(PathUnpackedMods, true);
-            Directory.CreateDirectory(PathUnpackedMods);
+            foreach (var type in modTypes) {
+                QuintessentialMod mod = (QuintessentialMod)type.GetConstructor([]).Invoke([]);
+                SetCodeModInstance(type, mod);
+                collectedCodeMods.Add(mod);
 
-            PathBlacklist = Path.Combine(PathMods, "blacklist.txt");
-            if (File.Exists(PathBlacklist))
-                blacklisted = File.ReadAllLines(PathBlacklist).Select(l => (l.StartsWith("#") ? "" : l).Trim()).ToList();
-            else
-            {
-                File.WriteAllText(PathBlacklist, @"# This is the blacklist. Lines starting with # are ignored.
-ExampleFolderThatIWantToBlacklist
-SomeZipIDontLike.zip");
+
+                if (idCheckSet.Contains(mod.ModId)) throw new Exception($"Multiple mods cannot share the same id. Found multiple mods with id '{mod.ModId}'");
+                idCheckSet.Add(mod.ModId);
+                //Logger.Log("Found Code Mod: " + type.Name);
             }
 
-            // Find mods in Mods/
-            // Delete legacy quintessential extracted zips and assets
-            CleanupLegacyExtractedData();
+            // Load modMeta files
+            string pathToModLoaderData = Path.Combine(PathUnpackedMods, "modLoaderData.json");
+            OrderedDictionary<string, string> data = DataSerializer.Deserialize<OrderedDictionary<string, string>>(pathToModLoaderData);
 
-            // Add Quintessential mod & mod meta
-            QuintessentialModMeta = new ModMeta
-            {
-                Name = "Quintessential",
-                Version = new Version(VersionString)
-            };
-            Mods.Add(QuintessentialModMeta);
-            QuintessentialAsMod = new Internal.QuintessentialAsMod
-            {
-                Meta = QuintessentialModMeta,
-                Settings = new QuintessentialSettings()
-            };
-            CodeMods.Add(QuintessentialAsMod);
+            foreach (var item in data) {
+                string metaPath = Path.Combine(PathLightning, item.Value, "modMeta.jsonc");
+                ModMeta mod = DataSerializer.Deserialize<ModMeta>(metaPath);
+                mod.PathToDirectory = Path.Combine(PathLightning, item.Value);
 
-            // Extract bundled assets
-            Logger.Log("Extracting Quintessential resources...");
-            string outDir = Path.Combine(PathUnpackedMods, quintAssetFolder, "Content", "Quintessential");
-            Directory.CreateDirectory(outDir);
-            ResourceManager manager = new("Properties.Resources", typeof(Renderer).Assembly);
-            var set = manager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
-            foreach (object item in set)
-            {
-                if (item is DictionaryEntry de)
-                {
-                    string name = (string)de.Key;
-                    using var toStream = File.OpenWrite(Path.Combine(outDir, name));
-                    byte[] content = (byte[])de.Value;
-                    toStream.Write(content, 0, content.Length);
+                var content = Path.Combine(mod.PathToDirectory, "Content");
+                if (Directory.Exists(content))
+                    ModContentDirectories.Add(mod.PathToDirectory);
+
+                if (!string.IsNullOrWhiteSpace(mod.DLL)) {
+                    var codeMod = collectedCodeMods.SingleOrDefault(codeMod => codeMod.ModId == mod.ModId, null);
+                    if (codeMod != null) {
+                        codeMod.Meta = mod;
+                        CodeMods.Add(codeMod);
+                    }
                 }
-            }
-            ModContentDirectories.Add(Path.Combine(PathUnpackedMods, quintAssetFolder));
+                LoadModCampaigns(mod);
 
-            Logger.Log("Finding mods to load...");
-            // Unzip zips
-            string[] files = Directory.GetFiles(PathMods);
-            foreach (var file in files)
-            {
-                string filename = Path.GetFileName(file);
-                if (blacklisted.Contains(filename))
-                    continue;
-                if (filename.EndsWith(".zip"))
-                    FindZipMod(file);
+                Mods.Add(mod);
             }
 
-            // Find folder mods
-            string[] folders = Directory.GetDirectories(PathMods);
-            foreach (var folder in folders)
-            {
-                string filename = Path.GetFileName(folder);
-                if (blacklisted.Contains(filename))
-                    continue;
-                FindFolderMod(folder);
-            }
-
-            // Load mods
-            Logger.Log("Loading mods...");
-
-            Logger.Log("Stage 1: Searching for duplicates");
-            HashSet<string> names = new();
-            foreach (ModMeta mod in Mods)
-            {
-                if (names.Contains(mod.Name))
-                {
-                    throw new Exception("Duplicate mod named " + mod.Name + " found, use the blacklist to only permit at most one.");
-                }
-                names.Add(mod.Name);
-            }
-
-            bool Contains(ModMeta.Dependency dep, List<ModMeta> list)
-                => list.Any(m => m.Name.Equals(dep.Name) && m.Version >= dep.Version);
-            bool ContainsOutdated(ModMeta.Dependency dep, List<ModMeta> list)
-                => list.Any(m => m.Name.Equals(dep.Name) && m.Version < dep.Version);
-
-            Logger.Log("Stage 2: Removing outdated");
-            List<ModMeta> ToRemove = new();
-            do
-            {
-                ToRemove.Clear();
-                foreach (ModMeta mod in Mods)
-                {
-                    bool missingDependencies = false;
-                    ModMeta.Dependency example = null;
-                    foreach (ModMeta.Dependency dep in mod.Dependencies)
-                    {
-                        if (!Contains(dep, Mods))
-                        {
-                            missingDependencies = true;
-                            example = dep;
-                            break;
-                        }
-                    }
-                    if (!missingDependencies)
-                    {
-                        foreach (ModMeta.Dependency opDep in mod.OptionalDependencies)
-                        {
-                            if (ContainsOutdated(opDep, Mods))
-                            {
-                                missingDependencies = true;
-                                example = opDep;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (missingDependencies)
-                    {
-                        Logger.Log("Removing " + mod.Name + " due to outdated or missing dependencies,\n" +
-                            "such as " + example.Name + " version " + example.VersionString);
-                        ToRemove.Add(mod);
-                    }
-                }
-                Mods.RemoveAll(m => ToRemove.Contains(m));
-            } while (ToRemove.Any());
-
-            Logger.Log("Stage 3: Preparing the waiting list");
-            foreach (ModMeta mod in Mods)
-            {
-                if (mod.OptionalDependencies.Any())
-                {
-                    waiting.Add(mod);
-                    continue;
-                }
-                bool wait = false;
-                foreach (ModMeta.Dependency opDep in mod.Dependencies)
-                {
-                    if (!Contains(opDep, loaded))
-                    {
-                        wait = true;
-                        break;
-                    }
-                }
-                if (wait)
-                {
-                    waiting.Add(mod);
-                    continue;
-                }
-                LoadModFromMeta(mod);
-            }
-
-            Logger.Log("Stage 4: Navigating the dependency tree");
-            List<ModMeta> loadedThisInteration = new();
-            while (waiting.Any())
-            {
-                loadedThisInteration.Clear();
-                foreach (ModMeta mod in waiting)
-                {
-                    foreach (ModMeta.Dependency dep in mod.Dependencies)
-                    {
-                        if (!Contains(dep, loaded))
-                        {
-                            // if deps are now loaded, load and remove from waiting list
-                            continue;
-                        }
-                    }
-
-                    bool waitingForDependencies = false;
-                    foreach (ModMeta.Dependency opDep in mod.OptionalDependencies)
-                    {
-                        if (!Contains(opDep, loaded) && Contains(opDep, waiting))
-                        {
-                            // if dependency is unloaded, but is waiting to be loaded, wait for it
-                            waitingForDependencies = true;
-                            break;
-                        }
-                    }
-                    if (waitingForDependencies)
-                    {
-                        continue;
-                    }
-                    LoadModFromMeta(mod);
-                    loadedThisInteration.Add(mod);
-                }
-                waiting.RemoveAll(m => loadedThisInteration.Contains(m));
-                if (!loadedThisInteration.Any())
-                {
-                    // if we don't load any mods, we have a circular dep, don't load any more
-                    foreach (ModMeta item in waiting)
-                    {
-                        Logger.Log("Not loading " + item.Name + ": circular dependency!");
-                    }
-                    break;
-                }
-            }
-            Logger.Log("Order finallized, Please enjoy the show!");
             // Add mod content
-            // Load mods
             foreach (var mod in CodeMods)
                 mod.Load();
-            Logger.Log($"Finished pre-init loading - {Mods.Count} mods loaded; {CodeMods.Count} assemblies, {ModContentDirectories.Count} content directories, and {ModCampaignModels.Count} custom campaigns found.");
+            Logger.Log($"Finished pre-init loading - {Mods.Count} mods loaded; {ModContentDirectories.Count} content directories, and {ModCampaignModels.Count} custom campaigns found.");
         }
         catch (Exception e)
         {
@@ -283,37 +107,14 @@ SomeZipIDontLike.zip");
         }
     }
 
-    private static void LoadModFromMeta(ModMeta mod)
-    {
-        if (mod == QuintessentialModMeta)
-            return;
-        if (!string.IsNullOrWhiteSpace(mod.DLL))
-        {
-            string dllPath = mod.DLL;
-            LoadModAssembly(mod, GetRemappedAssembly(dllPath, mod));
-        }
-        // Get mod content
-        //  - Consider modded folders when fetching any content
-        //  - Custom language files: vanilla stores in a big CSV, but for custom dialogue (and languages) we'll want seperate files (e.g. English.txt, French.txt)
-        //  - Custom solitaires too?
-        var content = Path.Combine(mod.PathDirectory, "Content");
-        if (Directory.Exists(content))
-            ModContentDirectories.Add(mod.PathDirectory);
-
-        LoadModCampaigns(mod);
-
-        loaded.Add(mod);
-        Logger.Log($"Will load mod \"{mod.Name}\".");
-    }
-
     private static void LoadModCampaigns(ModMeta mod)
     {
-        var puzzles = Path.Combine(mod.PathDirectory, "Puzzles");
+        var puzzles = Path.Combine(mod.PathToDirectory, "Puzzles");
         if (Directory.Exists(puzzles))
         {
             if (!ModPuzzleDirectories.Contains(puzzles))
                 ModPuzzleDirectories.Add(puzzles);
-            // Look for name.campaign.yaml and name.journal.yaml files in the folder
+            // Look for name.campaign.json and name.journal.json files in the folder
             foreach (var item in Directory.GetFiles(puzzles))
             {
                 string filename = Path.GetFileName(item);
@@ -350,7 +151,7 @@ SomeZipIDontLike.zip");
         }
     }
 
-    public static void PostLoad()
+    public static void PostInit()
     {
         Logger.Log("Starting post-init loading.");
         // Read mod save data
@@ -360,7 +161,7 @@ SomeZipIDontLike.zip");
             Directory.CreateDirectory(PathModSaves);
         foreach (var mod in CodeMods)
         {
-            var savePath = Path.Combine(PathModSaves, mod.Meta.Name + ".yaml");
+            var savePath = Path.Combine(PathModSaves, mod.ModId + ".json");
             if (File.Exists(savePath))
             {
                 var settings = DataSerializer.Deserialize(savePath, mod.SettingsType);
@@ -368,10 +169,10 @@ SomeZipIDontLike.zip");
                 {
                     mod.Settings = settings;
                     mod.ApplySettings();
-                }
-                else
+                } else
                     Logger.Log("Loaded null settings for mod " + mod.Meta.Name);
             }
+            mod.Settings ??= mod.SettingsType.GetConstructor([]).Invoke([]);
         }
         foreach (var mod in CodeMods)
             mod.PostLoad();
@@ -399,135 +200,6 @@ SomeZipIDontLike.zip");
         Logger.Log("Finished unloading.");
     }
 
-    protected static void FindZipMod(string zip)
-    {
-        Logger.Log("Unzipping zip mod: " + zip);
-        // Check that the zip exists
-        if (!File.Exists(zip)) // Relative path?
-            zip = Path.Combine(PathMods, zip);
-        if (!File.Exists(zip)) // It just doesn't exist.
-            return;
-
-        var dest = Path.Combine(PathUnpackedMods, Path.GetFileNameWithoutExtension(zip));
-        using (ZipFile file = new(zip))
-            file.ExtractAll(dest);
-        FindFolderMod(dest, zip);
-    }
-
-    protected static void FindFolderMod(string dir, string zipName = null)
-    {
-        // don't load zip mods again, ignore quintessential assets
-        if (dir.EndsWith(quintAssetFolder) || (string.IsNullOrEmpty(zipName) && dir.EndsWith(zipExtractSuffix)))
-            return;
-
-        Logger.Log($"Finding mod in folder: \"{dir}\"");
-        // Check that the folder exists
-        if (!Directory.Exists(dir)) // Relative path?
-            dir = Path.Combine(PathMods, dir);
-        if (!Directory.Exists(dir)) // It just doesn't exist.
-            return;
-
-        // Look for a mod meta
-        ModMeta meta;
-        string metaPath = Path.Combine(dir, "quintessential.yaml");
-        if (!File.Exists(metaPath))
-            metaPath = Path.Combine(dir, "quintessential.yml");
-        if (File.Exists(metaPath))
-        {
-            using StreamReader reader = new(metaPath);
-
-            try
-            {
-                if (!reader.EndOfStream)
-                {
-                    meta = DataSerializer.Deserialize<ModMeta>(metaPath);
-                    meta.Name = meta.Name.Trim().Replace(" ", "_");
-                    meta.PathDirectory = dir;
-                    if (!string.IsNullOrEmpty(zipName))
-                        meta.PathArchive = zipName;
-                    meta.PostParse();
-                    Mods.Add(meta);
-                    Logger.Log($"Queuing mod \"{meta.Name}\", version {meta.VersionString}.");
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"Failed parsing quintessential.yaml in {dir}: {e}");
-            }
-        }
-        else
-        {
-            meta = new ModMeta
-            {
-                Name = "NoMetaMod__" + Path.GetFileName(dir),
-                PathDirectory = dir
-            };
-            if (!string.IsNullOrEmpty(zipName))
-                meta.PathArchive = zipName;
-            meta.PostParse();
-            Mods.Add(meta);
-            Logger.Log($"Will load mod without metadata from \"{dir}\".");
-        }
-    }
-
-    protected static void LoadModAssembly(ModMeta meta, Assembly asm)
-    {
-        Type[] types;
-        try
-        {
-            try
-            {
-                types = asm.GetTypes();
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                types = e.Types.Where(t => t != null).ToArray();
-            }
-        }
-        catch (Exception e)
-        {
-            Logger.Log($"Failed reading assembly for {meta.Name}: {e}");
-            Logger.Log(e);
-            return;
-        }
-
-        foreach (var type in types)
-        {
-            if (typeof(QuintessentialMod).IsAssignableFrom(type) && !type.IsAbstract)
-            {
-                QuintessentialMod mod = (QuintessentialMod)type.GetConstructor(new Type[] { }).Invoke(new object[] { });
-                mod.Meta = meta;
-                Register(mod);
-            }
-        }
-    }
-
-    protected static void CleanupLegacyExtractedData()
-    {
-        string[] folders = Directory.GetDirectories(PathMods);
-        foreach (var folder in folders)
-            if (folder.EndsWith(zipExtractSuffix) || folder.EndsWith(quintAssetFolder))
-                Directory.Delete(folder, true);
-    }
-
-    protected static void Register(QuintessentialMod mod)
-    {
-        CodeMods.Add(mod);
-    }
-
-    public static Assembly GetRemappedAssembly(string asmPath, ModMeta meta)
-    {
-        if (!string.IsNullOrEmpty(meta.Mappings))
-        {
-            // load mappings
-            // load assembly def
-            // remap
-            // save in cache
-            // load that
-            //OpusMutatum.OpusMutatum.DoRemap();
-        }
-        return Assembly.LoadFrom(asmPath);
-    }
 
     public static void LoadCampaigns()
     {
@@ -704,8 +376,7 @@ SomeZipIDontLike.zip");
         }
     }
 
-    public static void CheckCampaignReload()
-    {
+    public static void CheckCampaignReload() {
         if (QuintessentialSettings.Instance.HotReloadCampaigns.Pressed() && GameLogic.instance.GetCurrentScreen() is PuzzleSelectScreen)
         {
             Logger.Log("Reloading campaigns and journals!");
@@ -721,8 +392,7 @@ SomeZipIDontLike.zip");
             patch_JournalScreen.ResetPosition();
 
             foreach (ModMeta mod in Mods)
-                if (mod != QuintessentialModMeta)
-                    LoadModCampaigns(mod);
+                LoadModCampaigns(mod);
 
             LoadCampaigns();
             LoadJournals();
@@ -759,20 +429,50 @@ SomeZipIDontLike.zip");
         return campaignItem;
     }
 
+
+    private static void SetCodeModInstance(Type type, QuintessentialMod instance) {
+        var property = type.GetProperty("Instance");
+        if (property == null || !property.PropertyType.IsAssignableFrom(type) || property.SetMethod != null) {
+            Logger.Log($"Failed to find Instance properity for CodeMod.\n" +
+                $"Add the following line to the ModClass:\n" +
+                $"\tpublic static {type.Name} Instance {{ get; }}");
+            throw new Exception("Failed to set instance for a CodeMod.");
+        }
+
+        var backingField = type.GetField("<Instance>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+
+        // Sadly we can't use backingField.SetValue, because the field is InitOnly
+        var method = new DynamicMethod(
+            name: "SetBackingField",
+            returnType: null,
+            parameterTypes: [type],
+            restrictedSkipVisibility: true
+        );
+        var IL = method.GetILGenerator();
+
+        IL.Emit(OpCodes.Ldarg, 0);
+        IL.Emit(OpCodes.Stsfld, backingField);
+        IL.Emit(OpCodes.Ret);
+
+        method.Invoke(null, [instance]);
+    }
+
+
     internal static void DumpVanillaPuzzles()
     {
         string outDir = Path.Combine(PathModSaves, "Quintessential", "DumpedPuzzles");
         Directory.CreateDirectory(outDir);
+        DataSerializer.SetMultilineFormat(true);
         foreach (var p in Puzzles.campaignPuzzles)
         {
             PuzzleModel m = PuzzleModel.FromPuzzle(p);
-            DataSerializer.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"), m, true);
+            m.Serialize(Path.Combine(outDir, m.ID + ".puzzle.jsonc"));
         }
         foreach (var volume in JournalVolumes.volumes)
         {
             foreach (var p in volume.puzzles) {
                 PuzzleModel m = PuzzleModel.FromPuzzle(p);
-                DataSerializer.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"), m, true);
+                m.Serialize(Path.Combine(outDir, "X" + m.ID + ".puzzle.jsonc"));
             }
         }
         Logger.Log($"Dumped puzzles to {outDir}");

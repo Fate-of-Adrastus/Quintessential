@@ -1,4 +1,5 @@
-﻿using Quintessential.Settings;
+﻿using Quintessential.Internal;
+using Quintessential.Settings;
 
 using YamlDotNet.Serialization;
 
@@ -6,7 +7,7 @@ namespace Quintessential;
 
 public class QuintessentialSettings {
 
-	public static QuintessentialSettings Instance => QuintessentialLoader.QuintessentialAsMod.Settings as QuintessentialSettings;
+	public static QuintessentialSettings Instance => QuintessentialAsMod.Instance.Settings as QuintessentialSettings;
 
 	//[SettingsLabel("Take Screenshot")]
 	//public Keybinding Screenshot = new("F12");
