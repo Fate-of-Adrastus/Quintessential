@@ -157,17 +157,17 @@ class ModsScreen : IScreen {
 		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
 		Bounds2 labelBounds = UI.DrawText(label, pos + new Vector2(45f, 13f), UI.SubTitle, UI.TextColor, (TextAlignment)0);
 		if(enabled)
-			TextureRenderer.Render(Assets.textures.ui.checkbox_fill, boxBounds.Min);
+			TextureRenderer.Render(Assets.textures.UI.checkbox_fill, boxBounds.Min);
         //UI.DrawTexture(Assets.textures.UI.field_773, boxBounds.Min);
         if (boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
-            TextureRenderer.Render(Assets.textures.ui.checkbox_hover, boxBounds.Min);
+            TextureRenderer.Render(Assets.textures.UI.checkbox_hover, boxBounds.Min);
             //UI.DrawTexture(Assets.textures.UI.field_774, boxBounds.Min);
             if (!Input.IsLeftClickPressed())
 				return false;
             Assets.sounds.click_button.method_28(1f);
 			return true;
 		}
-        TextureRenderer.Render(Assets.textures.ui.checkbox, boxBounds.Min);
+        TextureRenderer.Render(Assets.textures.UI.checkbox, boxBounds.Min);
         //UI.DrawTexture(Assets.textures.UI.field_772, boxBounds.Min);
 		return false;
 	}

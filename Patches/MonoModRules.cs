@@ -62,29 +62,29 @@ static class MonoModRules
 
     public static void PatchSettingsStaticInit(MethodDefinition method, CustomAttribute attrib) {
         return; // Keep steam enabeled
-        MonoModRule.Modder.Log("Patching settings static init");
-        if (method.HasBody) {
+        //MonoModRule.Modder.Log("Patching settings static init");
+        //if (method.HasBody) {
 
-            // Set "class_110.field_1012" (Steam support) to false
-            ILCursor cursor = new(new ILContext(method));
-            if (cursor.TryGotoNext(MoveType.Before,
-                   instr => instr.MatchLdcI4(1),
-                   instr => instr.MatchStsfld("AppConsts", "requireSteam")))
-            {
-                cursor.Remove();
-                cursor.Emit(OpCodes.Ldc_I4_0);
-            }
-            else
-            {
-                Console.WriteLine("Failed to disable Steam setting in AppConsts!");
-                throw new Exception();
-            }
-        }
-        else
-        {
-            Console.WriteLine("Failed to disable Steam setting in AppConsts!");
-            throw new Exception();
-        }
+        //    // Set "class_110.field_1012" (Steam support) to false
+        //    ILCursor cursor = new(new ILContext(method));
+        //    if (cursor.TryGotoNext(MoveType.Before,
+        //           instr => instr.MatchLdcI4(1),
+        //           instr => instr.MatchStsfld("AppConsts", "requireSteam")))
+        //    {
+        //        cursor.Remove();
+        //        cursor.Emit(OpCodes.Ldc_I4_0);
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Failed to disable Steam setting in AppConsts!");
+        //        throw new Exception();
+        //    }
+        //}
+        //else
+        //{
+        //    Console.WriteLine("Failed to disable Steam setting in AppConsts!");
+        //    throw new Exception();
+        //}
     }
 
     public static void RemoveReadOnly(FieldDefinition field, CustomAttribute attrib) {
@@ -286,7 +286,7 @@ static class MonoModRules
         }
 
         ILCursor cursor = new(new ILContext(method));
-        Instruction target = null; // will definitely be set
+        //Instruction target = null; // will definitely be set
 
         // kill off `flag5` and make the Upload puzzle button never clickable
         //if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdloc(27)))
@@ -496,42 +496,42 @@ static class MonoModRules
     {
         // TODO: Reworke this to match new version changes
         return;
-        MonoModRule.Modder.Log("Patching glyph effect (2/2)");
+        //MonoModRule.Modder.Log("Patching glyph effect (2/2)");
 
-        if (!method.HasBody)
-        {
-            Console.WriteLine("Unable to patch glyph effect renderer (no body)");
-            throw new Exception();
-        }
+        //if (!method.HasBody)
+        //{
+        //    Console.WriteLine("Unable to patch glyph effect renderer (no body)");
+        //    throw new Exception();
+        //}
 
-        ILCursor gremlin = new(new ILContext(method));
+        //ILCursor gremlin = new(new ILContext(method));
        
-        TypeDefinition holder = MonoModRule.Modder.FindType("Color").Resolve();
-        FieldDefinition colorWhite = holder.Fields.First((f) => f.IsStatic && f.Name == "White");
+        //TypeDefinition holder = MonoModRule.Modder.FindType("Color").Resolve();
+        //FieldDefinition colorWhite = holder.Fields.First((f) => f.IsStatic && f.Name == "White");
 
 
 
 
-        if (!gremlin.TryGotoNext(MoveType.Before,
-            instr =>
-            {
-                FieldReference testOperand = instr.Operand as FieldReference;
-                return instr.OpCode == OpCodes.Ldsfld && testOperand.FieldType == colorWhite.FieldType && testOperand.Name == colorWhite.Name;
-            },
-            instr => instr.MatchLdloc(6),
-            instr => instr.OpCode == OpCodes.Call
-        ))
-        {
-            Console.WriteLine("Unable to patch glyph effect renderer (no draw call)");
-            throw new Exception();
-        }
+        //if (!gremlin.TryGotoNext(MoveType.Before,
+        //    instr =>
+        //    {
+        //        FieldReference testOperand = instr.Operand as FieldReference;
+        //        return instr.OpCode == OpCodes.Ldsfld && testOperand.FieldType == colorWhite.FieldType && testOperand.Name == colorWhite.Name;
+        //    },
+        //    instr => instr.MatchLdloc(6),
+        //    instr => instr.OpCode == OpCodes.Call
+        //))
+        //{
+        //    Console.WriteLine("Unable to patch glyph effect renderer (no draw call)");
+        //    throw new Exception();
+        //}
 
-        holder = MonoModRule.Modder.FindType("GlyphEffect").Resolve();
-        FieldDefinition colorProp = holder.Fields.First((f) => f.Name == "Color");
+        //holder = MonoModRule.Modder.FindType("GlyphEffect").Resolve();
+        //FieldDefinition colorProp = holder.Fields.First((f) => f.Name == "Color");
 
-        gremlin.Remove();
-        gremlin.Emit(OpCodes.Ldloc, 1);
-        gremlin.Emit(OpCodes.Ldfld, colorProp);
+        //gremlin.Remove();
+        //gremlin.Emit(OpCodes.Ldloc, 1);
+        //gremlin.Emit(OpCodes.Ldfld, colorProp);
     }
     public static void PatchBondTypesInit(MethodDefinition method, CustomAttribute attrib) {
         //MonoModRule.Modder.Log("Patching bond type init");

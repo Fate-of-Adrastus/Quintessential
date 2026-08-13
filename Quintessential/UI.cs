@@ -106,15 +106,15 @@ public static class UI {
 		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
 		Bounds2 labelBounds = DrawText(label, pos + new Vector2(45f, 13f), SubTitle, TextColor, (TextAlignment)0);
 		if(enabled)
-			DrawTexture(Assets.textures.ui.checkbox_fill, boxBounds.Min);
+			DrawTexture(Assets.textures.UI.checkbox_fill, boxBounds.Min);
 		if(boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
-			DrawTexture(Assets.textures.ui.checkbox_hover, boxBounds.Min);
+			DrawTexture(Assets.textures.UI.checkbox_hover, boxBounds.Min);
 			if(!Input.IsLeftClickPressed())
 				return false;
             Assets.sounds.click_button.method_28(1f);
 			return true;
 		}
-		DrawTexture(Assets.textures.ui.checkbox, boxBounds.Min);
+		DrawTexture(Assets.textures.UI.checkbox, boxBounds.Min);
 		return false;
 	}
 	

@@ -20,11 +20,11 @@ class patch_PuzzleSelectScreen {
 			Bounds2 leftBounds = Bounds2.WithSize(leftPos, new Vector2(36f, 37f));
 			Bounds2 rightBounds = Bounds2.WithSize(rightPos, new Vector2(36f, 37f));
 			if(leftBounds.Contains(Input.MousePos()))
-				TextureRenderer.Render(Assets.textures.ui.checkbox_hover, Color.White.WithAlpha(0.7f), leftPos);
-			else TextureRenderer.Render(Assets.textures.ui.checkbox, Color.White.WithAlpha(0.7f), leftPos);
+				TextureRenderer.Render(Assets.textures.UI.checkbox_hover, Color.White.WithAlpha(0.7f), leftPos);
+			else TextureRenderer.Render(Assets.textures.UI.checkbox, Color.White.WithAlpha(0.7f), leftPos);
 			if(rightBounds.Contains(Input.MousePos()))
-				TextureRenderer.Render(Assets.textures.ui.checkbox_hover, Color.White.WithAlpha(0.7f), rightPos);
-			else TextureRenderer.Render(Assets.textures.ui.checkbox, Color.White.WithAlpha(0.7f), rightPos);
+				TextureRenderer.Render(Assets.textures.UI.checkbox_hover, Color.White.WithAlpha(0.7f), rightPos);
+			else TextureRenderer.Render(Assets.textures.UI.checkbox, Color.White.WithAlpha(0.7f), rightPos);
             TextureRenderer.Render(Assets.textures.instructions.track_retreat, leftPos);
             TextureRenderer.Render(Assets.textures.instructions.track_advance, rightPos);
             // show the currently displayed campaign

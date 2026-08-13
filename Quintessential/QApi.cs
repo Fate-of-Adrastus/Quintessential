@@ -187,7 +187,7 @@ public static class PartRendererExtensions {
 	public static PartRendererDelegate OfTexture(Texture texture, params HexIndex[] hexes) {
 		return (part, pos, editor, helper) => {
 			foreach(var hex in hexes)
-				helper.method_528(texture, hex, Vector2.Zero);
+				helper.RenderRotating(texture, hex, Vector2.Zero);
 		};
 	}
 

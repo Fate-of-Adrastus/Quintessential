@@ -48,7 +48,7 @@ internal sealed class MessageBoxScreenEx : IScreen{
 			centre.Y -= 34f;
 		if(isTextbox){
 			TextureRenderer.RenderText(title, centre + new Vector2(4f, 100f), Assets.fonts.crimson_16_5, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
-			TextureRenderer.Render9Slice(Assets.textures.ui.dropdown_list, Color.White, Bounds2.WithSize(centre + new Vector2(-265f, 24f), new Vector2(532f, 48f)));
+			TextureRenderer.Render9Slice(Assets.textures.UI.dropdown_list, Color.White, Bounds2.WithSize(centre + new Vector2(-265f, 24f), new Vector2(532f, 48f)));
 			Bounds2 bounds2 = TextureRenderer.RenderText(text.Length == 0 ? " " : text, centre + new Vector2(0.0f, 43f), Assets.fonts.crimson_15, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, true, true);
 			cursorBlink = (cursorBlink + deltaTime) % cursorBlinkSpeed;
 			if(cursorBlink < cursorBlinkSpeed / 2.0)
