@@ -1,4 +1,5 @@
-﻿using MonoMod;
+﻿using Mono.Cecil;
+using MonoMod;
 using Quintessential;
 using System.Collections.Generic;
 
@@ -21,7 +22,46 @@ abstract class patch_SolutionEditorBase : SolutionEditorBase
                 r.Right(part, pos, this, renderer);
     }
 
-    [MonoModIgnore]
-    [PatchGlyphEffectRenderer]
-    public extern void method_2451(List<BaseEffect> param_8691, Vector2 param_8692);
+
+    [MonoModILInject("method_2451")]
+    public static void PatchGlyphEffectRenderer(MethodDefinition method, CustomAttribute attrib) {
+        // TODO: Reworke this to match new version changes
+        return;
+        //MonoModRule.Modder.Log("Patching glyph effect (2/2)");
+
+        //if (!method.HasBody)
+        //{
+        //    Console.WriteLine("Unable to patch glyph effect renderer (no body)");
+        //    throw new Exception();
+        //}
+
+        //ILCursor gremlin = new(new ILContext(method));
+
+        //TypeDefinition holder = MonoModRule.Modder.FindType("Color").Resolve();
+        //FieldDefinition colorWhite = holder.Fields.First((f) => f.IsStatic && f.Name == "White");
+
+
+
+
+        //if (!gremlin.TryGotoNext(MoveType.Before,
+        //    instr =>
+        //    {
+        //        FieldReference testOperand = instr.Operand as FieldReference;
+        //        return instr.OpCode == OpCodes.Ldsfld && testOperand.FieldType == colorWhite.FieldType && testOperand.Name == colorWhite.Name;
+        //    },
+        //    instr => instr.MatchLdloc(6),
+        //    instr => instr.OpCode == OpCodes.Call
+        //))
+        //{
+        //    Console.WriteLine("Unable to patch glyph effect renderer (no draw call)");
+        //    throw new Exception();
+        //}
+
+        //holder = MonoModRule.Modder.FindType("GlyphEffect").Resolve();
+        //FieldDefinition colorProp = holder.Fields.First((f) => f.Name == "Color");
+
+        //gremlin.Remove();
+        //gremlin.Emit(OpCodes.Ldloc, 1);
+        //gremlin.Emit(OpCodes.Ldfld, colorProp);
+    }
 }

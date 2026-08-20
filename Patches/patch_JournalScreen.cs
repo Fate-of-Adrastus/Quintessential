@@ -1,5 +1,11 @@
-﻿using MonoMod;
+﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
+using MonoMod;
+using MonoMod.Cil;
+using MonoMod.InlineRT;
 using Quintessential;
+using System;
+using System.Linq;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 
@@ -14,7 +20,6 @@ public class patch_JournalScreen{
 	// mirror real version
 	private static int volumeCount;
 	
-	[PatchJournalScreen]
 	public extern void orig_RenderFrame(float deltaTime);
 	public void RenderFrame(float deltaTime){
         orig_RenderFrame(deltaTime);
@@ -64,10 +69,6 @@ public class patch_JournalScreen{
 		}
 	}
 
-	[MonoModIgnore]
-	[PatchJournalPuzzleBackgrounds]
-	private extern void RenderPuzzleSelect(Puzzle puzzle, Vector2 pos, bool isLarge);
-
 	public static void ResetPosition(){
 		currentJournal = 0;
         volumeCount = JournalVolumes.volumes.Length - 1;
@@ -88,4 +89,46 @@ public class patch_JournalScreen{
 			_ => before
 		};
 	}
+
+	[MonoModILInject("RenderFrame")]
+    static void PatchJournalScreen(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching journal screen");
+        if (method.HasBody) {
+            ILCursor cursor = new(new ILContext(method));
+            if (cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdstr("The Journal of Alchemical Engineering"))) {
+                cursor.Remove();
+                TypeDefinition holder = MonoModRule.Modder.FindType("JournalScreen").Resolve();
+                MethodDefinition to = holder.Methods.First(m => m.Name.Equals("CurrentJournalName"));
+                cursor.Emit(OpCodes.Call, to);
+            } else {
+                Console.WriteLine("Failed to modify journal screen (no match)!");
+                throw new Exception();
+            }
+        } else {
+            Console.WriteLine("Failed to modify journal screen (no body)!");
+            throw new Exception();
+        }
+    }
+
+    [MonoModILInject("RenderPuzzleSelect")]
+    static void PatchJournalPuzzleBackgrounds(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching journal screen puzzle backgrounds");
+        if (method.HasBody) {
+            ILCursor cursor = new(new ILContext(method));
+            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchStloc(1))) {
+                cursor.Emit(OpCodes.Ldloc_1);
+                cursor.Emit(OpCodes.Ldarg_3);
+                TypeDefinition holder = MonoModRule.Modder.FindType("JournalScreen").Resolve();
+                MethodDefinition to = holder.Methods.First(m => m.Name.Equals("CurrentJournalBg"));
+                cursor.Emit(OpCodes.Call, to);
+                cursor.Emit(OpCodes.Stloc_1);
+            } else {
+                Console.WriteLine("Failed to modify journal screen puzzle backgrounds (no match)!");
+                throw new Exception();
+            }
+        } else {
+            Console.WriteLine("Failed to modify journal screen puzzle backgrounds (no body)!");
+            throw new Exception();
+        }
+    }
 }

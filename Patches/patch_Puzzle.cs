@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 using MonoMod;
+using MonoMod.Cil;
+using MonoMod.InlineRT;
 using Quintessential;
 using Quintessential.Serialization;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 class patch_Puzzle{
 	
@@ -18,7 +23,6 @@ class patch_Puzzle{
 	public Maybe<Payloads> Payloads = MaybeHelper.empty;
 
 	// Save using the right format, and set Steam user ID to 0
-	[PatchPuzzleIdWrite]
 	public extern void orig_SaveToFile(string path);
 
 	// Save .puzzle or .puzzle.yaml
@@ -50,4 +54,24 @@ class patch_Puzzle{
         self.SaveToFile(((patch_WorkshopManager)(object)wm).CustomPuzzlePath(self));
         //wm.RegenPuzzleId(self);
 	}
+
+	[MonoModILInject("SaveToFile")]
+    public static void PatchPuzzleIdWrite(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching puzzle ids");
+        // Replace "SteamUser.GetSteamID().m_SteamID" with "0" (until a proper format is created)
+        if (method.HasBody) {
+            ILCursor cursor = new(new ILContext(method));
+            if (cursor.TryGotoNext(MoveType.Before,
+                   instr => instr.MatchCall("Steamworks.SteamUser", "GetSteamID"),
+                   instr => instr.MatchLdfld("Steamworks.CSteamID", "m_SteamID"))) {
+                cursor.Remove();
+                cursor.Remove();
+                cursor.Emit(OpCodes.Ldc_I8, (long)0);
+            }
+        } else {
+            Console.WriteLine("Failed to modify puzzle serialization!");
+            throw new Exception();
+        }
+    }
+
 }

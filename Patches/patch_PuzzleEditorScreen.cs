@@ -7,7 +7,11 @@
 // ReSharper disable UnusedMember.Global
 // ReSharper disable ArrangeTypeModifiers
 
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using MonoMod;
+using MonoMod.Cil;
+using MonoMod.InlineRT;
 using Quintessential;
 using Quintessential.Internal;
 using System;
@@ -26,9 +30,9 @@ class patch_PuzzleEditorScreen {
 	[MonoModIgnore]
     private static extern void RenderPermissionToggle(bool isAvailable, Puzzle puzzle, Vector2 pos, string name, PuzzlePermissions permissionFlag, bool isEnabled);
 
-	[MonoModIgnore]
-	[PatchPuzzleEditorScreen]
-	public extern void RenderFrame(float param);
+	//[MonoModIgnore]
+	//[PatchPuzzleEditorScreen]
+	//public extern void RenderFrame(float param);
 
 	[MonoModReplace]
 	private void RenderEditor(bool isPersonal, Vector2 pos, Bounds2 bounds, Puzzle puzzle) {
@@ -313,5 +317,63 @@ class patch_PuzzleEditorScreen {
 			TextureRenderer.RenderText("HASH: " + p.fileHash.ToString(), bdl.getBounds().Center + new Vector2(-15f, -24f), Assets.fonts.crimson_13, UI.TextColor, (TextAlignment)1, 1f, 0.6f, float.MaxValue, param_3025 - 75, 0, default, null, int.MaxValue, false, true);
 		}
         return flag;
+    }
+
+    [MonoModILInject("RenderFrame")]
+    public static void PatchPuzzleEditorScreen(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching puzzle editor screen");
+        if (!method.HasBody) {
+            Console.WriteLine("Failed to modify puzzle editor screen (no body)!");
+            throw new Exception();
+        }
+
+        ILCursor cursor = new(new ILContext(method));
+        //Instruction target = null; // will definitely be set
+
+        // kill off `flag5` and make the Upload puzzle button never clickable
+        //if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdloc(27)))
+        //{
+        //    Console.WriteLine("Failed to modify puzzle editor screen (no 1st match)!");
+        //    throw new Exception();
+        //}
+
+        //cursor.Remove();
+        //cursor.Emit(OpCodes.Ldc_I4_0);
+        //// Carriage Return
+        //cursor.Index = 0;
+        //// Ding!
+
+        if (!cursor.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdfld(out FieldReference fr) && fr.Name == "puzzleName",
+            instr => instr.MatchCall(out MethodReference mr) && mr.Name == "op_Implicit",
+            instr => instr.MatchLdloc(13)
+            )) {
+            Console.WriteLine("Failed to modify puzzle editor screen (no puzzle name found)");
+            throw new Exception();
+        }
+        cursor.RemoveRange(2);
+
+        if (!cursor.TryGotoNext(MoveType.Before,
+            instr => instr.OpCode == OpCodes.Call,
+            instr => instr.MatchStloc(18),
+            instr => instr.MatchLdloca(18))) {
+            Console.WriteLine("Failed to modify puzzle editor screen (no ButtonDrawLogic instantiation)");
+            throw new Exception();
+        }
+
+        cursor.RemoveRange(3);
+
+        if (!cursor.TryGotoNext(MoveType.Before,
+            instr => instr.MatchCall(out MethodReference mr) && mr.Name == "RenderAndCheckIfPressed",
+            instr => instr.OpCode == OpCodes.Brfalse_S,
+            instr => instr.MatchLdloc(16))) {
+            Console.WriteLine("Failed to modify puzzle editor screen (no ButtonDrawLogic call)");
+            throw new Exception();
+        }
+
+        TypeDefinition holder = MonoModRule.Modder.FindType("PuzzleEditorScreen").Resolve();
+        MethodDefinition getName = holder.Methods.First(m => m.Name.Equals("DrawPuzzleButton")); // TODO fix this line
+        cursor.Remove();
+        cursor.Emit(OpCodes.Call, getName);
     }
 }

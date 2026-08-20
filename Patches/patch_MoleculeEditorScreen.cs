@@ -3,9 +3,15 @@
 #pragma warning disable IDE1006
 
 
-using Quintessential;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using MonoMod;
+using MonoMod.Cil;
+using MonoMod.InlineRT;
+using Quintessential;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 class patch_MoleculeEditorScreen
 {
@@ -26,7 +32,7 @@ class patch_MoleculeEditorScreen
 
     private bool ShowExtraUI => editing is { IsModdedPuzzle: true } && Quintessential.QApi.ModAtomTypes.Count > 0;
 
-    [PatchMoleculeEditorScreenAtomTray]
+    //[PatchMoleculeEditorScreenAtomTray]
     public extern void orig_RenderFrame(float detalTime);
     public void RenderFrame(float detalTime)
     {
@@ -71,9 +77,9 @@ class patch_MoleculeEditorScreen
         }
     }
 
-    [MonoMod.MonoModIgnore]
-    [PatchMoleculeEditorScreenMoleculeError]
-    public extern void MoleculeError(); 
+    //[MonoModIgnore]
+    //[PatchMoleculeEditorScreenMoleculeError]
+    //public extern void MoleculeError(); 
 
     [MonoMod.MonoModIgnore]
     private extern void AtomTypeSelector(Vector2 pos, AtomType type, bool b);
@@ -128,5 +134,116 @@ class patch_MoleculeEditorScreen
     outer:
         // ...
         return;
+    }
+
+
+    [MonoModILInject("RenderFrame")]
+    static void PatchMoleculeEditorScreenAtomTray(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching molecule editor screen atom tray");
+        if (!method.HasBody) {
+            Console.WriteLine("Failed to modify molecule editor rendering (no body)!");
+            throw new Exception();
+        }
+        ILCursor cursor = new(new ILContext(method)); // Create cursor
+        if (!cursor.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdarg(0),
+            instr => instr.MatchLdloc(9),
+            instr => instr.MatchLdsfld("AtomTypes", "salt"),
+            instr => instr.MatchLdcI4(1),
+            instr => instr.MatchCallvirt("MoleculeEditorScreen", "AtomTypeSelector") // Move to the function call
+        )) {
+            Console.WriteLine("Failed to modify molecule editor rendering (no start match)!");
+            throw new Exception();
+        }
+        int start = cursor.Index;
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdarg(0),
+            instr => instr.MatchLdloc(9),
+            instr => instr.MatchLdsfld("AtomTypes", "quintessence"),
+            instr => instr.MatchLdcI4(1),
+            instr => instr.MatchCallvirt("MoleculeEditorScreen", "AtomTypeSelector") // Move to the function call
+        )) {
+            Console.WriteLine("Failed to modify molecule editor rendering (no near end match)!");
+            throw new Exception();
+        }
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchStindR4()
+        )) {
+            Console.WriteLine("Failed to modify molecule editor rendering (no end match)!");
+            throw new Exception();
+        }
+        int end = cursor.Index;
+
+        TypeDefinition holder = MonoModRule.Modder.FindType("MoleculeEditorScreen").Resolve();
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("DrawAtoms"));
+
+        cursor.Goto(start);
+        cursor.RemoveRange(end - start); // Go bye with you
+        cursor.Emit(OpCodes.Ldarg_0); // this
+        cursor.Emit(OpCodes.Ldloc, 9);
+        cursor.Emit(OpCodes.Ldloc, 8);
+        cursor.Emit(OpCodes.Callvirt, to);
+    }
+
+    [MonoModILInject("MoleculeError")]
+    public static void PatchMoleculeEditorScreenMoleculeError(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching molecule editor screen error detector");
+        if (!method.HasBody) {
+            Console.WriteLine("Failed to modify molecule editor error detector (no body)!");
+            throw new Exception();
+        }
+        ILCursor cursor = new(new ILContext(method)); // Create cursor
+
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdarg(0),
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "molecule",
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.MatchStloc(1),
+            instr => instr.OpCode == OpCodes.Br
+        )) {
+            Console.WriteLine("Failed to modify molecule editor error detector (no bond checker)!");
+            throw new Exception();
+        }
+        Instruction start = cursor.Previous;
+        cursor.Goto((Instruction)cursor.Previous.Operand);
+
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdloc(1),
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.OpCode == OpCodes.Brtrue,
+            instr => instr.OpCode == OpCodes.Leave
+        )) {
+            Console.WriteLine("Failed to modify molecule editor error detector (no last leave)");
+            throw new Exception();
+        }
+        Instruction end = cursor.Previous;
+        // Immediately leaves the loop
+        start.Operand = end;
+
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdarg(0),
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "molecule",
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.OpCode == OpCodes.Callvirt,
+            instr => instr.MatchStloc(1),
+            instr => instr.OpCode == OpCodes.Br
+        )) {
+            Console.WriteLine("Failed to modify molecule editor error detector (second error)");
+            throw new Exception();
+        }
+        Instruction start2 = cursor.Previous;
+        cursor.Goto((Instruction)cursor.Previous.Operand);
+
+        if (!cursor.TryGotoNext(MoveType.After,
+            instr => instr.OpCode == OpCodes.Brtrue,
+            instr => instr.OpCode == OpCodes.Leave_S
+        )) {
+            Console.WriteLine("Failed to modify molecule editor error detector (no second last leave)");
+            throw new Exception();
+        }
+        Instruction end2 = cursor.Previous;
+        // Immediately leaves the loop
+        start2.Operand = end2;
     }
 }
