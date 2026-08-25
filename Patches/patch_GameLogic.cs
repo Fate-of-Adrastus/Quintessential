@@ -5,6 +5,7 @@ using MonoMod.Cil;
 using MonoMod.InlineRT;
 using Quintessential;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
@@ -27,7 +28,6 @@ class patch_GameLogic{
         orig_GameUnload(exitCode);
 	}
 
-	//[MonoModILInject("QuintessentialPatches/" + nameof(PatchBondTypesInit))]
 	public void ContentInit(){
         orig_ContentInit();
 		QuintessentialLoader.LoadPuzzleContent();

@@ -13,8 +13,6 @@ public class VersionJsonConverter : JsonConverter<Version> {
         writer.WriteStringValue(value.ToString());
     }
 }
-
-
 public class VersionRangeJsonConverter : JsonConverter<VersionRange> {
     public override VersionRange Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         VersionRange toReturn = new();
@@ -72,5 +70,47 @@ public class EnumConverter<T> : JsonConverter<T> where T : Enum {
 
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) {
         writer.WriteStringValue(value.ToString());
+    }
+}
+
+public class LocalisationLayerConverter : JsonConverter<LocalisationLayer> {
+    private System.Collections.Generic.Stack<LocalisationLayer> layerStack = [];
+
+    public override LocalisationLayer Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+
+        if (layerStack.Count == 0) layerStack.Push( LocalisationLayer.GlobalLayer );
+
+        if (reader.TokenType != JsonTokenType.StartObject) {
+            if (reader.TokenType == JsonTokenType.String) {
+                layerStack.Peek().locDictionary[LocalisationLayer.CurrentFileLanguage] = reader.GetString();
+                reader.Read();
+                return layerStack.Pop();
+            }
+            throw new FormatException();
+        }
+
+        var current = layerStack.Peek();
+        while (reader.TokenType != JsonTokenType.EndObject) {
+            reader.Read();
+            string key = reader.GetString();
+
+            if (key == "") {
+                reader.Read();
+                current.locDictionary[LocalisationLayer.CurrentFileLanguage] = reader.GetString();
+
+            } else {
+                if (current.subLayers.TryGetValue(key, out LocalisationLayer value)) layerStack.Push(value);
+                else layerStack.Push(new());
+
+                reader.Read();
+                current.subLayers[key] = Read(ref reader, typeToConvert, options);
+            }
+        }
+        reader.Read();
+        return layerStack.Pop();
+    }
+
+    public override void Write(Utf8JsonWriter writer, LocalisationLayer value, JsonSerializerOptions options) {
+        throw new NotImplementedException();
     }
 }

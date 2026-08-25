@@ -57,7 +57,7 @@ class ModsScreen : IScreen {
 			UI.DrawHeader("Mods", new Vector2(20, size.Y - 200 - y), modButtonWidth, true, true);
 			
 			foreach(var mod in QuintessentialLoader.Mods) {
-                if (UI.DrawAndCheckSolutionButton(mod.Title ?? mod.Name, mod.Version.ToString(), new Vector2(20, size.Y - 290 - y), modButtonWidth, selected == mod))
+                if (UI.DrawAndCheckSolutionButton(Translations.Translate(mod.ModId), mod.Version.ToString(), new Vector2(20, size.Y - 290 - y), modButtonWidth, selected == mod))
                     selected = mod;
                 y += 70;
             }
@@ -81,16 +81,16 @@ class ModsScreen : IScreen {
 	private float DrawModLabel(ModMeta mod, Vector2 pos, Vector2 bgSize){
 		bool hasIcon = !string.IsNullOrWhiteSpace(mod.Icon);
 		Vector2 titlePos = hasIcon ? pos + new Vector2(140, -30) : pos;
-		if (mod.Icon != null)
+		if (hasIcon)
 			TextureRenderer.Render(mod.IconCache ??= AssetLoaderHelper.LoadTexture(mod.Icon), pos + new Vector2(20, bgSize.Y - 99f - 100));
-        //UI.DrawTexture(mod.IconCache ??= AssetLoaderHelper.LoadTexture(mod.Icon), pos + new Vector2(20, bgSize.Y - 99f - 100));
-        UI.DrawText(mod.Title ?? mod.Name, titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, (TextAlignment)0);
+
+        UI.DrawText(Translations.Translate(mod.ModId), titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, (TextAlignment)0);
 		string ver = mod.Version.ToString();
-		if(mod.Title != null)
-			ver = mod.Name + " - " + ver;
-		UI.DrawText(ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, (TextAlignment)0);
-		if(mod.Desc != null) {
-			var desc = UI.DrawText(mod.Desc, pos + new Vector2(20, bgSize.Y - 170f - (hasIcon ? 70 : 0)), UI.Text, UI.TextColor, (TextAlignment)0, maxWidth: 460);
+        UI.DrawText(ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, (TextAlignment)0);
+
+		var modDescription = Translations.Translate(mod.ModId + ".description");
+        if (modDescription != (mod.ModId + ".description")) { // Possibly broken with psudo language & missing english translation
+			var desc = UI.DrawText(modDescription, pos + new Vector2(20, bgSize.Y - 170f - (hasIcon ? 70 : 0)), UI.Text, UI.TextColor, (TextAlignment)0, maxWidth: 460);
 			return desc.Height + 80;
 		}
 		return 20;
@@ -145,26 +145,6 @@ class ModsScreen : IScreen {
 			y += 40;
 		}
 		return new DrawProgress { pressed = settingsChanged, curY = y };
-	}
-
-	[Obsolete("Use UI.DrawCheckbox instead")]
-	public static bool DrawCheckbox(Vector2 pos, string label, bool enabled) {
-		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
-		Bounds2 labelBounds = UI.DrawText(label, pos + new Vector2(45f, 13f), UI.SubTitle, UI.TextColor, (TextAlignment)0);
-		if(enabled)
-			TextureRenderer.Render(Assets.textures.UI.checkbox_fill, boxBounds.Min);
-        //UI.DrawTexture(Assets.textures.UI.field_773, boxBounds.Min);
-        if (boxBounds.Contains(Input.MousePos()) || labelBounds.Contains(Input.MousePos())) {
-            TextureRenderer.Render(Assets.textures.UI.checkbox_hover, boxBounds.Min);
-            //UI.DrawTexture(Assets.textures.UI.field_774, boxBounds.Min);
-            if (!Input.IsLeftClickPressed())
-				return false;
-            Assets.sounds.click_button.method_28(1f);
-			return true;
-		}
-        TextureRenderer.Render(Assets.textures.UI.checkbox, boxBounds.Min);
-        //UI.DrawTexture(Assets.textures.UI.field_772, boxBounds.Min);
-		return false;
 	}
 
 	public static void SaveSettings(QuintessentialMod mod){
