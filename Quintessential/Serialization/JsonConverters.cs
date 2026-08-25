@@ -89,21 +89,22 @@ public class LocalisationLayerConverter : JsonConverter<LocalisationLayer> {
             throw new FormatException();
         }
 
+        reader.Read();
         var current = layerStack.Peek();
         while (reader.TokenType != JsonTokenType.EndObject) {
-            reader.Read();
             string key = reader.GetString();
+            reader.Read();
 
             if (key == "") {
-                reader.Read();
                 current.locDictionary[LocalisationLayer.CurrentFileLanguage] = reader.GetString();
+                reader.Read();
 
             } else {
                 if (current.subLayers.TryGetValue(key, out LocalisationLayer value)) layerStack.Push(value);
                 else layerStack.Push(new());
 
-                reader.Read();
                 current.subLayers[key] = Read(ref reader, typeToConvert, options);
+                reader.Read();
             }
         }
         reader.Read();
