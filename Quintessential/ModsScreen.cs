@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using Quintessential.Internal;
@@ -86,7 +85,7 @@ class ModsScreen : IScreen {
 
         UI.DrawText(Translations.Translate(mod.ModId), titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, (TextAlignment)0);
 		string ver = mod.Version.ToString();
-        UI.DrawText(ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, (TextAlignment)0);
+        UI.DrawText(mod.ModId.EscapeFormatting() + " - " + ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, (TextAlignment)0);
 
 		var modDescription = Translations.Translate(mod.ModId + ".description");
         if (modDescription != (mod.ModId + ".description")) { // Possibly broken with psudo language & missing english translation
