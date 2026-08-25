@@ -16,14 +16,16 @@ public class patch_Translations {
         // Loading localisation data into LocalisationLayer.GlobalLayer
         foreach (var dir in QuintessentialLoader.ModContentDirectories) {
             var langDirPath = Path.Combine(dir, "Content", "lang");
-            foreach (var file in Directory.GetFiles(langDirPath)) {
-                var Language = Translations.countryCodes.FirstOrDefault(
-                    code => Path.GetFileName(file) == code.Value + ".jsonc",
-                    new(0,null) );
+            if (Directory.Exists(langDirPath)) {
+                foreach (var file in Directory.GetFiles(langDirPath)) {
+                    var Language = Translations.countryCodes.FirstOrDefault(
+                        code => Path.GetFileName(file) == code.Value + ".jsonc",
+                        new(0, null));
 
-                if (Language.Value != null) {
-                    LocalisationLayer.CurrentFileLanguage = Language.Key;
-                    DataSerializer.Deserialize<LocalisationLayer>(file);
+                    if (Language.Value != null) {
+                        LocalisationLayer.CurrentFileLanguage = Language.Key;
+                        DataSerializer.Deserialize<LocalisationLayer>(file);
+                    }
                 }
             }
         }

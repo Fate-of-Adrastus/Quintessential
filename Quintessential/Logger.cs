@@ -24,9 +24,12 @@ public static class Logger {
 
 	public static void Log(string text) {
 		File.AppendAllText(LogPath, $"({DateTime.Now}) {text ?? "null"}\n");
-	}
+    }
+    public static void LogNoTime(string text) {
+        File.AppendAllText(LogPath, $"{text ?? "null"}\n");
+    }
 
-	public static void Log(object e) {
+    public static void Log(object e) {
 		Log(e?.ToString());
 	}
 }
