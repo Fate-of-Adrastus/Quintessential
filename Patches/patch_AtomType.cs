@@ -1,10 +1,11 @@
 ﻿using MonoMod;
+using Quintessential;
 
-class patch_AtomType
+class patch_AtomType : AtomType
 {
 
     // String atom type ID
-    public string QuintAtomType;
+    public Identifier QuintAtomType;
 
     [MonoModReplace]
     public override bool Equals(object obj)
@@ -15,13 +16,13 @@ class patch_AtomType
     [MonoModReplace]
     public override int GetHashCode()
     {
-        return ((AtomType)(object)this).byteId.GetHashCode() ^ QuintAtomType.GetHashCode();
+        return byteId.GetHashCode() ^ QuintAtomType.GetHashCode();
     }
 
     [MonoModReplace]
     public static bool operator ==(patch_AtomType atomType1, patch_AtomType atomType2)
     {
-        return (((AtomType)(object)atomType1).byteId == ((AtomType)(object)atomType2).byteId) && string.Equals(atomType1.QuintAtomType, atomType2.QuintAtomType);
+        return (atomType1.byteId == atomType2.byteId) && atomType1.QuintAtomType == atomType2.QuintAtomType;
     }
 
     [MonoModReplace]

@@ -1,6 +1,9 @@
-﻿using MonoMod;
+﻿#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+#pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 
-class patch_Part{
+using MonoMod;
+
+class patch_Part {
 	// this part type
 	[MonoModIgnore]
 	public extern PartType GetType();

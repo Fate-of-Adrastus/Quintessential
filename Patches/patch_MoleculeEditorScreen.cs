@@ -43,7 +43,7 @@ class patch_MoleculeEditorScreen
             return;
         }
 
-        // This was being instantiated before all other mods could call LoadPuzzleContent, causing the list to be unpopulated.
+        // This was being instantiated before all other mods could call LoadContent, causing the list to be unpopulated.
         // This only occurred when Reductive Metallurgy Campaign is loaded for me, though I've had other mods on.
         // Thankfully it's only an integer division, but I should find a more sensible patch.
         int LastPage = (Quintessential.QApi.ModAtomTypes.Count + 14) / 15;

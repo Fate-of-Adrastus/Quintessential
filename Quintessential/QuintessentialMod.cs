@@ -5,19 +5,20 @@ namespace Quintessential;
 public abstract class QuintessentialMod {
 	public abstract string ModId { get; }
 	public virtual Type SettingsType => typeof(object);
+    public virtual Identifier GetIdentifier(string name) => new(ModId, name);
 
-	public ModMeta Meta;
+    public ModMeta Meta;
 	public object Settings;
 
 	public abstract void Load();
 
-	public abstract void PostLoad();
+	public abstract void LoadContent();
+    public abstract void LoadCompatContent();
+    public abstract void FinaliseContent();
+
+    public abstract void PostLoad();
 
 	public abstract void Unload();
-
-	public virtual void LoadPuzzleContent() {
-
-	}
 
 	public virtual void ApplySettings() {
 

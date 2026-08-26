@@ -10,7 +10,6 @@ namespace Quintessential;
 
 public class QuintessentialLoader
 {
-
     public static readonly string VersionString = "0.5.6";
 
     public static string PathLightning;
@@ -45,7 +44,6 @@ public class QuintessentialLoader
 
             Logger.Init();
             Logger.Log("Starting pre-init loading.");
-            QApi.Init();
 
             // Instantiate code mods
             var modTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => typeof(QuintessentialMod).IsAssignableFrom(t) && !t.IsAbstract);
@@ -60,7 +58,6 @@ public class QuintessentialLoader
 
                 if (idCheckSet.Contains(mod.ModId)) throw new Exception($"Multiple mods cannot share the same id. Found multiple mods with id '{mod.ModId}'");
                 idCheckSet.Add(mod.ModId);
-                //Logger.Log("Found Code Mod: " + type.Name);
             }
 
             // Load modMeta files
@@ -103,6 +100,34 @@ public class QuintessentialLoader
             throw;
         }
     }
+    public static void PostInit()
+    {
+        Logger.Log("Starting post-init loading.");
+        // Read mod save data
+        PathModSaves = Path.Combine(class_161.method_402(), "ModSettings");
+        Logger.Log($"Mod settings directory: \"{PathModSaves}\"");
+        if (!Directory.Exists(PathModSaves))
+            Directory.CreateDirectory(PathModSaves);
+        foreach (var mod in CodeMods)
+        {
+            var savePath = Path.Combine(PathModSaves, mod.ModId + ".json");
+            if (File.Exists(savePath))
+            {
+                var settings = DataSerializer.Deserialize(savePath, mod.SettingsType);
+                if (settings != null)
+                {
+                    mod.Settings = settings;
+                    mod.ApplySettings();
+                } else
+                    Logger.Log("Loaded null settings for mod " + mod.Meta.Name);
+            }
+            mod.Settings ??= mod.SettingsType.GetConstructor([]).Invoke([]);
+        }
+        foreach (var mod in CodeMods)
+            mod.PostLoad();
+        Logger.Log("Finished post-init loading.");
+    }
+
 
     private static void LoadModCampaigns(ModMeta mod)
     {
@@ -147,57 +172,6 @@ public class QuintessentialLoader
             }
         }
     }
-
-    public static void PostInit()
-    {
-        Logger.Log("Starting post-init loading.");
-        // Read mod save data
-        PathModSaves = Path.Combine(class_161.method_402(), "ModSettings");
-        Logger.Log($"Mod settings directory: \"{PathModSaves}\"");
-        if (!Directory.Exists(PathModSaves))
-            Directory.CreateDirectory(PathModSaves);
-        foreach (var mod in CodeMods)
-        {
-            var savePath = Path.Combine(PathModSaves, mod.ModId + ".json");
-            if (File.Exists(savePath))
-            {
-                var settings = DataSerializer.Deserialize(savePath, mod.SettingsType);
-                if (settings != null)
-                {
-                    mod.Settings = settings;
-                    mod.ApplySettings();
-                } else
-                    Logger.Log("Loaded null settings for mod " + mod.Meta.Name);
-            }
-            mod.Settings ??= mod.SettingsType.GetConstructor([]).Invoke([]);
-        }
-        foreach (var mod in CodeMods)
-            mod.PostLoad();
-        Logger.Log("Finished post-init loading.");
-    }
-
-    public static void LoadPuzzleContent()
-    {
-        Logger.Log("Starting puzzle content loading.");
-        foreach (var mod in CodeMods)
-            mod.LoadPuzzleContent();
-
-        Logger.Log("Loading campaigns and journals.");
-        LoadCampaigns();
-        LoadJournals();
-
-        Logger.Log("Finished puzzle content loading.");
-    }
-
-    public static void Unload()
-    {
-        Logger.Log("Starting mod unloading.");
-        foreach (var mod in CodeMods)
-            mod.Unload();
-        Logger.Log("Finished unloading.");
-    }
-
-
     public static void LoadCampaigns()
     {
         AllCampaigns.Clear();
@@ -290,7 +264,6 @@ public class QuintessentialLoader
             AllCampaigns.Add(campaign);
         }
     }
-
     public static void LoadJournals()
     {
         AllJournals.Clear();
@@ -330,7 +303,34 @@ public class QuintessentialLoader
             AllJournals.Add(volumes);
         }
     }
-    public static Puzzle[] GetJournalPuzzles(JournalChapterModel chapter, JournalModel journal) {
+    private static CampaignItem AddEntryToCampaign(
+            Campaign campaign,
+            int chapter,
+            string itemId,
+            LocString itemName,
+            CampaignItemType itemType,
+            Maybe<Tip> puzzleTip,
+            Maybe<Puzzle> puzzle,
+            MusicTrack musicTrack,
+            Sound fanfare,
+            UnlockRequirement requirement,
+            bool noStoryPanel
+    )
+    {
+        if (puzzle.HasValue())
+        {
+            //puzzle.method_1087().field_2767 = entryTitle;
+            puzzle.GetValue().puzzleTip = puzzleTip;
+        }
+        CampaignItem campaignItem = new(itemId, itemName, itemType, puzzle, requirement, musicTrack, fanfare, campaign);
+        campaign.chapters[chapter].campaignItems.Add(campaignItem);
+        // no cutscene to see here
+        if (noStoryPanel)
+            campaignItem.vignette = MaybeHelper.empty;
+
+        return campaignItem;
+    }
+    private static Puzzle[] GetJournalPuzzles(JournalChapterModel chapter, JournalModel journal) {
         IEnumerable<Puzzle> puzzles = new List<Puzzle>();
         foreach( var puzzleName in chapter.Puzzles) {
             Puzzle p = TryLoadPuzzle(journal.Path, puzzleName, journal.Title, out var puzzle) ? puzzle : new Puzzle();
@@ -338,7 +338,6 @@ public class QuintessentialLoader
         }
         return puzzles.ToArray();
     }
-
     private static bool TryLoadPuzzle(string basePath, string puzzleName, string campaignTitle, out Puzzle puzzle)
     {
         try
@@ -398,34 +397,6 @@ public class QuintessentialLoader
         }
     }
 
-    private static CampaignItem AddEntryToCampaign(
-            Campaign campaign,
-            int chapter,
-            string itemId,
-            LocString itemName,
-            CampaignItemType itemType,
-            Maybe<Tip> puzzleTip,
-            Maybe<Puzzle> puzzle,
-            MusicTrack musicTrack,
-            Sound fanfare,
-            UnlockRequirement requirement,
-            bool noStoryPanel
-    )
-    {
-        if (puzzle.HasValue())
-        {
-            //puzzle.method_1087().field_2767 = entryTitle;
-            puzzle.GetValue().puzzleTip = puzzleTip;
-        }
-        CampaignItem campaignItem = new(itemId, itemName, itemType, puzzle, requirement, musicTrack, fanfare, campaign);
-        campaign.chapters[chapter].campaignItems.Add(campaignItem);
-        // no cutscene to see here
-        if (noStoryPanel)
-            campaignItem.vignette = MaybeHelper.empty;
-
-        return campaignItem;
-    }
-
 
     private static void SetCodeModInstance(Type type, QuintessentialMod instance) {
         var property = type.GetProperty("Instance");
@@ -475,7 +446,6 @@ public class QuintessentialLoader
         Logger.Log($"Dumped puzzles to {outDir}");
         UI.OpenScreen(new NoticeScreen("Puzzle Dumping", $"Saved puzzles to \"{outDir.Replace('\\', '/')}\""));
     }
-
     internal static void DumpAtomSprites()
     {
         string outDir = Path.Combine(PathModSaves, "Quintessential", "DumpedAtomSprites");
@@ -483,12 +453,11 @@ public class QuintessentialLoader
         foreach (AtomType atomType in AtomTypes.atoms)
         {
             RenderTargetHandle v = RenderAtomToTarget(atomType);
-            Renderer.PngFromTexture(v.GetTarget().renderedTexture).Save(Path.Combine(outDir, ((patch_AtomType)(object)atomType).QuintAtomType.Replace(":", "_") + ".png"));
+            Renderer.PngFromTexture(v.GetTarget().renderedTexture).Save(Path.Combine(outDir, ((patch_AtomType)(object)atomType).QuintAtomType.ToString().Replace(":", "_") + ".png"));
         }
         Logger.Log($"Dumped atom sprites to {outDir}");
         UI.OpenScreen(new NoticeScreen("Sprite Dumping", $"Saved atom sprites to \"{outDir.Replace('\\', '/')}\""));
     }
-
     internal static RenderTargetHandle RenderAtomToTarget(AtomType type)
     {
         RenderTargetHandle renderTargetHandle = new RenderTargetHandle();

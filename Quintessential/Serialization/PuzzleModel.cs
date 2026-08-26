@@ -24,7 +24,7 @@ public class PuzzleModel {
     public PuzzlePermissions PermissionFlags;
     // modded permisisons, can be used for parts, instructions, or anything else
     [DataMember]
-    public HashSet<string> CustomPermissions = new();
+    public HashSet<Identifier> CustomPermissions = [];
     // set of highlighted hexes
     [DataMember(EmitDefaultValue = false)]
     public HashSet<HexIndexM> Highlights = new();

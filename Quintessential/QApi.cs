@@ -1,20 +1,17 @@
-﻿using System;
+﻿using Quintessential.Internal;
+using System;
 using System.Collections.Generic;
 
 namespace Quintessential;
 
 public static class QApi {
 
-	public static readonly List<Pair<Predicate<Part>, PartRendererDelegate>> PartRenderers = new();
-	public static readonly List<Pair<PartType, PartType>> PanelParts = new();
-	public static readonly List<AtomType> ModAtomTypes = new();
-	public static readonly List<Action<Sim, bool>> ToRunAfterCycle = new();
-	public static readonly List<Pair<string, SolutionPayloadHandler>> SolutionPayloadHandler = new();
-	public static readonly List<PuzzleOption> PuzzleOptions = new();
-
-	public static void Init(){
-
-	}
+	public static readonly List<Pair<Predicate<Part>, PartRendererDelegate>> PartRenderers = [];
+	public static readonly List<Pair<PartType, PartType>> PanelParts = [];
+	public static readonly List<AtomType> ModAtomTypes = [];
+	public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
+	public static readonly List<Pair<string, SolutionPayloadHandler>> SolutionPayloadHandler = [];
+	public static readonly List<PuzzleOption> PuzzleOptions = [];
 
 	/// <summary>
 	/// Adds a part type to the end of a part panel section, making it accessible for placement.
@@ -45,7 +42,7 @@ public static class QApi {
 	/// </summary>
 	/// <param name="renderer">The PartRenderer to be added and displayed.</param>
 	/// <param name="typeChecker">A predicate that determines which parts the renderer should try to display.</param>
-	public static void AddPartTypesRenderer(PartRendererDelegate renderer, Predicate<Part> typeChecker) {
+	public static void AddPartTypesRenderer(this QuintessentialMod mod, PartRendererDelegate renderer, Predicate<Part> typeChecker) {
 		PartRenderers.Add(new Pair<Predicate<Part>, PartRendererDelegate>(typeChecker, renderer));
 	}
 
@@ -53,9 +50,13 @@ public static class QApi {
 	/// Adds a part type to the list of all part types.
 	/// </summary>
 	/// <param name="type">The part type to be added.</param>
-	public static void AddPartType(PartType type) {
-		Array.Resize(ref PartTypes.partTypes, PartTypes.partTypes.Length + 1);
-		PartTypes.partTypes[PartTypes.partTypes.Length - 1] = type;
+	public static void AddPartType(this QuintessentialMod mod, PartType type, string id) {
+		type.id = mod.GetIdentifier(id);
+        type.name = Translations.Translate(mod.ModId + ".parts." + id);
+        type.description = Translations.Translate(mod.ModId + ".parts." + id + ".description");
+
+        Array.Resize(ref PartTypes.partTypes, PartTypes.partTypes.Length + 1);
+		PartTypes.partTypes[^1] = type;
 	}
 
 	/// <summary>
@@ -63,18 +64,23 @@ public static class QApi {
 	/// </summary>
 	/// <param name="type">The part type to be added.</param>
 	/// <param name="renderer">A PartRenderer to render instances of that part type.</param>
-	public static void AddPartType(PartType type, PartRendererDelegate renderer) {
-		AddPartType(type);
-		AddPartTypesRenderer(renderer, part => part.GetType() == type);
+	public static void AddPartType(this QuintessentialMod mod, PartType type, string id, PartRendererDelegate renderer) {
+        mod.AddPartType(type, id);
+        mod.AddPartTypesRenderer(renderer, part => part.GetType() == type);
 	}
 
 	/// <summary>
 	/// Adds an atom type, adding it to the list of atom types and the molecule editor.
 	/// </summary>
 	/// <param name="type">The atom type to add.</param>
-	public static void AddAtomType(AtomType type) {
-		ModAtomTypes.Add(type);
+	public static void AddAtomType(this QuintessentialMod mod, AtomType type, string id) {
+		type.byteId = 255; // doesn't really matter - should not overlap vanilla atom ids
+		((patch_AtomType)(object)type).QuintAtomType = mod.GetIdentifier(id);
+		type.name = Translations.Translate(mod.ModId + ".atoms." + id);
+		type.elementalName = Translations.Translate(mod.ModId + ".atoms." + id + ".elemental");
+		type.defaultName = Translations.Translate(mod.ModId + ".atoms." + id).locDictionary[Language.English];
 
+        ModAtomTypes.Add(type);
 		Array.Resize(ref AtomTypes.atoms, AtomTypes.atoms.Length + 1);
 		var len = AtomTypes.atoms.Length;
 		AtomTypes.atoms[len - 1] = type;
@@ -97,8 +103,13 @@ public static class QApi {
 	/// <param name="id">The ID of the permission that is used during checks and saved to puzzle files.</param>
 	/// <param name="displayName">The name of the permission that is displayed in the UI, e.g. "Glyphs of Quintessence".</param>
 	/// <param name="sectionName">The name of the section that the permission will appear under.</param>
-	public static void AddPuzzlePermission(string id, string displayName, string sectionName = "Other Parts and Mechanisms"){
-		PuzzleOptions.Add(PuzzleOption.BoolOption(id, displayName, sectionName));
+	public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName, string sectionName = ""){
+		var sectionNameLoc = Translations.Translate(
+			sectionName == "" ? (QuintessentialAsMod.Instance.ModId + ".permission_sections.default") : (mod.ModId + ".permission_sections." + sectionName)
+		);
+		var displayNameLoc = Translations.Translate( mod.ModId + ".permissions." + displayName );
+
+        PuzzleOptions.Add(PuzzleOption.BoolOption(mod.GetIdentifier(id), displayNameLoc, sectionNameLoc));
 	}
 
 	public static void AddPuzzleOption(PuzzleOption option){
@@ -125,13 +136,15 @@ public static class QApi {
 	/// Whether to automatically assign a centred offset for the chamber's overlay texture.
 	/// Otherwise, the chamber's <c>field_1730</c> must have its offset assigned by <c>UI.AssignOffset</c>, or the chamber will be visually incorrect.
 	/// </param>
-	public static void AddProductionChamber(ProductionChamber ProductionChamber, bool autoCentre = true){
-		int length = Puzzles.prodChambers.Length;
+	public static void AddProductionChamber(this QuintessentialMod mod, string id, ProductionChamber productionChamber, bool autoCentre = true){
+        productionChamber.name = mod.GetIdentifier(id);
+
+        int length = Puzzles.prodChambers.Length;
 		Array.Resize(ref Puzzles.prodChambers, length + 1);
-		Puzzles.prodChambers[length] = ProductionChamber;
+		Puzzles.prodChambers[length] = productionChamber;
 
 		if(autoCentre)
-			UI.AssignOffset(ProductionChamber.borderTexture, -0.5f * ProductionChamber.borderTexture.size.ToVector2());
+			UI.AssignOffset(productionChamber.borderTexture, -0.5f * productionChamber.borderTexture.size.ToVector2());
 	}
 
 	/// <summary>

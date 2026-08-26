@@ -16,7 +16,6 @@ using Quintessential;
 using Quintessential.Internal;
 using System;
 using System.Linq;
-using static Quintessential.Serialization.PuzzleModel;
 
 class patch_PuzzleEditorScreen {
 
@@ -53,7 +52,7 @@ class patch_PuzzleEditorScreen {
 
 			//// CustomPermissions may have just not been set? TODO: find a better place for the "canonical" setter
 			var conv = (patch_Puzzle)(object)puzzle;
-			conv.CustomPermissions ??= new();
+			conv.CustomPermissions ??= [];
 
             VanillaEditorRender(isPersonal, nCorner, bounds, puzzle);
 

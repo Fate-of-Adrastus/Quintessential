@@ -5,7 +5,6 @@ using MonoMod.Cil;
 using MonoMod.InlineRT;
 using Quintessential;
 using System;
-using System.Diagnostics;
 using System.Linq;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
@@ -23,15 +22,34 @@ class patch_GameLogic{
 		QuintessentialLoader.PostInit();
 	}
 
-	public void GameUnload(int exitCode){
-		QuintessentialLoader.Unload();
+	public void GameUnload(int exitCode) {
+        Logger.Log("Starting mod unloading.");
+        foreach (var mod in QuintessentialLoader.CodeMods)
+            mod.Unload();
+
+        Logger.Log("Finished unloading.");
         orig_GameUnload(exitCode);
 	}
 
 	public void ContentInit(){
         orig_ContentInit();
-		QuintessentialLoader.LoadPuzzleContent();
-	}
+
+        Logger.Log("Starting content loading.");
+        foreach (var mod in QuintessentialLoader.CodeMods)
+            mod.LoadContent();
+        foreach (var mod in QuintessentialLoader.CodeMods)
+            mod.LoadCompatContent();
+
+        Logger.Log("Loading campaigns and journals.");
+        QuintessentialLoader.LoadCampaigns();
+        QuintessentialLoader.LoadJournals();
+
+        Logger.Log("Finalising content.");
+        foreach (var mod in QuintessentialLoader.CodeMods)
+            mod.FinaliseContent();
+
+        Logger.Log("Finished content loading.");
+    }
 
     [MonoModILInject("ContentInit")]
     static void ContentInitBondTypeInit(MethodDefinition method, CustomAttribute attrib) {

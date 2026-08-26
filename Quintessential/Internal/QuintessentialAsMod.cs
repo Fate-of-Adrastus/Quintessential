@@ -9,7 +9,7 @@ public class QuintessentialAsMod : QuintessentialMod {
 
     public override void Load() {}
 
-    public override void LoadPuzzleContent()
+    public override void LoadContent()
     {
         QApi.AddSolutionPayloadHandler("Quintessential:place", (solution, data) =>
         {
@@ -31,8 +31,9 @@ public class QuintessentialAsMod : QuintessentialMod {
             part.RotateBy(solution, rotation);
         });
     }
+    public override void LoadCompatContent() { }
+    public override void FinaliseContent() { }
 
     public override void PostLoad() { }
-
 	public override void Unload() { }
 }

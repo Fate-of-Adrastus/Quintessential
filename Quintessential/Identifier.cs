@@ -1,14 +1,14 @@
-﻿
-namespace Quintessential;
-struct Identifier {
-    string namespc, name;
+﻿namespace Quintessential;
 
-    public Identifier(string _namespc, string _name) {
-        namespc = _namespc;
-        name = _name;
+public readonly struct Identifier {
+    private readonly string namespc, name;
+
+    public Identifier(string namespc, string name) {
+        this.namespc = namespc;
+        this.name = name;
     }
     public Identifier(string identifier) {
-        var sections = identifier.Split(new char[] { ':' });
+        var sections = identifier.Split(':');
         if (sections.Length != 2) throw new OpusMagnumException("Identifier constructor contains invalid number of ':'");
 
         namespc = sections[0];

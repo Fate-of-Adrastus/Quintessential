@@ -3,19 +3,20 @@
 namespace Quintessential;
 
 public class PuzzleOption{
-	
-	// Puzzle options are always saved as strings
-	// booleans -> ID present or not
-	// multi-choice -> {ID}::{choice}
-	// atom -> {ID}::{atom ID}
-	// part -> {ID}::{part ID}
-	
-	public string ID, Name, SectionName;
+
+    // Puzzle options are always saved as LocStrings
+    // booleans -> ID present or not
+    // multi-choice -> {ID}__{choice}
+    // atom -> {ID}__{atom ID}
+    // part -> {ID}__{part ID}
+
+    public Identifier ID;
+    public LocString Name, SectionName; // TODO to LocString
 	public PuzzleOptionType Type;
 
-	private List<string> choices;
+	private List<LocString> choices;
 
-	public static PuzzleOption BoolOption(string id, string name, string sectionName){
+	public static PuzzleOption BoolOption(Identifier id, LocString name, LocString sectionName){
 		return new PuzzleOption{
 			ID = id,
 			Name = name,
@@ -24,17 +25,17 @@ public class PuzzleOption{
 		};
 	}
 	
-	public static PuzzleOption MultiChoiceOption(string id, string name, string sectionName, params string[] choices){
+	public static PuzzleOption MultiChoiceOption(Identifier id, LocString name, LocString sectionName, params LocString[] choices){
 		return new PuzzleOption{
 			ID = id,
 			Name = name,
 			SectionName = sectionName,
 			Type = PuzzleOptionType.MultiChoice,
-			choices = new List<string>(choices)
-		};
+			choices = [.. choices]
+        };
 	}
 	
-	public static PuzzleOption PartTypeOption(string id, string name, string sectionName){
+	public static PuzzleOption PartTypeOption(Identifier id, LocString name, LocString sectionName){
 		return new PuzzleOption{
 			ID = id,
 			Name = name,
@@ -43,7 +44,7 @@ public class PuzzleOption{
 		};
 	}
 	
-	public static PuzzleOption AtomTypeOption(string id, string name, string sectionName){
+	public static PuzzleOption AtomTypeOption(Identifier id, LocString name, LocString sectionName){
 		return new PuzzleOption{
 			ID = id,
 			Name = name,
@@ -55,13 +56,13 @@ public class PuzzleOption{
 	// Getters that each correspond to a PuzzleOptionType
 	
 	public bool EnabledIn(Puzzle from){
-		return Convert(from).CustomPermissions?.Contains(ID) ?? false;
+		return ((patch_Puzzle)(object)from).CustomPermissions?.Contains(ID) ?? false;
 	}
 
 	public string ChoiceIn(Puzzle from){
-		foreach(string permission in Convert(from).CustomPermissions)
-			if(permission.StartsWith(ID + "::"))
-				return permission.Substring(ID.Length + 2);
+		foreach(string permission in ((patch_Puzzle)(object)from).CustomPermissions)
+			if(permission.StartsWith(ID + "__"))
+				return permission[(ID.ToString().Length + 2)..];
 		return null;
 	}
 
@@ -77,7 +78,7 @@ public class PuzzleOption{
 	public AtomType AtomIn(Puzzle from){
 		string choice = ChoiceIn(from);
 		foreach(AtomType type in AtomTypes.atoms)
-			if(Convert(type).QuintAtomType.Equals(choice))
+			if(((patch_AtomType)(object)type).QuintAtomType.Equals(choice))
 				return type;
 
 		return null;
@@ -85,31 +86,23 @@ public class PuzzleOption{
 
 	public void SetEnabledIn(Puzzle from, bool enabled){
 		if(enabled)
-			Convert(from).CustomPermissions.Add(ID);
+			((patch_Puzzle)(object)from).CustomPermissions.Add(ID);
 		else
-			Convert(from).CustomPermissions.Remove(ID);
+			((patch_Puzzle)(object)from).CustomPermissions.Remove(ID);
 	}
 	
 	public void SetChoiceIn(Puzzle from, string choice){
-		var perms = Convert(from).CustomPermissions;
-		perms.RemoveWhere(s => s.StartsWith(ID + "::"));
-		perms.Add(ID + "::" + choice);
+		var perms = ((patch_Puzzle)(object)from).CustomPermissions;
+		perms.RemoveWhere(s => s.ToString().StartsWith(ID + "__"));
+		perms.Add(ID + "__" + choice);
 	}
 
 	public void SetAtomIn(Puzzle from, AtomType atom){
-		SetChoiceIn(from, Convert(atom).QuintAtomType);
+		SetChoiceIn(from, ((patch_AtomType)(object)atom).QuintAtomType);
 	}
 
 	public void SetPartIn(Puzzle from, PartType part){
 		SetChoiceIn(from, part.id);
-	}
-
-	private static patch_Puzzle Convert(Puzzle from){
-		return (patch_Puzzle)(object)from;
-	}
-
-	private static patch_AtomType Convert(AtomType from){
-		return (patch_AtomType)(object)from;
 	}
 }
 

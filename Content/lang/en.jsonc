@@ -1,6 +1,9 @@
 {
   "quintessential_core": {
     "": "Quintessential Core",
-    "description": "Example description..."
+    "description": "Example description...",
+    "permission_sections": {
+      "default": "Other Parts and Mechanisms"
+    }
   }
 }

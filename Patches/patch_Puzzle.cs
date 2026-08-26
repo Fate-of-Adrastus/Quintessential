@@ -9,10 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-class patch_Puzzle{
+#pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value null
+
+class patch_Puzzle : Puzzle {
 	
 	// Custom puzzle data
-	public HashSet<string> CustomPermissions = new();
+	public HashSet<Identifier> CustomPermissions = [];
 	
 	// Is modded content allowed in this puzzle?
 	// Controls whether this is saved to/from a vanilla `.puzzle` file, or a Quintessential `.puzzle.yaml` file

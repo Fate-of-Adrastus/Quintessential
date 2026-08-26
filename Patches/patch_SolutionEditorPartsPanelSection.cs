@@ -1,6 +1,5 @@
 ﻿using MonoMod;
 using MonoMod.Utils;
-
 using Quintessential;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ class patch_SolutionEditorPartsPanelSection {
 		var sol = selfData.Get<SolutionEditorScreen>("solEditScr");
 		Puzzle puzzle = sol.GetSolution().GetPuzzle();
 		// check if we have the appropriate custom permissions
-		var perms = (((patch_Puzzle)(object)puzzle).CustomPermissions ??= new());
+		var perms = ((patch_Puzzle)(object)puzzle).CustomPermissions ??= [];
 		var checker = ((patch_PartType)(object)partType).CustomPermissionCheck;
 
 		if(checker == null || checker(perms))

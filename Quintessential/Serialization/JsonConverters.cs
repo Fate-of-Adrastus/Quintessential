@@ -77,7 +77,7 @@ public class LocalisationLayerConverter : JsonConverter<LocalisationLayer> {
     private System.Collections.Generic.Stack<LocalisationLayer> layerStack = [];
 
     public override LocalisationLayer Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-
+        
         if (layerStack.Count == 0) layerStack.Push( LocalisationLayer.GlobalLayer );
 
         if (reader.TokenType != JsonTokenType.StartObject) {
@@ -104,7 +104,6 @@ public class LocalisationLayerConverter : JsonConverter<LocalisationLayer> {
                 else layerStack.Push(new());
 
                 current.subLayers[key] = Read(ref reader, typeToConvert, options);
-                reader.Read();
             }
         }
         reader.Read();
