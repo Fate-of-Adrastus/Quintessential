@@ -331,7 +331,7 @@ public class PuzzleModel {
         [DataMember]
         public bool Top;
         [DataMember]
-        public List<Pair<string, string>> Sprites = new();
+        public List<Tuple<string, string>> Sprites = new();
 
 		public VialM(){}
 
@@ -344,7 +344,7 @@ public class PuzzleModel {
 
 		public PlacedVial FromModel() {
 			return new PlacedVial(Position.Q(), Position.R(), Top,
-				Sprites.Select(xs => Tuple.Create(AssetLoaderHelper.LoadTexture(xs.Left), AssetLoaderHelper.LoadTexture(xs.Right))).ToArray());
+				Sprites.Select(xs => Tuple.Create(AssetLoaderHelper.LoadTexture(xs.Item1), AssetLoaderHelper.LoadTexture(xs.Item2))).ToArray());
 		}
 
 		private static string CleanName(Texture texture){
@@ -413,7 +413,7 @@ public class PuzzleModel {
 
         public Payloads.Payload FromModel()
         {
-			if (!QApi.SolutionPayloadHandler.Exists(sph => sph.Left == Address))
+			if (!QApi.SolutionPayloadHandler.Exists(sph => sph.Item1 == Address))
 			{
 	           throw new Exception("No payload handler for address \"" + Address + "\"");
 			}

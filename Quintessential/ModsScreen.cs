@@ -34,7 +34,7 @@ class ModsScreen : IScreen {
 	// update & render
 	public void RenderFrame(float deltaTime) {
 		Vector2 size = new(1220, 1000);
-		Vector2 pos = (Input.ScreenSize() / 2 - size / 2).Rounded();
+		Vector2 pos = (InputManager.screenSize / 2 - size / 2).Rounded();
 		Vector2 bgPos = pos + new Vector2(78, 88);
 		Vector2 bgSize = size - new Vector2(78 * 2, 77 * 2);
 

@@ -1,4 +1,6 @@
-﻿namespace Quintessential.Settings;
+﻿using SDL2;
+
+namespace Quintessential.Settings;
 
 public class Keybinding {
 
@@ -17,28 +19,31 @@ public class Keybinding {
 	}
 
 	public bool IsControlKeysPressed(){
-		return (!Shift || Input.IsShiftHeld()) && (!Control || Input.IsControlHeld()) && (!Alt || Input.IsAltHeld());
+		return (!Shift || InputManager.IsModifierKeyHeld(ModifierKeyType.Shift)) &&
+			(!Control || InputManager.IsModifierKeyHeld(ModifierKeyType.Ctrl)) &&
+			(!Alt || InputManager.IsModifierKeyHeld(ModifierKeyType.Alt));
 	}
 
 	public bool Pressed(){
-		return IsControlKeysPressed() && Input.IsKeyPressed(Key);
+		return IsControlKeysPressed() && InputManager.IsKeyPressed(SDL.SDL_GetKeyFromName(Key));
 	}
 
 	public bool Held(){
-		return IsControlKeysPressed() && Input.IsKeyHeld(Key);
+		return IsControlKeysPressed() && InputManager.IsKeyHeld(SDL.SDL_GetKeyFromName(Key));
 	}
 
 	public bool Released(){
-		return IsControlKeysPressed() && Input.IsKeyReleased(Key);
+		return IsControlKeysPressed() && InputManager.IsKeyReleased(SDL.SDL_GetKeyFromName(Key));
 	}
 
 	public Keybinding Copy() {
-		Keybinding copy = new();
-		copy.Key = Key;
-		copy.Shift = Shift;
-		copy.Control = Control;
-		copy.Alt = Alt;
-		return copy;
+        Keybinding copy = new() {
+            Key = Key,
+            Shift = Shift,
+            Control = Control,
+            Alt = Alt
+        };
+        return copy;
 	}
 
 	public string ControlKeysText() {

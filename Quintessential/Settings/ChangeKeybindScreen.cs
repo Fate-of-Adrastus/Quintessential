@@ -12,7 +12,7 @@ class ChangeKeybindScreen : IScreen {
 
 	// SDL doesn't make an event when Control or Alt are pressed unless it makes a character (or maybe OM doesn't pick it up)
 	// So we just use this
-	public static List<string> BindableKeys = new();
+	public static List<string> BindableKeys = [];
 
 	static ChangeKeybindScreen(){
 		foreach(var letter in "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-+_=/*!\"£$%^&()<>,.?{}[]:;@'~#|\\`¬¦".ToCharArray())
@@ -21,7 +21,7 @@ class ChangeKeybindScreen : IScreen {
 			BindableKeys.Add("F" + i);
 		for(int i = 0; i < 10; i++) // Keypad numbers
 			BindableKeys.Add("Keypad " + i);
-		BindableKeys.AddRange(new[]{ "Insert", "PageUp", "PageDown", "Home", "End" });
+		BindableKeys.AddRange(["Insert", "PageUp", "PageDown", "Home", "End"]);
 	}
 
 	public ChangeKeybindScreen(Keybinding key, string label, QuintessentialMod save){
@@ -42,28 +42,28 @@ class ChangeKeybindScreen : IScreen {
 
 	public void RenderFrame(float deltaTime) {
 		// "Please enter a new key:"
-		UI.DrawText("Please enter a new key for: " + Label, (Input.ScreenSize() / 2) + new Vector2(0, 170), UI.Title, Color.White, (TextAlignment)1);
+		UI.DrawText("Please enter a new key for: " + Label, (InputManager.screenSize / 2) + new Vector2(0, 170), UI.Title, Color.White, TextAlignment.Center);
 		// display ctrl/shift
 		string preview = "";
-		bool shift = Input.IsShiftHeld();
-		bool ctrl = Input.IsControlHeld();
-		bool alt = Input.IsAltHeld();
-		if(shift)
+		bool shift = InputManager.IsModifierKeyHeld(ModifierKeyType.Shift);
+        bool ctrl = InputManager.IsModifierKeyHeld(ModifierKeyType.Ctrl);
+        bool alt = InputManager.IsModifierKeyHeld(ModifierKeyType.Alt);
+        if (shift)
 			preview = "Shift + " + preview;
 		if(alt)
 			preview = "Alt + " + preview;
 		if(ctrl)
 			preview = "Control + " + preview;
 		if(!string.IsNullOrWhiteSpace(preview))
-			UI.DrawText(preview, Input.ScreenSize() / 2, UI.Title, class_181.field_1718, (TextAlignment)1);
+			UI.DrawText(preview, InputManager.screenSize / 2, UI.Title, class_181.field_1718, TextAlignment.Center);
 		// "press esc to CANCEL"
-		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (Input.ScreenSize() / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, (TextAlignment)1);
-		if(Input.IsSdlKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton("CANCEL", labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
+		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (InputManager.screenSize / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, TextAlignment.Center);
+		if(InputManager.IsKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton("CANCEL", labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
 			UI.HandleCloseButton();
 		// handle keypresses
 		string key = "";
 		foreach(var bindable in BindableKeys)
-			if(Input.IsKeyPressed(bindable))
+			if(InputManager.IsKeyPressed(SDL.SDL_GetKeyFromName(bindable)))
 				key = bindable;
 		if(key != ""){
 			Keybinding old = Key.Copy();

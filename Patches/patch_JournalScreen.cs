@@ -32,12 +32,12 @@ public class patch_JournalScreen{
 		JournalGoRight ??= AssetLoaderHelper.LoadTexture("textures/journal_go_right");
 		JournalGoRightHover ??= AssetLoaderHelper.LoadTexture("textures/journal_go_right_hover");
 		
-		Vector2 size = new Vector2(1516f, 922f);
-		Vector2 corner = (Input.ScreenSize() / 2 - size / 2 + new Vector2(-2f, -11f)).Rounded();
+		Vector2 size = new(1516f, 922f);
+		Vector2 corner = (InputManager.screenSize / 2 - size / 2 + new Vector2(-2f, -11f)).Rounded();
 		Vector2 lPos = corner + new Vector2(84, 812f);
 		Vector2 rPos = corner + new Vector2(188, 812f);
-		bool inLeftBound = Bounds2.WithSize(lPos, JournalGoLeft.size.ToVector2()).Contains(Input.MousePos());
-		bool inRightBound = Bounds2.WithSize(rPos, JournalGoRight.size.ToVector2()).Contains(Input.MousePos());
+		bool inLeftBound = Bounds2.WithSize(lPos, JournalGoLeft.size.ToVector2()).Contains(InputManager.MousePos());
+		bool inRightBound = Bounds2.WithSize(rPos, JournalGoRight.size.ToVector2()).Contains(InputManager.MousePos());
 		TextureRenderer.Render(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
         TextureRenderer.Render(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
         UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, (TextAlignment)1);
@@ -45,7 +45,7 @@ public class patch_JournalScreen{
         //UI.DrawTexture(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
         //UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, TextAlignment.Centred);
 
-		if(Input.IsLeftClickPressed() && (inLeftBound || inRightBound)){
+		if(InputManager.IsClickPressed(MouseButtonType.LeftClick) && (inLeftBound || inRightBound)){
             Assets.sounds.click_button.method_28(1f);
 			
 			if(inLeftBound){
@@ -62,7 +62,7 @@ public class patch_JournalScreen{
 				currentJournal = next;
 			}
 
-			JournalVolumes.volumes = QuintessentialLoader.AllJournals[currentJournal].ToArray();
+			JournalVolumes.volumes = [.. QuintessentialLoader.AllJournals[currentJournal]];
             volumeCount = JournalVolumes.volumes.Length - 1;
 			UI.InstantCloseScreen();
 			UI.OpenScreen(new JournalScreen(false));

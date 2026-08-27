@@ -28,7 +28,7 @@ class patch_SolutionEditorPartsPanelSection {
             orig_AddTypeToToolbar(partToolbar, partType);
 
 		if(((patch_Puzzle)(object)puzzle).IsModdedPuzzle)
-			foreach(var pair in QApi.PanelParts.Where(pair => partType.Equals(pair.Right)))
-                AddTypeToToolbar(partToolbar, pair.Left);
+			foreach(var pair in QApi.PanelParts.Where(pair => partType.Equals(pair.Item2)))
+                AddTypeToToolbar(partToolbar, pair.Item1);
 	}
 }

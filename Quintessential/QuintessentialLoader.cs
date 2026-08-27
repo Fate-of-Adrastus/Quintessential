@@ -21,6 +21,7 @@ public class QuintessentialLoader
     public static QuintessentialMod CodeModById(string modId) => CodeMods.SingleOrDefault(mod => mod.ModId == modId, null);
     public static List<ModMeta> Mods = [];
     public static ModMeta ModById(string modId) => Mods.SingleOrDefault(mod => mod.ModId == modId, null);
+    public static bool IsModPresent(string modId) => Mods.Any(mod => mod.ModId == modId);
     public static List<string> ModContentDirectories = [];
     public static List<string> ModPuzzleDirectories = [];
 

@@ -18,8 +18,8 @@ abstract class patch_SolutionEditorBase : SolutionEditorBase
         IntermediatePartState class195 = GetIntermState(part, pos);
         PartRenderer renderer = new(class195.pos, class195.rotation, Editor.method_922());
         foreach (var r in QApi.PartRenderers)
-            if (r.Left(part))
-                r.Right(part, pos, this, renderer);
+            if (r.Item1(part))
+                r.Item2(part, pos, this, renderer);
     }
 
 

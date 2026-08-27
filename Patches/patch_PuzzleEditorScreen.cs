@@ -80,7 +80,7 @@ class patch_PuzzleEditorScreen {
 					istructionPos += new Vector2(3, -3);
 				}
 
-				bool hovered = Bounds2.WithSize(basePos, @base.size.ToVector2()).Contains(Input.MousePos());
+				bool hovered = Bounds2.WithSize(basePos, @base.size.ToVector2()).Contains(InputManager.MousePos());
 				Texture highlight = Assets.textures.solution_editor.program_panel.instruction_highlight;
 
 				TextureRenderer.Render(@base, basePos);
@@ -88,7 +88,7 @@ class patch_PuzzleEditorScreen {
 				if (hovered)
 					TextureRenderer.Render(highlight, istructionPos + new Vector2(2, 4));
 
-				if (hovered && Input.IsLeftClickPressed()) {
+				if (hovered && InputManager.IsClickPressed(MouseButtonType.LeftClick)) {
 					puzzle.permissionFlags ^= type.permissionCategory;
                     puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
                     //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
@@ -222,7 +222,7 @@ class patch_PuzzleEditorScreen {
                         var isElement = array[j].molecule.GetAtoms().Count == 1;
                         var fallbackPvw = "_(" + (isElement ? array[j].molecule.GetAtoms().Values.First().atomType.elementalName : "Unnamed") + ")_";
                         Bounds2 textArea = TextureRenderer.RenderText(array[j].molecule.displayName.GetOrDefault(Translations.Translate(fallbackPvw)), namePos, Assets.fonts.crimson_13, UI.TextColor, (TextAlignment)1, 1f, 0.6f, 236, 206, 0, new Color(), null, int.MaxValue, true, true);
-                        if (textArea.Contains(Input.MousePos()) && Input.IsLeftClickPressed() && !screenOpened) {
+                        if (textArea.Contains(InputManager.MousePos()) && InputManager.IsClickPressed(MouseButtonType.LeftClick) && !screenOpened) {
                             screenOpened = true;
                             int J = j;
                             GameLogic.instance.PushScreen(MessageBoxScreenEx.textbox(bounds, Translations.Translate("Please enter a new name for this " + (i == 0 ? "product:" : "reagent:")), array[j].molecule.displayName.HasValue() ? array[j].molecule.displayName.GetValue() : (isElement ? array[j].molecule.GetAtoms().Values.First().atomType.elementalName : ""), Translations.Translate("Rename " + (i == 0 ? "Product" : "Reagent")), (string s) => {
@@ -291,11 +291,11 @@ class patch_PuzzleEditorScreen {
 		const float scale = 0.7f;
 		Editor.RenderAtom(atom, atomPos, scale, 1, 1, 1, -21, 0, null, null, false);
 
-		if(Vector2.Distance(atomPos, Input.MousePos()) < (37 * scale) || labelBounds.Contains(Input.MousePos())){
+		if(Vector2.Distance(atomPos, InputManager.MousePos()) < (37 * scale) || labelBounds.Contains(InputManager.MousePos())){
 			Vector2 outlinePos = (atomPos - Assets.textures.molecule_editor.grid_circle_hover.size.ToVector2() * scale / 2).Rounded();
 			var tex = Assets.textures.molecule_editor.grid_circle_hover;
 			TextureRenderer.Render(tex, Color.White, outlinePos, tex.size.ToVector2() * 0.7f);
-			if(Input.IsLeftClickPressed()){
+			if(InputManager.IsClickPressed(MouseButtonType.LeftClick)){
 				Assets.sounds.click_button.method_28(1);
 				return true;
 			}
@@ -304,8 +304,8 @@ class patch_PuzzleEditorScreen {
 	}
 
 	private static bool DrawPuzzleButton(Puzzle p, Vector2 param_3552, int param_3025, bool param_3553, bool param_3554, bool param_4458, bool param_4459) {
-		bool shift = Input.IsShiftHeld();
-		string name = shift ? "ID: " + p.puzzleId.Replace("_", "\\_") : p.puzzleName;
+        bool shift = InputManager.IsModifierKeyHeld(ModifierKeyType.Shift);
+        string name = shift ? "ID: " + p.puzzleId.Replace("_", "\\_") : p.puzzleName;
 
 		// draw the button
 		ButtonDrawingLogic bdl = UIUtils.PuzzleButton(name, param_3552, param_3025, param_3553, param_3554);

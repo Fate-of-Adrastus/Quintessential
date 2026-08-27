@@ -28,9 +28,9 @@ public class NoticeScreen : IScreen {
 	}
 
 	public void RenderFrame(float deltaTime) {
-		UI.DrawText(Title, (Input.ScreenSize() / 2) + new Vector2(0, 120), UI.Title, Color.White, (TextAlignment)1);
-		UI.DrawText(Tooltip, Input.ScreenSize() / 2, UI.SubTitle, class_181.field_1718, (TextAlignment)1);
-		if(Input.IsSdlKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckBoxButton("OK", (Input.ScreenSize() / 2) + new Vector2(-130, -160)))
+		UI.DrawText(Title, (InputManager.screenSize / 2) + new Vector2(0, 120), UI.Title, Color.White, (TextAlignment)1);
+		UI.DrawText(Tooltip, InputManager.screenSize / 2, UI.SubTitle, class_181.field_1718, (TextAlignment)1);
+		if(InputManager.IsKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckBoxButton("OK", (InputManager.screenSize / 2) + new Vector2(-130, -160)))
 			UI.CloseScreen();
 	}
 }

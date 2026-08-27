@@ -25,9 +25,9 @@ public class patch_Solution
             {
                 foreach (var handler in QApi.SolutionPayloadHandler)
                 {
-                    if (p.Address.Equals(handler.Left))
+                    if (p.Address.Equals(handler.Item1))
                     {
-                        handler.Right(solution, p.Data);
+                        handler.Item2(solution, p.Data);
                     }
                 }
             }

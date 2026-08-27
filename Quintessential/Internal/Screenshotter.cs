@@ -10,7 +10,7 @@ internal class Screenshotter{
 
 	public static void CheckScreenshot(){
 		if(/*QuintessentialSettings.Instance.Screenshot.Pressed()*/ false){
-			var size = Input.ScreenSize();
+			var size = InputManager.screenSize;
 			SDL.SDL_Rect rect = new(){
 				w = (int)Math.Ceiling(size.X),
 				h = (int)Math.Ceiling(size.Y),

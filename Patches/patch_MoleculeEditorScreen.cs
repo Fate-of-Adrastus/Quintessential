@@ -30,7 +30,7 @@ class patch_MoleculeEditorScreen
     public static int currentPage = 0;
 
 
-    private bool ShowExtraUI => editing is { IsModdedPuzzle: true } && Quintessential.QApi.ModAtomTypes.Count > 0;
+    private bool ShowExtraUI => editing is { IsModdedPuzzle: true } && QApi.ModAtomTypes.Count > 0;
 
     //[PatchMoleculeEditorScreenAtomTray]
     public extern void orig_RenderFrame(float detalTime);
@@ -46,22 +46,22 @@ class patch_MoleculeEditorScreen
         // This was being instantiated before all other mods could call LoadContent, causing the list to be unpopulated.
         // This only occurred when Reductive Metallurgy Campaign is loaded for me, though I've had other mods on.
         // Thankfully it's only an integer division, but I should find a more sensible patch.
-        int LastPage = (Quintessential.QApi.ModAtomTypes.Count + 14) / 15;
+        int LastPage = (QApi.ModAtomTypes.Count + 14) / 15;
 
         Vector2 uiSize = new(1516f, 922f);
-        Vector2 corner = (Input.ScreenSize() / 2 - uiSize / 2 + new Vector2(-2f, -11f)).Rounded();
+        Vector2 corner = (InputManager.screenSize / 2 - uiSize / 2 + new Vector2(-2f, -11f)).Rounded();
         Vector2 lPos = corner + new Vector2(90f, 800f);
         Vector2 rPos = lPos;
         rPos.X += 350 - nextAtoms.size.X;
-        bool inLeftBound = Bounds2.WithSize(lPos, prevAtoms.size.ToVector2()).Contains(Input.MousePos());
-        bool inRightBound = Bounds2.WithSize(rPos, nextAtoms.size.ToVector2()).Contains(Input.MousePos());
+        bool inLeftBound = Bounds2.WithSize(lPos, prevAtoms.size.ToVector2()).Contains(InputManager.MousePos());
+        bool inRightBound = Bounds2.WithSize(rPos, nextAtoms.size.ToVector2()).Contains(InputManager.MousePos());
         TextureRenderer.Render(currentPage > 0 ? inLeftBound ? prevAtomsHover : prevAtoms : prevAtomsFaded, lPos);
         TextureRenderer.Render(currentPage < LastPage ? inRightBound ? nextAtomsHover : nextAtoms : nextAtomsFaded, rPos);
         UI.DrawText($"{currentPage + 1}/{LastPage + 1}", corner + new Vector2(262f, 800f), UI.Text, UI.TextColor, (TextAlignment)0);
         //UI.DrawTexture(currentPage > 0 ? inLeftBound ? prevAtomsHover : prevAtoms : prevAtomsFaded, lPos);
         //UI.DrawTexture(currentPage < LastPage ? inRightBound ? nextAtomsHover : nextAtoms : nextAtomsFaded, rPos);
         //UI.DrawText($"{currentPage + 1}/{LastPage + 1}", corner + new Vector2(262f, 800f), UI.Text, UI.TextColor, TextAlignment.Centred);
-        if (Input.IsLeftClickPressed() && (inLeftBound || inRightBound))
+        if (InputManager.IsClickPressed(MouseButtonType.LeftClick) && (inLeftBound || inRightBound))
         {
             Assets.sounds.click_button.method_28(1f);
 
@@ -76,10 +76,6 @@ class patch_MoleculeEditorScreen
             }
         }
     }
-
-    //[MonoModIgnore]
-    //[PatchMoleculeEditorScreenMoleculeError]
-    //public extern void MoleculeError(); 
 
     [MonoMod.MonoModIgnore]
     private extern void AtomTypeSelector(Vector2 pos, AtomType type, bool b);
@@ -119,10 +115,10 @@ class patch_MoleculeEditorScreen
                 this.AtomTypeSelector(pos, atoms[index], true);
                 if (showExtra)
                 {
-                    bool hovering = Bounds2.WithSize(pos - new Vector2(30, 30), new Vector2(61, 61)).Contains(Input.MousePos());
+                    bool hovering = Bounds2.WithSize(pos - new Vector2(30, 30), new Vector2(61, 61)).Contains(InputManager.MousePos());
                     if (hovering)
                     {
-                        TextureRenderer.RenderText(atoms[index].defaultName, pos + new Vector2(0, -40), Assets.fonts.crimson_9_75, UI.TextColor, (TextAlignment)0, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
+                        TextureRenderer.RenderText(atoms[index].defaultName, pos + new Vector2(0, -40), Assets.fonts.crimson_9_75, UI.TextColor, TextAlignment.Left, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
                         //UI.DrawText(atoms[index].defaultName, pos + new Vector2(0, -40), Assets.fonts.crimson_9_75, UI.TextColor, (TextAlignment)0);
                     }
                 }

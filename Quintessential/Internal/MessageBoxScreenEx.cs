@@ -94,7 +94,7 @@ internal sealed class MessageBoxScreenEx : IScreen{
 			Assets.sounds.click_button.method_28(1f);
 		}
 
-		if(bounds.Contains(Input.MousePos()) || !Input.IsLeftClickPressed())
+		if(bounds.Contains(InputManager.MousePos()) || !InputManager.IsClickPressed(MouseButtonType.LeftClick))
 			return;
 		onCancel();
 		UI.CloseScreen();

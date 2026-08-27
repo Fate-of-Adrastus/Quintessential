@@ -6,11 +6,11 @@ namespace Quintessential;
 
 public static class QApi {
 
-	public static readonly List<Pair<Predicate<Part>, PartRendererDelegate>> PartRenderers = [];
-	public static readonly List<Pair<PartType, PartType>> PanelParts = [];
+	public static readonly List<Tuple<Predicate<Part>, PartRendererDelegate>> PartRenderers = [];
+	public static readonly List<Tuple<PartType, PartType>> PanelParts = [];
 	public static readonly List<AtomType> ModAtomTypes = [];
 	public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
-	public static readonly List<Pair<string, SolutionPayloadHandler>> SolutionPayloadHandler = [];
+	public static readonly List<Tuple<string, SolutionPayloadHandler>> SolutionPayloadHandler = [];
 	public static readonly List<PuzzleOption> PuzzleOptions = [];
 
 	/// <summary>
@@ -34,7 +34,7 @@ public static class QApi {
 		else if(type.Equals(after))
 			Logger.Log("Tried to add a part to the part panel after itself (circular reference), not adding.");
 		else
-			PanelParts.Add(new Pair<PartType, PartType>(type, after));
+			PanelParts.Add(new Tuple<PartType, PartType>(type, after));
 	}
 
 	/// <summary>
@@ -43,7 +43,7 @@ public static class QApi {
 	/// <param name="renderer">The PartRenderer to be added and displayed.</param>
 	/// <param name="typeChecker">A predicate that determines which parts the renderer should try to display.</param>
 	public static void AddPartTypesRenderer(this QuintessentialMod mod, PartRendererDelegate renderer, Predicate<Part> typeChecker) {
-		PartRenderers.Add(new Pair<Predicate<Part>, PartRendererDelegate>(typeChecker, renderer));
+		PartRenderers.Add(new Tuple<Predicate<Part>, PartRendererDelegate>(typeChecker, renderer));
 	}
 
 	/// <summary>
