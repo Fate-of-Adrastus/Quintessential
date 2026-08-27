@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Quintessential;
 
-[JsonConverter(typeof(LocalisationLayerConverter))]
+[JsonConverter(typeof(LocalisationLayerJsonConverter))]
 public class LocalisationLayer {
     public static readonly LocalisationLayer GlobalLayer = new();
     public static Language CurrentFileLanguage;

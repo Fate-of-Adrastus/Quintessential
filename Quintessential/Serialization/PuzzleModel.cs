@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Quintessential.Serialization;
 [DataContract]
@@ -14,6 +14,7 @@ public class PuzzleModel {
     [DataMember] public List<PuzzleIoM> Inputs { get; set; } = [];
     [DataMember] public List<PuzzleIoM> Outputs { get; set; } = [];
     [DataMember(EmitDefaultValue = false)] public int OutputMultiplier { get; set; } = 1;
+	[JsonConverter(typeof(FlagEnumJsonConverter<PuzzlePermissions>))]
     [DataMember] public PuzzlePermissions PermissionFlags { get; set; }
     [DataMember] public List<string> CustomPermissions { get; set; } = [];
     [DataMember(EmitDefaultValue = false)] public HashSet<HexIndexM> Highlights { get; set; } = [];
@@ -27,7 +28,7 @@ public class PuzzleModel {
 			PermissionFlags = puzzle.permissionFlags,
 			Name = puzzle.puzzleName?.GetEnglish() ?? "Unnamed",
 			Author = puzzle.journalAuthor.HasValue() ? puzzle.journalAuthor.GetValue() : "",
-			CustomPermissions = [..((patch_Puzzle)(object)puzzle).CustomPermissions],
+			CustomPermissions = [..((patch_Puzzle)(object)puzzle).CustomPermissions ?? []],
 			OutputMultiplier = puzzle.outputMultiplier
         };
 		foreach(var @in in puzzle.inputs)
