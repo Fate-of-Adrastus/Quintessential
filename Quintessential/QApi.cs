@@ -103,9 +103,10 @@ public static class QApi {
 	/// <param name="id">The ID of the permission that is used during checks and saved to puzzle files.</param>
 	/// <param name="displayName">The name of the permission that is displayed in the UI, e.g. "Glyphs of Quintessence".</param>
 	/// <param name="sectionName">The name of the section that the permission will appear under.</param>
-	public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName, string sectionName = ""){
+	public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName = "", string sectionName = ""){
+		if (displayName == "") displayName = id;
 		var sectionNameLoc = Translations.Translate(
-			sectionName == "" ? (QuintessentialAsMod.Instance.ModId + ".permission_sections.default") : (mod.ModId + ".permission_sections." + sectionName)
+            mod.ModId + ".permission_sections" + (sectionName == "" ? "" : "." + sectionName)
 		);
 		var displayNameLoc = Translations.Translate( mod.ModId + ".permissions." + displayName );
 

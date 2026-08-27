@@ -10,11 +10,13 @@ public static class DataSerializer {
     private static bool MultilineFormat;
 
     private static readonly JsonSerializerOptions compactOptions = new() {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         AllowTrailingCommas = true,
         WriteIndented = false,
     };
     private static readonly JsonSerializerOptions multilineOptions = new() {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         AllowTrailingCommas = true,
         WriteIndented = true,

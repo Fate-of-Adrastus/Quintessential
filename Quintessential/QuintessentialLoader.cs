@@ -120,7 +120,7 @@ public class QuintessentialLoader
                     mod.Settings = settings;
                     mod.ApplySettings();
                 } else
-                    Logger.Log("Loaded null settings for mod " + mod.Meta.Name);
+                    Logger.Log("Loaded null settings for mod " + Translations.Translate(mod.Meta.ModId));
             }
             mod.Settings ??= mod.SettingsType.GetConstructor([]).Invoke([]);
         }
@@ -454,7 +454,7 @@ public class QuintessentialLoader
         foreach (AtomType atomType in AtomTypes.atoms)
         {
             RenderTargetHandle v = RenderAtomToTarget(atomType);
-            Renderer.PngFromTexture(v.GetTarget().renderedTexture).Save(Path.Combine(outDir, ((patch_AtomType)(object)atomType).QuintAtomType.ToString().Replace(":", "_") + ".png"));
+            Renderer.PngFromTexture(v.GetTarget().renderedTexture).Save(Path.Combine(outDir, ((patch_AtomType)(object)atomType).QuintAtomType.ToString().Replace(":", "__") + ".png"));
         }
         Logger.Log($"Dumped atom sprites to {outDir}");
         UI.OpenScreen(new NoticeScreen("Sprite Dumping", $"Saved atom sprites to \"{outDir.Replace('\\', '/')}\""));

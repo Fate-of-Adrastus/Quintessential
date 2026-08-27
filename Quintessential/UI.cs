@@ -123,12 +123,12 @@ public static class UI {
 	#region Texture control methods
 
 	public static Texture AssignOffset(Texture tex, Vector2 offset){
-		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("solution_editor6")[tex] = offset;
+		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("offsets")[tex] = offset;
 		return tex;
 	}
 	
 	public static Texture AssignCentre(Texture tex, Vector2 offset){
-		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("solution_editor7")[tex] = offset;
+		new DynamicData(typeof(TextureOffsets)).Get<Dictionary<Texture, Vector2>>("scales")[tex] = offset;
 		return tex;
 	}
 

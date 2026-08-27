@@ -1,40 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 
 namespace Quintessential.Serialization;
 [DataContract]
 public class PuzzleModel {
 
-    // display name, internal name, journal author
-    [DataMember]
-    public string Name, ID, Author;
-    // the inputs
-    [DataMember]
-    public List<PuzzleIoM> Inputs = new();
-    // the outputs
-    [DataMember]
-    public List<PuzzleIoM> Outputs = new();
-    // output multiplier
-    [DataMember(EmitDefaultValue = false)]
-    public int OutputMultiplier = 1;
-    // vanilla permission info
-    [DataMember]
-    public PuzzlePermissions PermissionFlags;
-    // modded permisisons, can be used for parts, instructions, or anything else
-    [DataMember]
-    public HashSet<Identifier> CustomPermissions = [];
-    // set of highlighted hexes
-    [DataMember(EmitDefaultValue = false)]
-    public HashSet<HexIndexM> Highlights = new();
-    // production-related stuff, or null for non-production puzzles
-    [DataMember(EmitDefaultValue = false)]
-    public ProductionInfoM ProductionInfo = null;
-    [DataMember(EmitDefaultValue = false)]
-    public List<ConduitM> Conduits = null;
-    [DataMember(EmitDefaultValue = false)]
-    public PayloadsM Payloads = null;
+    [DataMember] public string Name { get; set; }
+    [DataMember] public string ID { get; set; }
+    [DataMember] public string Author { get; set; }
+    [DataMember] public List<PuzzleIoM> Inputs { get; set; } = [];
+    [DataMember] public List<PuzzleIoM> Outputs { get; set; } = [];
+    [DataMember(EmitDefaultValue = false)] public int OutputMultiplier { get; set; } = 1;
+    [DataMember] public PuzzlePermissions PermissionFlags { get; set; }
+    [DataMember] public List<string> CustomPermissions { get; set; } = [];
+    [DataMember(EmitDefaultValue = false)] public HashSet<HexIndexM> Highlights { get; set; } = [];
+    [DataMember(EmitDefaultValue = false)] public ProductionInfoM ProductionInfo { get; set; } = null;
+    [DataMember(EmitDefaultValue = false)] public List<ConduitM> Conduits { get; set; } = null;
+    [DataMember(EmitDefaultValue = false)] public PayloadsM Payloads { get; set; } = null;
 
 	public static PuzzleModel FromPuzzle(Puzzle puzzle) {
 		PuzzleModel model = new(){
@@ -42,30 +27,26 @@ public class PuzzleModel {
 			PermissionFlags = puzzle.permissionFlags,
 			Name = puzzle.puzzleName?.GetEnglish() ?? "Unnamed",
 			Author = puzzle.journalAuthor.HasValue() ? puzzle.journalAuthor.GetValue() : "",
-			CustomPermissions = ((patch_Puzzle)(object)puzzle).CustomPermissions,
+			CustomPermissions = [..((patch_Puzzle)(object)puzzle).CustomPermissions],
 			OutputMultiplier = puzzle.outputMultiplier
         };
 		foreach(var @in in puzzle.inputs)
-			model.Inputs.Add(new PuzzleIoM(@in));
+			model.Inputs.Add(@in);
 		foreach(var @out in puzzle.outputs)
-			model.Outputs.Add(new PuzzleIoM(@out));
+			model.Outputs.Add(@out);
 		foreach(var item in puzzle.highlights)
-			model.Highlights.Add(new HexIndexM(item));
+			model.Highlights.Add(item);
 		if(puzzle.productionInfo.HasValue())
 			// if there's production cabinet info, use that
-			model.ProductionInfo = new ProductionInfoM(puzzle.productionInfo.GetValue());
+			model.ProductionInfo = puzzle.productionInfo.GetValue();
 		else if (((patch_Puzzle)(object)puzzle).EngineConduits.HasValue())
 		{
 			// otherwise, populate the engine conduits
-			model.Conduits = new();
-			foreach (var conduit in ((patch_Puzzle)(object)puzzle).EngineConduits.GetValue())
-			{
-				model.Conduits.Add(new ConduitM(conduit));
-			}
+			model.Conduits = [.. ((patch_Puzzle)(object)puzzle).EngineConduits.GetValue()];
 		}
 		if (((patch_Puzzle)(object)puzzle).Payloads.HasValue())
 		{
-			model.Payloads = new PayloadsM(((patch_Puzzle)(object)puzzle).Payloads.GetValue());
+			model.Payloads = ((patch_Puzzle)(object)puzzle).Payloads.GetValue();
 		}
 
 		return model;
@@ -75,17 +56,17 @@ public class PuzzleModel {
 		Puzzle ret = new(){
             puzzleId = model.ID,
             puzzleName = Translations.Translate(model.Name),
-            inputs = model.Inputs.Select(k => k.FromModel()).ToArray(),
-            outputs = model.Outputs.Select(k => k.FromModel()).ToArray(),
+            inputs = [.. model.Inputs],
+            outputs = [.. model.Outputs],
             permissionFlags = model.PermissionFlags,
             journalAuthor = model.Author.Equals("") ? new Maybe<string>(false, null) : model.Author,
-            highlights = model.Highlights.Select(k => k.FromModel()).ToArray(),
+            highlights = [.. model.Highlights],
             outputMultiplier = model.OutputMultiplier
 		};
 		if(model.ProductionInfo != null) {
 			if (model.ProductionInfo.Chambers.Count > 0)
 			{
-				ret.productionInfo = model.ProductionInfo.FromModel();
+				ret.productionInfo = (ProductionInfo)model.ProductionInfo;
 				// Calculate bounds
 				ret.CalculateCabinetBounds();
 			}
@@ -93,12 +74,12 @@ public class PuzzleModel {
 		else if (model.Conduits != null)
 		{
 			// if it's not a cabinet, use these
-			((patch_Puzzle)(object)ret).EngineConduits = model.Conduits.Select(c => c.FromModel()).ToArray();
+			((patch_Puzzle)(object)ret).EngineConduits = (PlacedConduit[])[.. model.Conduits];
 		}
-		((patch_Puzzle)(object)ret).CustomPermissions = model.CustomPermissions;
+		((patch_Puzzle)(object)ret).CustomPermissions = [..model.CustomPermissions];
 
 		if (model.Payloads != null) {
-			((patch_Puzzle)(object)ret).Payloads = model.Payloads.FromModel();
+			((patch_Puzzle)(object)ret).Payloads = (Payloads)model.Payloads;
 		}
 
 		return ret;
@@ -106,23 +87,21 @@ public class PuzzleModel {
 
     [DataContract]
     public class HexIndexM {
-        [DataMember]
-        public string Pos;
+        [DataMember] public string Pos { get; set; }
 
-		public HexIndexM(HexIndex ind) {
-			Pos = ind.Q + "," + ind.R;
+        public HexIndexM() { }
+        public static implicit operator HexIndexM (HexIndex ind) {
+			return new() {
+				Pos = ind.Q + "," + ind.R
+			};
 		}
-
-		public HexIndexM(){}
-
-		public HexIndex FromModel() {
-			return new(Q(), R());
+        public static implicit operator HexIndex (HexIndexM ind) {
+			return new(ind.Q(), ind.R());
 		}
 
 		public int Q() {
 			return int.Parse(Pos.Split(',')[0]);
 		}
-
 		public int R() {
 			return int.Parse(Pos.Split(',')[1]);
 		}
@@ -130,107 +109,96 @@ public class PuzzleModel {
 
     [DataContract]
     public class PuzzleIoM {
-        [DataMember]
-        public MoleculeM Molecule;
-        [DataMember(EmitDefaultValue = false)]
-        public int AmountOverride = 0;
+        [DataMember] public MoleculeM Molecule { get; set; }
+        [DataMember(EmitDefaultValue = false)] public int AmountOverride { get; set; } = 0;
 
-		public PuzzleIoM(PuzzleInputOutput io) {
-			Molecule = new MoleculeM(io.molecule);
-			AmountOverride = ((patch_PuzzleInputOutput)(object)io).AmountOverride;
+        public PuzzleIoM() { }
+        public static implicit operator PuzzleIoM (PuzzleInputOutput io) {
+			return new() {
+				Molecule = io.molecule,
+				AmountOverride = ((patch_PuzzleInputOutput)(object)io).AmountOverride
+			};
 		}
-
-		public PuzzleIoM(){}
-
-		public PuzzleInputOutput FromModel(){
-			PuzzleInputOutput io = new PuzzleInputOutput(Molecule.FromModel());
-			((patch_PuzzleInputOutput)(object)(io)).AmountOverride = AmountOverride;
-			return io;
+        public static implicit operator PuzzleInputOutput (PuzzleIoM io) {
+			PuzzleInputOutput _io = new(io.Molecule);
+			((patch_PuzzleInputOutput)(object)_io).AmountOverride = io.AmountOverride;
+			return _io;
 		}
 	}
 
     [DataContract]
     public class MoleculeM {
-        [DataMember]
-        public List<AtomM> Atoms = new();
-        [DataMember]
-        public List<BondM> Bonds = new();
-        [DataMember]
-        public string Name = "";
+        [DataMember] public List<AtomM> Atoms { get; set; } = [];
+        [DataMember] public List<BondM> Bonds { get; set; } = [];
+        [DataMember] public string Name { get; set; } = "";
 
-		public MoleculeM(Molecule mol) {
-			// Preserve the name
-			Name = mol.displayName.GetOrDefault(null)?.GetEnglish() ?? "";
-            // Clean molecule
-            //mol = MoleculeEditorScreen.ImportRepeatingMolecules(mol); What does this line do??? ImportRepeatingMolecules was only present in previous possible bug!!!
-            foreach (var atom in mol.GetAtoms())
-				Atoms.Add(new AtomM(atom.Value, new HexIndexM(atom.Key)));
-			foreach(var bond in mol.GetBonds())
-				Bonds.Add(new BondM(bond));
+        public MoleculeM() { }
+        public static implicit operator MoleculeM (Molecule mol) {
+            MoleculeM toReturn = new() {
+				Name = mol.displayName.GetOrDefault(null)?.GetEnglish() ?? "", // TODO find a way to deal with this that is better for localisation
+			};
+			foreach (var atom in mol.GetMonomer().GetAtoms())
+                toReturn.Atoms.Add(new AtomM(atom.Value, atom.Key));
+			foreach(var bond in mol.GetMonomer().GetBonds())
+                toReturn.Bonds.Add(bond);
+			return toReturn;
 		}
-
-		public MoleculeM(){}
-
-		public Molecule FromModel() {
-			Molecule ret = new();
-			foreach(var item in Atoms)
-				ret.AddAtom(item.FromModel(), item.Position.FromModel());
-			foreach(var item in Bonds)
-				ret.AddBond((BondTypeEnum)item.BondBits(), item.A.FromModel(), item.B.FromModel());
-			if(!Name.Equals(""))
-				ret.displayName = Translations.Translate(Name);
-			//return MoleculeEditorScreen.ExportRepeatingMolecules(ret, class_181.field_4474); Same as previous removed to run tests!!!!
-			return ret;
+        public static implicit operator Molecule ( MoleculeM mol) {
+			Molecule monomer = new();
+			foreach(var item in mol.Atoms)
+                monomer.AddAtom(item, item.Position);
+			foreach(var item in mol.Bonds)
+                monomer.AddBond((BondTypeEnum)item.BondBits(), item.A, item.B);
+			Molecule toReturn = Molecule.RepeatMonomer(monomer);
+			if(!mol.Name.Equals(""))
+                toReturn.displayName = Translations.Translate(mol.Name);
+			return toReturn;
         }
     }
 
     [DataContract]
     public class AtomM {
-        [DataMember]
-        public string AtomType;
-        [DataMember]
-        public HexIndexM Position;
+        [DataMember] public string AtomType { get; set; }
+        [DataMember] public HexIndexM Position { get; set; }
 
-		public AtomM(Atom atom, HexIndexM hex) {
+        public AtomM() { }
+        public AtomM(Atom atom, HexIndexM hex) {
 			AtomType = ((patch_AtomType)(object)atom.atomType).QuintAtomType;
 			Position = hex;
 		}
-
-		public AtomM(){}
-
-		public Atom FromModel() {
-			if(AtomType == null)
+        public static implicit operator Atom (AtomM model) {
+			if(model.AtomType == null)
 				throw new NullReferenceException("Missing atom type!");
 
 			return new Atom(
-				AtomTypes.atoms.FirstOrDefault(k => AtomType.Equals(((patch_AtomType)(object)k).QuintAtomType))
-				?? throw new Exception($"Atom type \"{AtomType}\" does not exist!")
+				AtomTypes.atoms.FirstOrDefault(k => model.AtomType.Equals(((patch_AtomType)(object)k).QuintAtomType))
+				?? throw new Exception($"Atom type \"{model.AtomType}\" does not exist!")
 			);
 		}
 	}
 
     [DataContract]
     public class BondM {
-        [DataMember]
-        public HexIndexM A, B;
-        [DataMember]
-        public HashSet<string> BondTypes = new();
+		[DataMember] public HexIndexM A { get; set; }
+        [DataMember] public HexIndexM B { get; set; }
+        [DataMember] public HashSet<string> BondTypes { get; set; } = [];
 
-		public BondM(Bond bond) {
-			A = new HexIndexM(bond.hexPos1);
-			B = new HexIndexM(bond.hexPos2);
+        public BondM() { }
+        public static implicit operator BondM(Bond bond) {
+			BondM toReturn = new() {
+				A = bond.hexPos1,
+				B = bond.hexPos2,
+			};
 			if((bond.type & BondTypeEnum.Standard) == BondTypeEnum.Standard)
-				BondTypes.Add("standard");
+                toReturn.BondTypes.Add("standard");
 			if((bond.type & BondTypeEnum.Prisma0) == BondTypeEnum.Prisma0)
-				BondTypes.Add("triplex_0");
+                toReturn.BondTypes.Add("triplex_0");
 			if((bond.type & BondTypeEnum.Prisma1) == BondTypeEnum.Prisma1)
-				BondTypes.Add("triplex_1");
+                toReturn.BondTypes.Add("triplex_1");
 			if((bond.type & BondTypeEnum.Prisma2) == BondTypeEnum.Prisma2)
-				BondTypes.Add("triplex_2");
+                toReturn.BondTypes.Add("triplex_2");
+			return toReturn;
 		}
-
-		public BondM(){}
-
 		public byte BondBits() {
 			byte bits = 0;
 			if(BondTypes.Contains("standard"))
@@ -247,110 +215,102 @@ public class PuzzleModel {
 
     [DataContract]
     public class ProductionInfoM {
-        [DataMember]
-        public List<ChamberM> Chambers = new();
-        [DataMember]
-        public List<ConduitM> Conduits = new();
-        [DataMember]
-        public List<VialM> Vials = new();
-        [DataMember]
-        public bool Isolation = false, ShrinkLeft = false, ShrinkRight = false;
+        [DataMember] public List<ChamberM> Chambers { get; set; } = [];
+        [DataMember] public List<ConduitM> Conduits { get; set; } = [];
+        [DataMember] public List<VialM> Vials { get; set; } = [];
+		[DataMember] public bool Isolation { get; set; } = false;
+		[DataMember] public bool ShrinkLeft { get; set; } = false;
+		[DataMember] public bool ShrinkRight { get; set; } = false;
 
-		public ProductionInfoM(ProductionInfo info) {
-			foreach(var chamber in info.chambers)
-				Chambers.Add(new ChamberM(chamber));
-			foreach(PlacedConduit conduit in info.conduits)
-				Conduits.Add(new ConduitM(conduit));
-			foreach(PlacedVial vial in info.vials)
-				Vials.Add(new VialM(vial));
-			ShrinkLeft = info.tightLeftBound;
-			ShrinkRight = info.tightRightBound;
-			Isolation = info.requireIsolation;
-		}
-
-		public ProductionInfoM(){}
-
-		public ProductionInfo FromModel() {
-			ProductionInfo ret = new(){
-                chambers = Chambers.Select(k => k.FromModel()).ToArray(),
-                conduits = Conduits.Select(k => k.FromModel()).ToArray(),
-                vials = Vials.Select(k => k.FromModel()).ToArray(),
-                tightLeftBound = ShrinkLeft,
-                tightRightBound = ShrinkRight,
-                requireIsolation = Isolation
+        public ProductionInfoM() { }
+        public static implicit operator ProductionInfoM (ProductionInfo info) {
+            ProductionInfoM toReturn = new() {
+				ShrinkLeft = info.tightLeftBound,
+				ShrinkRight = info.tightRightBound,
+				Isolation = info.requireIsolation
 			};
-			return ret;
+            foreach (PlacedChamber chamber in info.chambers)
+                toReturn.Chambers.Add(chamber);
+            foreach (PlacedConduit conduit in info.conduits)
+                toReturn.Conduits.Add(conduit);
+            foreach (PlacedVial vial in info.vials)
+                toReturn.Vials.Add(vial);
+			return toReturn;
+        }
+        public static implicit operator ProductionInfo (ProductionInfoM info) {
+            return new(){
+                chambers = [.. info.Chambers],
+                conduits = [.. info.Conduits],
+                vials = [.. info.Vials],
+                tightLeftBound = info.ShrinkLeft,
+                tightRightBound = info.ShrinkRight,
+                requireIsolation = info.Isolation
+			};
 		}
 	}
 
     [DataContract]
     public class ChamberM {
-        [DataMember]
-        public string ChamberType;
-        [DataMember]
-        public HexIndexM Position;
+        [DataMember] public string ChamberType { get; set; }
+        [DataMember] public HexIndexM Position { get; set; }
 
-		public ChamberM(PlacedChamber chamber) {
-			ChamberType = chamber.chamber.name;
-			Position = new HexIndexM(chamber.hexPos);
-		}
-
-		public ChamberM(){}
-
-		public PlacedChamber FromModel() {
-			return new(Position.Q(), Position.R(), Puzzles.prodChambers.First(k => k.name.Equals(ChamberType)));
+        public ChamberM() { }
+        public static implicit operator ChamberM (PlacedChamber chamber) {
+			return new() {
+				ChamberType = chamber.chamber.name,
+				Position = chamber.hexPos
+			};
+        }
+        public static implicit operator PlacedChamber (ChamberM chamber) {
+			return new(chamber.Position.Q(), chamber.Position.R(), Puzzles.prodChambers.First(k => k.name.Equals(chamber.ChamberType)));
 		}
 	}
 
     [DataContract]
     public class ConduitM {
-        [DataMember]
-        public HexIndexM PosA, PosB;
-        [DataMember]
-        public List<HexIndexM> Shape = new();
+        [DataMember] public HexIndexM PosA { get; set; }
+        [DataMember] public HexIndexM PosB { get; set; }
+        [DataMember] public List<HexIndexM> Shape { get; set; } = [];
 
-		public ConduitM(){}
-
-		public ConduitM(PlacedConduit c) {
+        public ConduitM() { }
+        public static implicit operator ConduitM (PlacedConduit c) {
+			ConduitM toReturn = new() {
+                PosA = c.conduitTransforms[0].translation,
+                PosB = c.conduitTransforms[1].translation
+            };
 			foreach(HexIndex hex in c.conduitHexes)
-				Shape.Add(new HexIndexM(hex));
-			// TODO: when are there ever more than two?
-			PosA = new HexIndexM(c.conduitTransforms[0].translation);
-			PosB = new HexIndexM(c.conduitTransforms[1].translation);
+                toReturn.Shape.Add(hex);
+			return toReturn;
 		}
-
-		public PlacedConduit FromModel() {
-			return new PlacedConduit(PosA.Q(), PosA.R(), PosB.Q(), PosB.R(), Shape.Select(k => k.FromModel()).ToArray());
+        public static implicit operator PlacedConduit (ConduitM c) {
+			return new PlacedConduit(c.PosA.Q(), c.PosA.R(), c.PosB.Q(), c.PosB.R(), [..c.Shape]);
 		}
 	}
 
     [DataContract]
     public class VialM {
-        [DataMember]
-        public HexIndexM Position;
-        [DataMember]
-        public bool Top;
-        [DataMember]
-        public List<Tuple<string, string>> Sprites = new();
+        [DataMember] public HexIndexM Position { get; set; }
+        [DataMember] public bool Top { get; set; }
+        [DataMember] public List<Tuple<string, string>> Sprites { get; set; } = [];
 
-		public VialM(){}
-
-		public VialM(PlacedVial v) {
-			Position = new HexIndexM(v.hexPos);
-			Top = v.isTopConnected;
+        public VialM() { }
+        public static implicit operator VialM(PlacedVial v) {
+			VialM toReturn = new() {
+				Position = v.hexPos,
+				Top = v.isTopConnected
+			};
 			foreach(Tuple<Texture, Texture> sprites in v.textures)
-				Sprites.Add(new(CleanName(sprites.Item1), CleanName(sprites.Item2)));
+                toReturn.Sprites.Add(new(CleanName(sprites.Item1), CleanName(sprites.Item2)));
+			return toReturn;
 		}
-
-		public PlacedVial FromModel() {
-			return new PlacedVial(Position.Q(), Position.R(), Top,
-				Sprites.Select(xs => Tuple.Create(AssetLoaderHelper.LoadTexture(xs.Item1), AssetLoaderHelper.LoadTexture(xs.Item2))).ToArray());
+        public static implicit operator PlacedVial (VialM v) {
+			return new PlacedVial(v.Position.Q(), v.Position.R(), v.Top,
+                [.. v.Sprites.Select(xs => Tuple.Create(AssetLoaderHelper.LoadTexture(xs.Item1), AssetLoaderHelper.LoadTexture(xs.Item2)))]);
 		}
-
 		private static string CleanName(Texture texture){
 			string name = texture.sourceFile.GetValue();
 			if(name.StartsWith("Content/") || name.StartsWith("Content\\"))
-				name = name.Substring("Content/".Length);
+				name = name["Content/".Length..];
 			return name;
 		}
 	}
@@ -361,26 +321,23 @@ public class PuzzleModel {
         // change puzzle behaviour at runtime
         //public List<PayloadM> PuzzleInitialization = new();
         // changes new solutions
-        [DataMember]
-        public List<PayloadM> SolutionInitialization = new();
+        [DataMember] public List<PayloadM> SolutionInitialization { get; set; } = [];
 
-		public PayloadsM(){}
-
-		public PayloadsM(Payloads p)
-		{
+        public PayloadsM() { }
+        public static implicit operator PayloadsM (Payloads p) {
 			/*
 			foreach (Payloads.Payload pl in p.PuzzleInitialization)
 			{
 				PuzzleInitialization.Add(new(pl));
 			}
 			*/
-			foreach (Payloads.Payload pl in p.SolutionInitialization)
-			{
-				SolutionInitialization.Add(new(pl));
+			PayloadsM toReturn = new();
+			foreach (Payloads.Payload pl in p.SolutionInitialization) {
+                toReturn.SolutionInitialization.Add(pl);
 			}
+			return toReturn;
 		}
-
-        public Payloads FromModel()
+        public static implicit operator Payloads (PayloadsM p)
         {
             Payloads ret = new();
 			/*
@@ -389,35 +346,30 @@ public class PuzzleModel {
 				ret.PuzzleInitialization.Add(pl.FromModel());
 			}
 			*/
-			foreach (PayloadM pl in SolutionInitialization)
-			{
-				ret.SolutionInitialization.Add(pl.FromModel());
+			foreach (PayloadM pl in p.SolutionInitialization) {
+				ret.SolutionInitialization.Add(pl);
 			}
-
 			return ret;
         }
     }
     [DataContract]
     public class PayloadM {
-        [DataMember]
-        public string Address;
-        [DataMember]
-        public string Data;
+        [DataMember] public string Address { get; set; }
+        [DataMember] public string Data { get; set; }
 
-		public PayloadM(){}
-        public PayloadM(Payloads.Payload pl)
-        {
-			Address = pl.Address;
-			Data = pl.Data;
+        public PayloadM() { }
+        public static implicit operator PayloadM (Payloads.Payload pl) {
+			return new() {
+				Address = pl.Address,
+				Data = pl.Data,
+			};
         }
-
-        public Payloads.Payload FromModel()
-        {
-			if (!QApi.SolutionPayloadHandler.Exists(sph => sph.Item1 == Address))
+        public static implicit operator Payloads.Payload (PayloadM pl) {
+			if (!QApi.SolutionPayloadHandler.Exists(sph => sph.Item1 == pl.Address))
 			{
-	           throw new Exception("No payload handler for address \"" + Address + "\"");
+	           throw new Exception("No payload handler for address \"" + pl.Address + "\"");
 			}
-			return new(Address, Data);
+			return new(pl.Address, pl.Data);
         }
     }
 }

@@ -150,8 +150,8 @@ class ModsScreen : IScreen {
 		mod.ApplySettings();
 		ModMeta meta = mod.Meta;
 		object settings = mod.Settings;
-		string name = meta.Name;
-		string path = Path.Combine(QuintessentialLoader.PathModSaves, name + ".yaml");
+		string id = meta.ModId;
+		string path = Path.Combine(QuintessentialLoader.PathModSaves, id + ".yaml");
 		if(!Directory.Exists(QuintessentialLoader.PathModSaves))
 			Directory.CreateDirectory(QuintessentialLoader.PathModSaves);
 

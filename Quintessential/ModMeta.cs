@@ -20,16 +20,8 @@ public class ModMeta {
     public Dictionary<string, VersionRange> Dependencies { get; set; } = [];
     public string[] Conflicts { get; set; } = [];
 
-
-    [JsonIgnore] public string Name { get; set; } = "Missing.";
-    [JsonIgnore] public string Title { get; set; } = "Missing.";
-    [JsonIgnore] public string Desc { get; set; } = "Missing.";
-
-
-    [JsonIgnore]
-    public string PathToDirectory;
-    [JsonIgnore]
-	public Texture IconCache = null;
+    [JsonIgnore] public string PathToDirectory;
+    [JsonIgnore] public Texture IconCache = null;
 }
 
 [JsonConverter(typeof(VersionRangeJsonConverter))]
