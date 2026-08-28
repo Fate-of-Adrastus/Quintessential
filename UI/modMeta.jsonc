@@ -1,11 +1,13 @@
 {
-  "mod_id": "quintessential_core",
+  "mod_id": "quintessential_ui",
   "version": "0.5.6",
   "mod_page_url": "https://github.com/QuintessentialOM/Quintessential",
-  "dll": "Quintessential.dll",
+  "dll": "QuintessentialUI.dll",
   "authors": [],
   "icon": "",
   "mappings": "",
-  "dependencies": {},
+  "dependencies": {
+    "quintessential_core": "[0.5.6,0.6)"
+  },
   "conflicts": []
 }
