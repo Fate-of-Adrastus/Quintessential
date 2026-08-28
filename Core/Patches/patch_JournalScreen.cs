@@ -41,10 +41,7 @@ public class patch_JournalScreen{
 		TextureRenderer.Render(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
         TextureRenderer.Render(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
         UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, (TextAlignment)1);
-        //UI.DrawTexture(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
-        //UI.DrawTexture(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
-        //UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, TextAlignment.Centred);
-
+        
 		if(InputManager.IsClickPressed(MouseButtonType.LeftClick) && (inLeftBound || inRightBound)){
             Assets.sounds.click_button.method_28(1f);
 			

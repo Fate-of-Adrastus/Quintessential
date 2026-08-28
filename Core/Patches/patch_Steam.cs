@@ -9,7 +9,7 @@ internal class patch_Steam{
 	public static extern void orig_method_2150();
 	public static void method_2150(){
 		orig_method_2150(); // is this necessary?
-		Screenshotter.CheckScreenshot();
+		//Screenshotter.CheckScreenshot();
 		QuintessentialLoader.CheckCampaignReload();
 	}
 }

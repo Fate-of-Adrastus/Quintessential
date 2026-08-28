@@ -11,7 +11,7 @@ class patch_PuzzleSelectScreen {
 
 	public void RenderFrame(float deltaTime) {
         orig_RenderFrame(deltaTime);
-		if(QuintessentialSettings.Instance.EnableCustomCampaigns && QuintessentialLoader.AllCampaigns.Count > 1) {
+		if(QuintessentialCoreSettings.Instance.EnableCustomCampaigns && QuintessentialLoader.AllCampaigns.Count > 1) {
 			var dyn = new DynamicData(typeof(PuzzleSelectScreen), this);
 			float y1 = Utils.InterpolateCos(-220f, 0.0f, dyn.Get<float>("chapterUIFadeTimer"));
 			// add campaign change buttons
@@ -31,7 +31,7 @@ class patch_PuzzleSelectScreen {
             TextureRenderer.RenderText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(InputManager.screenSize.X / 2f, 20 + y1), Assets.fonts.crimson_16_5, Color.LightGray, (TextAlignment)1,1,0.6f,float.MaxValue,float.MaxValue,0,new Color(), null, int.MaxValue, false, true);
             //UI.DrawText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(InputManager.screenSize.X / 2f, 20 + y1), UI.Text, Color.LightGray, (TextAlignment)1);
             // reopen the menu if clicked
-            var settings = QuintessentialSettings.Instance.SwitcherSettings;
+            var settings = QuintessentialCoreSettings.Instance.SwitcherSettings;
 			bool keyLeft = settings.SwitchCampaignLeft.Pressed();
 			bool keyRight = settings.SwitchCampaignRight.Pressed();
 

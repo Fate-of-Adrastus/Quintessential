@@ -37,7 +37,7 @@ class patch_Renderer {
 		// none match -> use missing texture
 		try{
 			Logger.Log($"Texture {origPath} does not exist, using fallback texture");
-            texture.sourceFile = Path.Combine(QuintessentialAsMod.Instance.Meta.PathToDirectory, "Content", "textures", "missing");
+            texture.sourceFile = Path.Combine(QuintessentialCore.Instance.Meta.PathToDirectory, "Content", "textures", "missing");
 			return orig_ReloadTextureIfChanged(texture);
 		}finally{
             texture.sourceFile = origPath;

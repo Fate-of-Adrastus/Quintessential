@@ -1,16 +1,11 @@
 ﻿using Quintessential.Internal;
 using Quintessential.Settings;
 
-using YamlDotNet.Serialization;
-
 namespace Quintessential;
 
-public class QuintessentialSettings {
+public class QuintessentialCoreSettings {
 
-	public static QuintessentialSettings Instance => QuintessentialAsMod.Instance.Settings as QuintessentialSettings;
-
-	//[SettingsLabel("Take Screenshot")]
-	//public Keybinding Screenshot = new("F12");
+	public static QuintessentialCoreSettings Instance => QuintessentialCore.Instance.Settings as QuintessentialCoreSettings;
 
 	[SettingsLabel("Hot Reload Campaigns")]
 	public Keybinding HotReloadCampaigns = new("F11");
@@ -31,12 +26,4 @@ public class QuintessentialSettings {
 		[SettingsLabel("Switch Campaign Right")]
 		public Keybinding SwitchCampaignRight = new() { Key = "L", Control = true };
 	}
-
-	[SettingsLabel("Dump Puzzles")]
-	[YamlIgnore]
-	public SettingsButton DumpPuzzles = QuintessentialLoader.DumpVanillaPuzzles;
-	
-	[SettingsLabel("Dump Atom Sprites")]
-	[YamlIgnore]
-	public SettingsButton DumpAtomSprites = QuintessentialLoader.DumpAtomSprites;
 }

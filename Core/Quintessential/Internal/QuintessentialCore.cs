@@ -2,10 +2,10 @@
 
 namespace Quintessential.Internal;
 
-public class QuintessentialAsMod : QuintessentialMod {
-    public static QuintessentialAsMod Instance { get; }
+public class QuintessentialCore : QuintessentialMod {
+    public static QuintessentialCore Instance { get; }
     public override string ModId => "quintessential_core";
-    public override Type SettingsType => typeof(QuintessentialSettings);
+    public override Type SettingsType => typeof(QuintessentialCoreSettings);
 
     public override void Load() {}
 

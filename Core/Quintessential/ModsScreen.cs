@@ -11,7 +11,7 @@ class ModsScreen : IScreen {
 	private const int modButtonWidth = 300;
 	private static readonly Texture verticalBarCentreTall = AssetLoaderHelper.LoadTexture("textures/vertical_bar_centre_tall");
 	
-	private ModMeta selected = QuintessentialAsMod.Instance.Meta;
+	private ModMeta selected = QuintessentialCore.Instance.Meta;
 	private Scrollbar modsListScrollbar = new();
 
 	private struct DrawProgress {

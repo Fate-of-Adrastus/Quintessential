@@ -16,7 +16,7 @@ using System.Linq;
 class patch_MoleculeEditorScreen
 {
 
-    internal patch_Puzzle editing;
+    internal Puzzle editing;
 
     private static readonly Texture prevAtoms = AssetLoaderHelper.LoadTexture("textures/editor_go_left");
     private static readonly Texture prevAtomsFaded = AssetLoaderHelper.LoadTexture("textures/editor_go_left_faded");

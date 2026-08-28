@@ -51,7 +51,7 @@ class patch_PuzzleEditorScreen {
 			var nCorner = new Vector2(-12, scrollbar.scrollOffset - 95);
 
 			//// CustomPermissions may have just not been set? TODO: find a better place for the "canonical" setter
-			var conv = (patch_Puzzle)(object)puzzle;
+			var conv = puzzle;
 			conv.CustomPermissions ??= [];
 
             VanillaEditorRender(isPersonal, nCorner, bounds, puzzle);
@@ -90,7 +90,7 @@ class patch_PuzzleEditorScreen {
 
 				if (hovered && InputManager.IsClickPressed(MouseButtonType.LeftClick)) {
 					puzzle.permissionFlags ^= type.permissionCategory;
-                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                    puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                     //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 				}
 
@@ -127,7 +127,7 @@ class patch_PuzzleEditorScreen {
 									conv.CustomPermissions.Remove(option.ID);
 								else
 									conv.CustomPermissions.Add(option.ID);
-                                puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                                 //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 							}
 						} else if (option.Type == PuzzleOptionType.Atom) {
@@ -135,7 +135,7 @@ class patch_PuzzleEditorScreen {
 							if (DrawAtomSelector(selectorPos, option.Name, currentChoice ?? AtomTypes.repeat))
 								UI.OpenScreen(new AtomSelectScreen("Select: " + option.Name, type => {
 									option.SetAtomIn(puzzle, type);
-                                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                    puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                                     //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
 								}, currentChoice));
 						}
@@ -155,8 +155,9 @@ class patch_PuzzleEditorScreen {
 
 	private void VanillaEditorRender(bool isPersonal, Vector2 pos, Bounds2 bounds, Puzzle puzzle) {
 
-        PuzzleEditorScreen.PuzzleCont puzzleCont = new PuzzleEditorScreen.PuzzleCont();
-        puzzleCont.field_4622 = puzzle;
+        PuzzleEditorScreen.PuzzleCont puzzleCont = new() {
+            field_4622 = puzzle
+        };
         UIUtils.RenderScreenTitle(Translations.Translate("Products"), pos + new Vector2(489f, 774f), 904, false, true);
         UIUtils.RenderScreenTitle(Translations.Translate("Reagents"), pos + new Vector2(489f, 522f), 904, false, true);
         UIUtils.RenderScreenTitle(Translations.Translate("Mechanisms and Glyphs"), pos + new Vector2(489f, 270f), 904, false, true);
@@ -180,10 +181,10 @@ class patch_PuzzleEditorScreen {
                                 int J = j;
                                 var moleculeEditorScreen = new MoleculeEditorScreen(array[J].molecule, I == 0, new Action<Molecule>(molecule => {
                                     (I == 0 ? puzzleCont.field_4622.outputs : puzzleCont.field_4622.inputs)[J].molecule = molecule;
-                                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                    puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                                     //GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                                 }));
-                                ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = (patch_Puzzle)(object)puzzle;
+                                ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = puzzle;
                                 screenOpened = true;
 
                                 GameLogic.instance.PushScreen(moleculeEditorScreen);
@@ -204,7 +205,7 @@ class patch_PuzzleEditorScreen {
                                     } else {
                                         puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Take<PuzzleInputOutput>(J).Concat<PuzzleInputOutput>(puzzleCont.field_4622.inputs.Skip<PuzzleInputOutput>(J + 1)).ToArray<PuzzleInputOutput>();
                                     }
-                                    puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                    puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                                     //GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                                 }, () => { }));
                                 Assets.sounds.click_button.method_28(1f);
@@ -217,7 +218,7 @@ class patch_PuzzleEditorScreen {
                     TextureRenderer.Render(renderedTexture, vector2);
 
 
-                    if (((patch_Puzzle)(object)puzzle).IsModdedPuzzle) {
+                    if (puzzle.IsModdedPuzzle) {
                         Vector2 namePos = bounds2.BottomLeft + new Vector2(bounds2.Width / 2f - 7, -17);
                         var isElement = array[j].molecule.GetAtoms().Count == 1;
                         var fallbackPvw = "_(" + (isElement ? array[j].molecule.GetAtoms().Values.First().atomType.elementalName : "Unnamed") + ")_";
@@ -227,7 +228,7 @@ class patch_PuzzleEditorScreen {
                             int J = j;
                             GameLogic.instance.PushScreen(MessageBoxScreenEx.textbox(bounds, Translations.Translate("Please enter a new name for this " + (i == 0 ? "product:" : "reagent:")), array[j].molecule.displayName.HasValue() ? array[j].molecule.displayName.GetValue() : (isElement ? array[j].molecule.GetAtoms().Values.First().atomType.elementalName : ""), Translations.Translate("Rename " + (i == 0 ? "Product" : "Reagent")), (string s) => {
                                 array[J].molecule.displayName = Translations.Translate(s);
-                                puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                                 //GameLogic.instance.workshopManager.RegenPuzzleId(puzzle);
                             }));
                             Assets.sounds.click_button.method_28(1f);
@@ -248,10 +249,10 @@ class patch_PuzzleEditorScreen {
                                 } else {
                                     puzzleCont.field_4622.inputs = puzzleCont.field_4622.inputs.Concat([new PuzzleInputOutput(molecule)]).ToArray<PuzzleInputOutput>();
                                 }
-                                puzzle.SaveToFile(((patch_WorkshopManager)(object)GameLogic.instance.workshopManager).CustomPuzzlePath(puzzle));
+                                puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
                                 //GameLogic.instance.workshopManager.RegenPuzzleId(puzzleCont.field_4622);
                             }));
-                            ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = (patch_Puzzle)(object)puzzle;
+                            ((patch_MoleculeEditorScreen)(object)moleculeEditorScreen).editing = puzzle;
 
 							GameLogic.instance.PushScreen(moleculeEditorScreen);
                             Assets.sounds.click_button.method_28(1f);
