@@ -1,0 +1,108 @@
+﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
+using MonoMod;
+using MonoMod.Cil;
+using MonoMod.InlineRT;
+using Quintessential;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+#pragma warning disable CS0649 // Field is never assigned to
+#pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
+
+class patch_Sim{
+
+	// Make important fields public
+	[MonoModPublic]
+	public SolutionEditorBase solutionEditor;
+	[MonoModPublic]
+	public Dictionary<Part, PartSimState> simulationDict;
+	[MonoModPublic]
+	public Dictionary<Part, Sim.HolderMovementInfo> holderInfos;
+	[MonoModPublic]
+	public List<Molecule> molecules;
+	[MonoModPublic]
+	public List<Sim.Collider> additionalCollisions;
+	
+	// Hold onto held grippers
+	public List<Part> HeldGrippers;
+
+	// Helper methods to find held or unheld atoms
+	public Maybe<AtomReference> FindAtomRelative(Part part, HexIndex offset){
+		return FindAtom(part.InFrontBy(offset));
+	}
+	
+	public Maybe<AtomReference> FindAtom(HexIndex position){
+		var simStates = simulationDict;
+		foreach(Molecule molecule in molecules) {
+			if(molecule.GetAtoms().TryGetValue(position, out Atom atom)){
+				bool isHeld = HeldGrippers != null && HeldGrippers.Any(part => simStates[part].newPosition == position);
+				return new AtomReference(molecule, position, atom.atomType, atom, isHeld);
+			}
+		}
+
+		return MaybeHelper.empty;
+	}
+
+    // Run custom behaviours
+    public extern void orig_RunCycleGlyphs(bool isCycleStart);
+	public void RunCycleGlyphs(bool isCycleStart) {
+		// fill the list of grippers
+		List<Part> allParts = solutionEditor.GetSolution().parts;
+		Dictionary<Part, PartSimState> simStates = simulationDict;
+		HeldGrippers = new();
+		foreach(var part in allParts)
+			foreach(var gripper in part.subparts)
+				if(simStates[gripper].heldMolecule.HasValue())
+					HeldGrippers.Add(gripper);
+        // run the cycle
+        orig_RunCycleGlyphs(isCycleStart);
+
+        // and then process things that happen after
+		foreach(var action in QApi.ToRunAfterCycle)
+			action((Sim)(object)this, isCycleStart);
+	}
+
+    public void RunMidcycleDelegates(Sim.ReferredPart partWrapper, PartSimState pss, bool first) {
+        Part part = partWrapper.part;
+        foreach (var action in QApi.ToRunDuringCycle) {
+            action((Sim)(object)this, part, pss, first);
+        }
+    }
+
+    [MonoModILInject("RunCycleGlyphs")]
+    public static void PatchGlyphBehaviour(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching glyph Behaviour");
+        if (!method.HasBody) {
+            Console.WriteLine("Unable to patch glyph behaviour (no body)");
+            throw new Exception();
+        }
+        ILCursor gremlin = new(new ILContext(method));
+
+        if (!gremlin.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdloc(6),
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "part",
+            instr => instr.MatchCallvirt(out MethodReference m) && m.Name == "GetType",
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "bonders",
+            instr => instr.MatchLdlen()
+        )) {
+            Console.WriteLine("Unable to patch glyph behaviour (no bonder check)");
+            throw new Exception();
+        }
+
+        TypeDefinition holder = MonoModRule.Modder.FindType("Sim").Resolve();
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunMidcycleDelegates"));
+        Instruction oldTarget = gremlin.Next;
+        gremlin.Emit(OpCodes.Ldarg_0);
+        Instruction newTarget = gremlin.Previous;
+        gremlin.Emit(OpCodes.Ldloc, 6);
+        gremlin.Emit(OpCodes.Ldloc, 7);
+        gremlin.Emit(OpCodes.Ldarg_1);
+        gremlin.Emit(OpCodes.Call, to);
+        // I don't know why it never works, but MonoMod's goto and branch handling is not functional, or I don't know how it works.
+        foreach (var v in gremlin.Instrs.Where(v => v.Operand is Instruction t && t == oldTarget)) {
+            v.Operand = newTarget;
+        }
+    }
+}

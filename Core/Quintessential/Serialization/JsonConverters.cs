@@ -1,0 +1,134 @@
+﻿using System;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Quintessential.Serialization;
+
+public class VersionJsonConverter : JsonConverter<Version> {
+    public override Version Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return Version.Parse(reader.GetString());
+    }
+
+    public override void Write(Utf8JsonWriter writer, Version value, JsonSerializerOptions options) {
+        writer.WriteStringValue(value.ToString());
+    }
+}
+public class VersionRangeJsonConverter : JsonConverter<VersionRange> {
+    public override VersionRange Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        VersionRange toReturn = new();
+
+        string[] versionRange = reader.GetString().Split(',');
+        if (versionRange.Length == 1) {
+            toReturn.InclusiveMin = true;
+            toReturn.InclusiveMax = false;
+            toReturn.VersionMax = null;
+            try {
+                toReturn.VersionMin = versionRange[0] == "" ? null : Version.Parse(versionRange[0]);
+            } catch (Exception e) { throw new JsonException("Faliled to parse minimum version in range", e); }
+            return toReturn;
+        }
+        if (versionRange.Length == 2) {
+
+            char minInclusive = versionRange[0][0];
+            if (minInclusive == '[') toReturn.InclusiveMin = true;
+            else if (minInclusive == '(') toReturn.InclusiveMin = false;
+            else throw new JsonException("Version range must begin with '[' for Min-Inclusive or '(' for Min-Exclusive.");
+            versionRange[0] = versionRange[0][1..];
+
+            char maxInclusive = versionRange[1][^1];
+            if (maxInclusive == ']') toReturn.InclusiveMax = true;
+            else if (maxInclusive == ')') toReturn.InclusiveMax = false;
+            else throw new JsonException("Version range must end with ']' for Max-Inclusive or ')' for Max-Exclusive.");
+            versionRange[1] = versionRange[1][..^1];
+
+            try {
+                toReturn.VersionMin = versionRange[0] == "" ? null : Version.Parse(versionRange[0]);
+            } catch (Exception e) { throw new JsonException("Faliled to parse minimum version in range", e); }
+            try {
+                toReturn.VersionMax = versionRange[1] == "" ? null : Version.Parse(versionRange[1]);
+            } catch (Exception e) { throw new JsonException("Faliled to parse maximum version in range", e); }
+
+            return toReturn;
+        }
+        throw new JsonException("Invalid number of ',' characters in the VersionRange, multiple range sets are not supported.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, VersionRange value, JsonSerializerOptions options) {
+        writer.WriteStringValue(value.ToString());
+        return;
+    }
+}
+public class LocalisationLayerJsonConverter : JsonConverter<LocalisationLayer> {
+    private System.Collections.Generic.Stack<LocalisationLayer> layerStack = [];
+
+    public override LocalisationLayer Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        
+        if (layerStack.Count == 0) layerStack.Push( LocalisationLayer.GlobalLayer );
+
+        if (reader.TokenType != JsonTokenType.StartObject) {
+            if (reader.TokenType == JsonTokenType.String) {
+                layerStack.Peek().locDictionary[LocalisationLayer.CurrentFileLanguage] = reader.GetString();
+                reader.Read();
+                return layerStack.Pop();
+            }
+            throw new FormatException();
+        }
+
+        reader.Read();
+        var current = layerStack.Peek();
+        while (reader.TokenType != JsonTokenType.EndObject) {
+            string key = reader.GetString();
+            reader.Read();
+
+            if (key == "") {
+                current.locDictionary[LocalisationLayer.CurrentFileLanguage] = reader.GetString();
+                reader.Read();
+
+            } else {
+                if (current.subLayers.TryGetValue(key, out LocalisationLayer value)) layerStack.Push(value);
+                else layerStack.Push(new());
+
+                current.subLayers[key] = Read(ref reader, typeToConvert, options);
+            }
+        }
+        reader.Read();
+        return layerStack.Pop();
+    }
+
+    public override void Write(Utf8JsonWriter writer, LocalisationLayer value, JsonSerializerOptions options) {
+        throw new NotImplementedException();
+    }
+}
+
+public class BasicEnumJsonConverter<T> : JsonConverter<T> where T : Enum {
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        var value = reader.GetString();
+        for (int i = 1; i < typeToConvert.GetFields().Length; i++) {
+            if (value == (typeToConvert.GetFields()[i].Name)) return (T)typeToConvert.GetFields()[i].GetRawConstantValue();
+        }
+        throw new JsonException($"The provided Enum ('{typeToConvert.Name}') value was not recognised as a valid value.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) {
+        writer.WriteStringValue(value.ToString());
+    }
+}
+public class FlagEnumJsonConverter<T> : JsonConverter<T> where T : Enum {
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        var values = reader.GetString().Split(", ");
+        var fileds = typeToConvert.GetFields()[1..];
+        int sum = 0;
+
+        foreach (var value in values) {
+            sum += (int)(fileds.SingleOrDefault(field => field.Name == value, null)?.GetRawConstantValue() ??
+                throw new JsonException($"The provided Enum value ('{value}') value was not recognised as valid."));
+        }
+
+        return (T)(object)sum;
+    }
+
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) {
+        writer.WriteStringValue(value.ToString());
+    }
+}
