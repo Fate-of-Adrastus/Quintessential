@@ -40,7 +40,7 @@ public class patch_JournalScreen{
 		bool inRightBound = Bounds2.WithSize(rPos, JournalGoRight.size.ToVector2()).Contains(InputManager.MousePos());
 		TextureRenderer.Render(inLeftBound ? JournalGoLeftHover : JournalGoLeft, lPos);
         TextureRenderer.Render(inRightBound ? JournalGoRightHover : JournalGoRight, rPos);
-        UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, (TextAlignment)1);
+        UI.DrawText($"{currentJournal + 1}/{QuintessentialLoader.AllJournals.Count}", corner + new Vector2(157, 824f), UI.Text, UI.TextColor, TextAlignment.Center);
         
 		if(InputManager.IsClickPressed(MouseButtonType.LeftClick) && (inLeftBound || inRightBound)){
             Assets.sounds.click_button.method_28(1f);
@@ -72,8 +72,8 @@ public class patch_JournalScreen{
 	}
 
 	// found by name in MonoModRules
-	public static string CurrentJournalName(){
-		return currentJournal == 0 ? "The Journal of Alchemical Engineering" : QuintessentialLoader.ModJournalModels[currentJournal - 1].Title;
+	public static string CurrentJournalNameKey(){
+		return currentJournal == 0 ? "The Journal of Alchemical Engineering" : QuintessentialLoader.ModJournalModels[currentJournal - 1].TitleKey;
 	}
 
 	public static Texture CurrentJournalBg(Texture before, bool large){
@@ -95,7 +95,7 @@ public class patch_JournalScreen{
             if (cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdstr("The Journal of Alchemical Engineering"))) {
                 cursor.Remove();
                 TypeDefinition holder = MonoModRule.Modder.FindType("JournalScreen").Resolve();
-                MethodDefinition to = holder.Methods.First(m => m.Name.Equals("CurrentJournalName"));
+                MethodDefinition to = holder.Methods.First(m => m.Name.Equals("CurrentJournalNameKey"));
                 cursor.Emit(OpCodes.Call, to);
             } else {
                 Console.WriteLine("Failed to modify journal screen (no match)!");

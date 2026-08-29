@@ -104,7 +104,7 @@ public static class UI {
 
 	public static bool DrawCheckbox(Vector2 pos, string label, bool enabled) {
 		Bounds2 boxBounds = Bounds2.WithSize(pos, new Vector2(36f, 37f));
-		Bounds2 labelBounds = DrawText(label, pos + new Vector2(45f, 13f), SubTitle, TextColor, (TextAlignment)0);
+		Bounds2 labelBounds = DrawText(label, pos + new Vector2(45f, 13f), SubTitle, TextColor, TextAlignment.Left);
 		if(enabled)
 			DrawTexture(Assets.textures.UI.checkbox_fill, boxBounds.Min);
 		if(boxBounds.Contains(InputManager.MousePos()) || labelBounds.Contains(InputManager.MousePos())) {

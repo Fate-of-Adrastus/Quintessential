@@ -32,12 +32,12 @@ internal class patch_WorkshopManager{
                 fromModel = PuzzleModel.FromModel(model);
             } catch (Exception e) {
                 Logger.Log($"Exception loading custom puzzle \"{model.ID}\":");
-                Logger.Log(e);
+                Logger.Log(e.Message);
                 continue;
             }
 
             fromModel.fileHash = (uint)typeof(WorkshopManager).GetMethod("ComputeFileHash", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .Invoke(GameLogic.instance.workshopManager, new object[] { puzzleFilePath });
+                .Invoke(GameLogic.instance.workshopManager, [puzzleFilePath]);
             // ReSharper disable once PossibleInvalidCastException
             ((patch_Puzzle)(object)fromModel).IsModdedPuzzle = true;
             orig.Add(fromModel);

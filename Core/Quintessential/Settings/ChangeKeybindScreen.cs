@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using Quintessential.Internal;
 using SDL2;
 
 namespace Quintessential.Settings;
@@ -7,7 +7,7 @@ namespace Quintessential.Settings;
 class ChangeKeybindScreen : IScreen {
 
 	Keybinding Key;
-	string Label;
+    LocString Label;
 	QuintessentialMod ToSave;
 
 	// SDL doesn't make an event when Control or Alt are pressed unless it makes a character (or maybe OM doesn't pick it up)
@@ -24,7 +24,7 @@ class ChangeKeybindScreen : IScreen {
 		BindableKeys.AddRange(["Insert", "PageUp", "PageDown", "Home", "End"]);
 	}
 
-	public ChangeKeybindScreen(Keybinding key, string label, QuintessentialMod save){
+	public ChangeKeybindScreen(Keybinding key, LocString label, QuintessentialMod save){
 		Key = key;
 		Label = label;
 		ToSave = save;
@@ -42,9 +42,9 @@ class ChangeKeybindScreen : IScreen {
 
 	public void RenderFrame(float deltaTime) {
 		// "Please enter a new key:"
-		UI.DrawText("Please enter a new key for: " + Label, (InputManager.screenSize / 2) + new Vector2(0, 170), UI.Title, Color.White, TextAlignment.Center);
-		// display ctrl/shift
-		string preview = "";
+		UI.DrawText(QuintessentialCore.Instance.Translate("display_text.key_prompt") + " " + Label, (InputManager.screenSize / 2) + new Vector2(0, 170), UI.Title, Color.White, TextAlignment.Center);
+        // display ctrl/shift
+        string preview = "";
 		bool shift = InputManager.IsModifierKeyHeld(ModifierKeyType.Shift);
         bool ctrl = InputManager.IsModifierKeyHeld(ModifierKeyType.Ctrl);
         bool alt = InputManager.IsModifierKeyHeld(ModifierKeyType.Alt);
@@ -57,8 +57,8 @@ class ChangeKeybindScreen : IScreen {
 		if(!string.IsNullOrWhiteSpace(preview))
 			UI.DrawText(preview, InputManager.screenSize / 2, UI.Title, class_181.field_1718, TextAlignment.Center);
 		// "press esc to CANCEL"
-		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (InputManager.screenSize / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, TextAlignment.Center);
-		if(InputManager.IsKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton("CANCEL", labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
+		Bounds2 labelBounds = UI.DrawText(QuintessentialCore.Instance.Translate("display_text.escape_prompt") + " ", (InputManager.screenSize / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, TextAlignment.Center);
+        if (InputManager.IsKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton(QuintessentialCore.Instance.Translate("display_text.cancel_keybind"), labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
 			UI.HandleCloseButton();
 		// handle keypresses
 		string key = "";

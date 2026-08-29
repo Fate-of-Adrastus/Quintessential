@@ -38,6 +38,27 @@ public class patch_Translations {
         LocalisationLayer.GlobalLayer.AddSelfAndSubToDictionary(translationDict);
     }
 
+    public static extern LocString orig_Translate(string toTranslate);
+    public static LocString Translate(string toTranslate) {
+        var orig = orig_Translate(toTranslate);
+        ((patch_LocString)(object)orig).Key = toTranslate;
+        return orig;
+    }
+
+    public static extern LocString orig_WithAllLanguages(string toTranslate);
+    public static LocString WithAllLanguages(string toTranslate) {
+        var orig = orig_WithAllLanguages(toTranslate);
+        ((patch_LocString)(object)orig).Key = "<" + toTranslate + ">";
+        return orig;
+    }
+
+    public static LocString TranslateByType(string toTranslate) {
+        if (string.IsNullOrEmpty(toTranslate)) return WithAllLanguages("");
+        if (toTranslate.StartsWith('<') && toTranslate.EndsWith('>'))
+            return WithAllLanguages(toTranslate[1..^1]);
+        return Translate(toTranslate);
+    }
+
 
     [MonoModILInject("Translate")]
     public static void DeformatKeysPatch(MethodDefinition method, CustomAttribute attrib) {
@@ -70,7 +91,7 @@ public class patch_Translations {
     }
 
     public static string Deformat(string original) {
-        if (original.Contains(' ') || !original.Equals(original, StringComparison.CurrentCultureIgnoreCase)) return original; // skip vanilla english keys
+        if (original.Contains(' ') || original != original.ToLower()) return original; // skip vanilla english keys
         return original.EscapeFormatting();
     }
 }

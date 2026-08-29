@@ -52,8 +52,8 @@ public static class QApi {
 	/// <param name="type">The part type to be added.</param>
 	public static void AddPartType(this QuintessentialMod mod, PartType type, string id) {
 		type.id = mod.GetIdentifier(id);
-        type.name = Translations.Translate(mod.ModId + ".parts." + id);
-        type.description = Translations.Translate(mod.ModId + ".parts." + id + ".description");
+        type.name = mod.Translate("parts." + id);
+        type.description = mod.Translate("parts." + id + ".description");
 
         Array.Resize(ref PartTypes.partTypes, PartTypes.partTypes.Length + 1);
 		PartTypes.partTypes[^1] = type;
@@ -76,9 +76,9 @@ public static class QApi {
 	public static void AddAtomType(this QuintessentialMod mod, AtomType type, string id) {
 		type.byteId = 255; // doesn't really matter - should not overlap vanilla atom ids
 		((patch_AtomType)(object)type).QuintAtomType = mod.GetIdentifier(id);
-		type.name = Translations.Translate(mod.ModId + ".atoms." + id);
-		type.elementalName = Translations.Translate(mod.ModId + ".atoms." + id + ".elemental");
-		type.defaultName = Translations.Translate(mod.ModId + ".atoms." + id).locDictionary[Language.English];
+		type.name = mod.Translate("atoms." + id);
+		type.elementalName = mod.Translate("atoms." + id + ".elemental");
+		type.defaultName = mod.Translate("atoms." + id).locDictionary[Language.English];
 
         ModAtomTypes.Add(type);
 		Array.Resize(ref AtomTypes.atoms, AtomTypes.atoms.Length + 1);
@@ -105,10 +105,10 @@ public static class QApi {
 	/// <param name="sectionName">The name of the section that the permission will appear under.</param>
 	public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName = "", string sectionName = ""){
 		if (displayName == "") displayName = id;
-		var sectionNameLoc = Translations.Translate(
-            mod.ModId + ".permission_sections" + (sectionName == "" ? "" : "." + sectionName)
+		var sectionNameLoc = mod.Translate(
+            "permission_sections" + (sectionName == "" ? "" : "." + sectionName)
 		);
-		var displayNameLoc = Translations.Translate( mod.ModId + ".permissions." + displayName );
+		var displayNameLoc = mod.Translate("permissions." + displayName );
 
         PuzzleOptions.Add(PuzzleOption.BoolOption(mod.GetIdentifier(id), displayNameLoc, sectionNameLoc));
 	}

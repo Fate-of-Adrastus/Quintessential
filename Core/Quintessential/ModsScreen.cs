@@ -40,9 +40,7 @@ class ModsScreen : IScreen {
 
         UI.DrawLargeUiBackground(bgPos, bgSize);
         TextureRenderer.Render9Slice(Assets.textures.window.frame, Color.White, pos, size);
-		//UI.DrawUiFrame(pos, size);
         TextureRenderer.Render(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
-		//UI.DrawTexture(verticalBarCentreTall, pos + new Vector2(modButtonWidth + 130, 76f));
 
 		if(UI.DrawAndCheckCloseButton(pos, size, new Vector2(104, 98)))
 			UI.HandleCloseButton();
@@ -83,13 +81,13 @@ class ModsScreen : IScreen {
 		if (hasIcon)
 			TextureRenderer.Render(mod.IconCache ??= AssetLoaderHelper.LoadTexture(mod.Icon), pos + new Vector2(20, bgSize.Y - 99f - 100));
 
-        UI.DrawText(Translations.Translate(mod.ModId), titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, (TextAlignment)0);
+        UI.DrawText(Translations.Translate(mod.ModId), titlePos + new Vector2(20, bgSize.Y - 99f), UI.Title, UI.TextColor, TextAlignment.Left);
 		string ver = mod.Version.ToString();
-        UI.DrawText(mod.ModId.EscapeFormatting() + " - " + ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, (TextAlignment)0);
+        UI.DrawText(mod.ModId.EscapeFormatting() + " - " + ver, titlePos + new Vector2(20, bgSize.Y - 130f), UI.Text, Color.LightGray, TextAlignment.Left);
 
 		var modDescription = Translations.Translate(mod.ModId + ".description");
         if (modDescription != (mod.ModId + ".description")) { // Possibly broken with psudo language & missing english translation
-			var desc = UI.DrawText(modDescription, pos + new Vector2(20, bgSize.Y - 170f - (hasIcon ? 70 : 0)), UI.Text, UI.TextColor, (TextAlignment)0, maxWidth: 460);
+			var desc = UI.DrawText(modDescription, pos + new Vector2(20, bgSize.Y - 170f - (hasIcon ? 70 : 0)), UI.Text, UI.TextColor, TextAlignment.Left, maxWidth: 460);
 			return desc.Height + 80;
 		}
 		return 20;
@@ -111,9 +109,9 @@ class ModsScreen : IScreen {
 			if(field.IsStatic)
 				continue;
 
-			string label = field.GetCustomAttribute<SettingsLabel>()?.Label ?? field.Name;
+			LocString label = Translations.Translate(field.GetCustomAttribute<SettingsLabelKey>()?.Label ?? field.Name);
 
-			if(field.FieldType == typeof(bool)) {
+            if (field.FieldType == typeof(bool)) {
 				if(UI.DrawCheckbox(pos + new Vector2(20, bgSize.Y - y), label, (bool)field.GetValue(settings))) {
 					field.SetValue(settings, !(bool)field.GetValue(settings));
 					settingsChanged = true;
@@ -124,16 +122,16 @@ class ModsScreen : IScreen {
 				y += 20;
 			} else if(field.FieldType == typeof(Keybinding)) {
 				Keybinding key = (Keybinding)field.GetValue(settings);
-				Bounds2 labelBounds = UI.DrawText(label + ": " + key.ControlKeysText(), pos + new Vector2(20, bgSize.Y - y - 15), UI.SubTitle, UI.TextColor, (TextAlignment)0);
-				var text = !string.IsNullOrWhiteSpace(key.Key) ? key.Key : "None";
-				if(UI.DrawAndCheckSimpleButton(text, labelBounds.BottomRight + new Vector2(10, 0), new Vector2(50, (int)labelBounds.Height)))
+				Bounds2 labelBounds = UI.DrawText(label + ": " + key.ControlKeysText(), pos + new Vector2(20, bgSize.Y - y - 15), UI.SubTitle, UI.TextColor, TextAlignment.Left);
+				var text = !string.IsNullOrWhiteSpace(key.Key) ? key.Key : QuintessentialCore.Instance.Translate("display_text.empty_keybind");
+                if (UI.DrawAndCheckSimpleButton(text, labelBounds.BottomRight + new Vector2(10, 0), new Vector2(50, (int)labelBounds.Height)))
 					UI.OpenScreen(new ChangeKeybindScreen(key, label, mod));
 				y += 20;
 			} else if(typeof(SettingsGroup).IsAssignableFrom(field.FieldType)) {
 				SettingsGroup group = (SettingsGroup)field.GetValue(settings);
 				var textPos = pos + new Vector2(20, bgSize.Y - y + 5);
 				if(group.Enabled) {
-					UI.DrawText("*" + label + "*", textPos, UI.SubTitle, UI.TextColor, (TextAlignment)0);
+					UI.DrawText("*" + label + "*", textPos, UI.SubTitle, UI.TextColor, TextAlignment.Left);
 					y += 25;
 					var progress = DrawSettingsObject(mod, field.GetValue(settings), pos + new Vector2(15, 0), bgSize, y);
 					settingsChanged |= progress.pressed;

@@ -42,8 +42,6 @@ class patch_Sim{
 
     // Run custom behaviours
     public extern void orig_RunCycleGlyphs(bool isCycleStart);
-    //public extern void RunCycleGlyphsMain(bool isCycleStart);
-	//[MonoModReplace]
 	public void RunCycleGlyphs(bool isCycleStart) {
 		// fill the list of grippers
 		List<Part> allParts = solutionEditor.GetSolution().parts;
@@ -54,18 +52,10 @@ class patch_Sim{
 				if(simStates[gripper].heldMolecule.HasValue())
 					HeldGrippers.Add(gripper);
         // run the cycle
-        //RunCycleGlyphsMain(isCycleStart);
         orig_RunCycleGlyphs(isCycleStart);
 
         // and then process things that happen after
 		foreach(var action in QApi.ToRunAfterCycle)
 			action((Sim)(object)this, isCycleStart);
 	}
-
-    //This was just a test, TODO remove once other places use MonoModWrapOperation
-    //[MonoModWrapOperation("BeginCycle", "Call", "Sim::ResetSimStates")]
-    //public void BeginCycle_WrapTest_First(Action<Sim> orig) {
-    //    Logger.Log("The Cycle is (1) : " + ((Sim)(object)this).GetCycle());
-    //    orig((Sim)(object)this);
-    //}
 }

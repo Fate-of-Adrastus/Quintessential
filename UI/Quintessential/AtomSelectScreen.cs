@@ -28,7 +28,7 @@ public class AtomSelectScreen : IScreen{
 	
 	public void RenderFrame(float deltaTime){
 		// Display a title
-		UI.DrawText(Label, (InputManager.screenSize / 2) + new Vector2(0, 170), UI.Title, Color.White, (TextAlignment)1);
+		UI.DrawText(Label, (InputManager.screenSize / 2) + new Vector2(0, 170), UI.Title, Color.White, TextAlignment.Center);
 
 		// draw atom options
 		var numAtoms = AtomTypes.atoms.Length;
@@ -41,7 +41,7 @@ public class AtomSelectScreen : IScreen{
 		}
 		
 		// "press esc to CANCEL"
-		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (InputManager.screenSize / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, (TextAlignment)1);
+		Bounds2 labelBounds = UI.DrawText("Press ESC to ", (InputManager.screenSize / 2) + new Vector2(-40, -170), UI.SubTitle, class_181.field_1718, TextAlignment.Center);
 		if(InputManager.IsKeyPressed(SDL.SDLKey.SDLK_ESCAPE) || UI.DrawAndCheckSimpleButton("CANCEL", labelBounds.BottomRight + new Vector2(10, -7), new Vector2(70, (int)labelBounds.Height + 10)))
 			UI.HandleCloseButton();
 	}

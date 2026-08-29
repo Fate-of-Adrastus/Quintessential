@@ -1,6 +1,26 @@
 {
   "quintessential_core": {
     "": "Quintessential Core",
-    "description": "Example description..."
+    "simple": "Quintessential",
+    "description": "Example description...",
+    "display_text": {
+      "mods_loaded": "mods loaded.",
+      "empty_keybind": "None",
+      "key_prompt": "Please enter a new key for:",
+      "escape_prompt": "Press ESC to",
+      "cancel_keybind": "CANCEL"
+    },
+    "settings": {
+      "hot_reload": "Hot Reload Campaigns",
+      "custom_campaigns": "Enable Campaign Switcher",
+      "switcher": {
+        "": "Campaign Switcher Options:",
+        "left": "Switch Campaign Left",
+        "right": "Switch Campaign Right"
+      }
+    }
+  },
+  "om": {
+    "": "Opus Magnum"
   }
 }

@@ -1,4 +1,4 @@
 ﻿class patch_Campaign {
 
-	public string QuintTitle = "Opus Magnum";
+	public LocString QuintTitle = Translations.Translate("om");
 }

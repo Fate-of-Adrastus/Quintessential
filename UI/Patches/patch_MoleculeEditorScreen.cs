@@ -57,10 +57,7 @@ class patch_MoleculeEditorScreen
         bool inRightBound = Bounds2.WithSize(rPos, nextAtoms.size.ToVector2()).Contains(InputManager.MousePos());
         TextureRenderer.Render(currentPage > 0 ? inLeftBound ? prevAtomsHover : prevAtoms : prevAtomsFaded, lPos);
         TextureRenderer.Render(currentPage < LastPage ? inRightBound ? nextAtomsHover : nextAtoms : nextAtomsFaded, rPos);
-        UI.DrawText($"{currentPage + 1}/{LastPage + 1}", corner + new Vector2(262f, 800f), UI.Text, UI.TextColor, (TextAlignment)0);
-        //UI.DrawTexture(currentPage > 0 ? inLeftBound ? prevAtomsHover : prevAtoms : prevAtomsFaded, lPos);
-        //UI.DrawTexture(currentPage < LastPage ? inRightBound ? nextAtomsHover : nextAtoms : nextAtomsFaded, rPos);
-        //UI.DrawText($"{currentPage + 1}/{LastPage + 1}", corner + new Vector2(262f, 800f), UI.Text, UI.TextColor, TextAlignment.Centred);
+        UI.DrawText($"{currentPage + 1}/{LastPage + 1}", corner + new Vector2(262f, 800f), UI.Text, UI.TextColor, TextAlignment.Left);
         if (InputManager.IsClickPressed(MouseButtonType.LeftClick) && (inLeftBound || inRightBound))
         {
             Assets.sounds.click_button.method_28(1f);
@@ -119,7 +116,6 @@ class patch_MoleculeEditorScreen
                     if (hovering)
                     {
                         TextureRenderer.RenderText(atoms[index].defaultName, pos + new Vector2(0, -40), Assets.fonts.crimson_9_75, UI.TextColor, TextAlignment.Left, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
-                        //UI.DrawText(atoms[index].defaultName, pos + new Vector2(0, -40), Assets.fonts.crimson_9_75, UI.TextColor, (TextAlignment)0);
                     }
                 }
                 pos.X += spacing.X;

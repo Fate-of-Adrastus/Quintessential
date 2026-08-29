@@ -28,8 +28,7 @@ class patch_PuzzleSelectScreen {
             TextureRenderer.Render(Assets.textures.instructions.track_retreat, leftPos);
             TextureRenderer.Render(Assets.textures.instructions.track_advance, rightPos);
             // show the currently displayed campaign
-            TextureRenderer.RenderText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(InputManager.screenSize.X / 2f, 20 + y1), Assets.fonts.crimson_16_5, Color.LightGray, (TextAlignment)1,1,0.6f,float.MaxValue,float.MaxValue,0,new Color(), null, int.MaxValue, false, true);
-            //UI.DrawText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(InputManager.screenSize.X / 2f, 20 + y1), UI.Text, Color.LightGray, (TextAlignment)1);
+            TextureRenderer.RenderText(((patch_Campaign)(object)QuintessentialLoader.AllCampaigns[currentCampaign]).QuintTitle, new Vector2(InputManager.screenSize.X / 2f, 20 + y1), Assets.fonts.crimson_16_5, Color.LightGray, TextAlignment.Center,1,0.6f,float.MaxValue,float.MaxValue,0,new Color(), null, int.MaxValue, false, true);
             // reopen the menu if clicked
             var settings = QuintessentialCoreSettings.Instance.SwitcherSettings;
 			bool keyLeft = settings.SwitchCampaignLeft.Pressed();

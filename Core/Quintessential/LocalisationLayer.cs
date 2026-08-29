@@ -13,7 +13,7 @@ public class LocalisationLayer {
     public Dictionary<string, LocalisationLayer> subLayers = [];
 
     public void AddSelfAndSubToDictionary(Dictionary<string, LocString> translationDict, string key = "") {
-        bool useEnglishAsReplacement = false; // TODO make this a global setting
+        bool useEnglishAsReplacement = !AppConsts.isDevEnv;
 
         if (key != "") {
             var loc = new LocString {

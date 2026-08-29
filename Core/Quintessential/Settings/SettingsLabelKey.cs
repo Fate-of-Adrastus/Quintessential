@@ -3,11 +3,11 @@
 namespace Quintessential.Settings;
 
 [AttributeUsage(AttributeTargets.Field)]
-public class SettingsLabel : Attribute {
+public class SettingsLabelKey : Attribute {
 
 	public string Label;
 
-	public SettingsLabel(string label) {
+	public SettingsLabelKey(string label) {
 		Label = label;
 	}
 }

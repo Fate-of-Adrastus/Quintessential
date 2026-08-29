@@ -9,7 +9,7 @@ public readonly struct Identifier {
     }
     public Identifier(string identifier) {
         var sections = identifier.Split(':');
-        if (sections.Length != 2) throw new OpusMagnumException("Identifier constructor contains invalid number of ':'");
+        if (sections.Length != 2) throw new OpusMagnumException($"Identifier constructor '{identifier}' contains invalid number of ':'");
 
         namespc = sections[0];
         name = sections[1];

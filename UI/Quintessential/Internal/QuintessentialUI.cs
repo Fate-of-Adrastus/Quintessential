@@ -3,7 +3,7 @@ using System;
 
 namespace Quintessential.Internal;
 
-public class QuintessentialUI : QuintessentialMod {
+internal class QuintessentialUI : QuintessentialMod {
     public static QuintessentialUI Instance { get; }
     public override string ModId => "quintessential_ui";
     public override Type SettingsType => typeof(QuintessentialUISettings);

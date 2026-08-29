@@ -20,14 +20,14 @@ internal sealed class MessageBoxScreenEx : IScreen{
 	private Action onConfirm = () => {};
 	private Action onCancel = () => {};
 
-	internal static MessageBoxScreenEx textbox(Bounds2 bounds, string title, string initialText, string confirmText, Action<string> onConfirm){
+	internal static MessageBoxScreenEx Textbox(Bounds2 bounds, string title, string initialText, string confirmText, Action<string> onConfirm){
 		MessageBoxScreenEx ret = new(){
 			bounds = bounds,
 			title = title,
 			text = initialText,
 			confirmText = confirmText,
 			confirmable = true,
-			cancelText = "Cancel",
+			cancelText = Translations.Translate("Cancel"),
 			isTextbox = true
 		};
 		ret.onConfirm = () => onConfirm(ret.text);
@@ -47,9 +47,9 @@ internal sealed class MessageBoxScreenEx : IScreen{
 		if(isTextbox)
 			centre.Y -= 34f;
 		if(isTextbox){
-			TextureRenderer.RenderText(title, centre + new Vector2(4f, 100f), Assets.fonts.crimson_16_5, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
+			TextureRenderer.RenderText(title, centre + new Vector2(4f, 100f), Assets.fonts.crimson_16_5, class_181.field_1718, TextAlignment.Center, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
 			TextureRenderer.Render9Slice(Assets.textures.UI.dropdown_list, Color.White, Bounds2.WithSize(centre + new Vector2(-265f, 24f), new Vector2(532f, 48f)));
-			Bounds2 bounds2 = TextureRenderer.RenderText(text.Length == 0 ? " " : text, centre + new Vector2(0.0f, 43f), Assets.fonts.crimson_15, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, true, true);
+			Bounds2 bounds2 = TextureRenderer.RenderText(text.Length == 0 ? " " : text, centre + new Vector2(0.0f, 43f), Assets.fonts.crimson_15, class_181.field_1718, TextAlignment.Center, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, true, true);
 			cursorBlink = (cursorBlink + deltaTime) % cursorBlinkSpeed;
 			if(cursorBlink < cursorBlinkSpeed / 2.0)
 				TextureRenderer.RenderColor(class_181.field_1718, Bounds2.WithSize(bounds2.BottomRight + new Vector2(2f, 1f), new Vector2(2f, 22f)));
@@ -60,19 +60,19 @@ internal sealed class MessageBoxScreenEx : IScreen{
 			}
             
             if (InputManager.IsKeyHeld(SDL.SDLKey.SDLK_BACKSPACE) && text.Length > 0) {
-				if (InputManager.IsModifierKeyHeld((ModifierKeyType)1)) {
+				if (InputManager.IsModifierKeyHeld(ModifierKeyType.Ctrl)) {
 					text = text.TrimEnd();
-					text = text.Substring(0, text.LastIndexOf(' ') + 1);
+					text = text[..(text.LastIndexOf(' ') + 1)];
 				} else
-					text = text.Substring(0, text.Length - 1);
+					text = text[..^1];
 
 				cursorBlink = 0.0f;
 			}
 		}else if(field_2626.HasValue()){
-			TextureRenderer.RenderText(title, centre + new Vector2(0.0f, 70f), Assets.fonts.crimson_16_5, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
-			TextureRenderer.RenderText(field_2626.GetValue(), centre + new Vector2(0.0f, 30f), Assets.fonts.crimson_16_5, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
+			TextureRenderer.RenderText(title, centre + new Vector2(0.0f, 70f), Assets.fonts.crimson_16_5, class_181.field_1718, TextAlignment.Center, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
+			TextureRenderer.RenderText(field_2626.GetValue(), centre + new Vector2(0.0f, 30f), Assets.fonts.crimson_16_5, class_181.field_1718, TextAlignment.Center, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
 		}else
-			TextureRenderer.RenderText(title, centre + new Vector2(0.0f, 30f), Assets.fonts.crimson_16_5, class_181.field_1718, (global::TextAlignment)1, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
+			TextureRenderer.RenderText(title, centre + new Vector2(0.0f, 30f), Assets.fonts.crimson_16_5, class_181.field_1718, TextAlignment.Center, 1f, 0.6f, float.MaxValue, float.MaxValue, 0, new Color(), null, int.MaxValue, false, true);
 
 		ButtonDrawingLogic buttonDrawingLogic;
 		if(confirmable){

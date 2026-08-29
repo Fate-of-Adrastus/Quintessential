@@ -7,23 +7,23 @@ public class QuintessentialCoreSettings {
 
 	public static QuintessentialCoreSettings Instance => QuintessentialCore.Instance.Settings as QuintessentialCoreSettings;
 
-	[SettingsLabel("Hot Reload Campaigns")]
+	[SettingsLabelKey("quintessential_core.settings.hot_reload")]
 	public Keybinding HotReloadCampaigns = new("F11");
 
-	[SettingsLabel("Enable Campaign Switcher")]
+	[SettingsLabelKey("quintessential_core.settings.custom_campaigns")]
 	public bool EnableCustomCampaigns = true;
 
-	[SettingsLabel("Campaign Switcher Options:")]
+	[SettingsLabelKey("quintessential_core.settings.switcher")]
 	public CampaignSwitcherSettings SwitcherSettings = new();
 
 	public class CampaignSwitcherSettings : SettingsGroup {
 
 		public override bool Enabled => Instance.EnableCustomCampaigns;
 
-		[SettingsLabel("Switch Campaign Left")]
+		[SettingsLabelKey("quintessential_core.settings.switcher.left")]
 		public Keybinding SwitchCampaignLeft = new() { Key = "K", Control = true };
 		
-		[SettingsLabel("Switch Campaign Right")]
+		[SettingsLabelKey("quintessential_core.settings.switcher.right")]
 		public Keybinding SwitchCampaignRight = new() { Key = "L", Control = true };
 	}
 }

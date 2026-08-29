@@ -10,8 +10,6 @@ namespace Quintessential;
 
 public class QuintessentialLoader
 {
-    public static readonly string VersionString = "0.5.6";
-
     public static string PathLightning;
     public static string PathUnpackedMods;
     public static string PathModSaves;
@@ -144,7 +142,7 @@ public class QuintessentialLoader
                 if (filename.EndsWith(".campaign.yaml"))
                 {
                     CampaignModel c = DataSerializer.Deserialize<CampaignModel>(item);
-                    Logger.Log($"Campaign \"{c.Title}\" ({c.Name}) has {c.Chapters.Count} chapters.");
+                    Logger.Log($"Campaign \"{Translations.Translate(c.TitleKey)}\" ({c.Name}) has {c.Chapters.Count} chapters.");
                     c.Path = Path.GetDirectoryName(item);
                     ModCampaignModels.Add(c);
                 }
@@ -152,12 +150,12 @@ public class QuintessentialLoader
                 if (filename.EndsWith(".journal.yaml"))
                 {
                     JournalModel c = DataSerializer.Deserialize<JournalModel>(item);
-                    Logger.Log($"Journal \"{c.Title}\" has {c.Chapters.Count} chapters.");
+                    Logger.Log($"Journal \"{Translations.Translate(c.TitleKey)}\" has {c.Chapters.Count} chapters.");
                     foreach (var chapter in new List<JournalChapterModel>(c.Chapters))
                     {
                         if (chapter.Puzzles.Count != 5)
                         {
-                            Logger.Log($"Journal chapter \"{chapter.Title}\" in \"{c.Title}\" has {chapter.Puzzles.Count} puzzles instead of 5; skipping chapter.");
+                            Logger.Log($"Journal chapter \"{Translations.Translate(chapter.TitleKey)}\" in \"{Translations.Translate(c.TitleKey)}\" has {chapter.Puzzles.Count} puzzles instead of 5; skipping chapter.");
                             c.Chapters.Remove(chapter);
                         }
                     }
@@ -168,7 +166,7 @@ public class QuintessentialLoader
                         ModJournalModels.Add(c);
                     }
                     else
-                        Logger.Log($"Journal \"{c.Title}\" has no chapters, skipping.");
+                        Logger.Log($"Journal \"{Translations.Translate(c.TitleKey)}\" has no chapters, skipping.");
                 }
             }
         }
@@ -178,8 +176,10 @@ public class QuintessentialLoader
         AllCampaigns.Clear();
 
         VanillaCampaign = Campaigns.opusMagnum;
-        ((patch_Campaign)(object)VanillaCampaign).QuintTitle = "Opus Magnum";
+        ((patch_Campaign)(object)VanillaCampaign).QuintTitle = Translations.Translate("om");
         AllCampaigns.Add(VanillaCampaign);
+
+        Dictionary<string, Texture> iconCache = [];
 
         foreach (var c in ModCampaignModels)
         {
@@ -188,15 +188,15 @@ public class QuintessentialLoader
                 chapters = new CampaignChapter[c.Chapters.Count]
             };
 
-            ((patch_Campaign)(object)campaign).QuintTitle = c.Title;
+            ((patch_Campaign)(object)campaign).QuintTitle = Translations.Translate(c.TitleKey);
 
             for (int j = 0; j < c.Chapters.Count; j++)
             {
                 ChapterModel chapter = c.Chapters[j];
                 campaign.chapters[j] = new CampaignChapter(
-                    Translations.Translate(chapter.Title),
-                    Translations.Translate(chapter.Subtitle),
-                    Translations.Translate(chapter.Place),
+                    Translations.Translate(chapter.TitleKey),
+                    Translations.Translate(chapter.SubtitleKey),
+                    Translations.Translate(chapter.PlaceKey),
                     chapter.Background != null ? AssetLoaderHelper.LoadTexture(chapter.Background) : Campaigns.opusMagnum.chapters[j].background,
                     Campaigns.opusMagnum.chapters[j].lockedIcon,
                     Campaigns.opusMagnum.chapters[j].unlockedIcon,
@@ -208,7 +208,7 @@ public class QuintessentialLoader
 
                 foreach (var entry in chapter.Entries)
                 {
-                    UnlockRequirement requirement = string.IsNullOrEmpty(entry.Requires) ? (UnlockRequirement)new UnlockReqNothing() : new UnlockReqCompleteCampaignItem(entry.Requires);
+                    UnlockRequirement requirement = string.IsNullOrEmpty(entry.Requires) ? new UnlockReqNothing() : new UnlockReqCompleteCampaignItem(entry.Requires);
 
                     var lower = entry.Type.ToLowerInvariant();
                     CampaignItem cItem;
@@ -216,7 +216,7 @@ public class QuintessentialLoader
                     {
                         case "puzzle":
                             {
-                                if (!TryLoadPuzzle(c.Path, entry.Puzzle, c.Title, out var puzzle))
+                                if (!TryLoadPuzzle(c.Path, entry.Puzzle, Translations.Translate(c.TitleKey), out var puzzle))
                                     continue;
 
                                 puzzle.puzzleId = entry.ID;
@@ -230,14 +230,14 @@ public class QuintessentialLoader
                                 }
 
                                 // TODO: optimize
-                                cItem = AddEntryToCampaign(campaign, j, entry.ID, Translations.Translate(entry.Title), (CampaignItemType)0, MaybeHelper.empty, puzzle, Assets.musicTracks.field_972, Assets.sounds.fanfare_solving3, requirement, entry.NoStoryPanel);
+                                cItem = AddEntryToCampaign(campaign, j, entry.ID, Translations.Translate(entry.TitleKey), CampaignItemType.Puzzle, MaybeHelper.empty, puzzle, Assets.musicTracks.field_972, Assets.sounds.fanfare_solving3, requirement, entry.NoStoryPanel);
                                 Array.Resize(ref Puzzles.campaignPuzzles, Puzzles.campaignPuzzles.Length + 1);
-                                Puzzles.campaignPuzzles[Puzzles.campaignPuzzles.Length - 1] = puzzle;
+                                Puzzles.campaignPuzzles[^1] = puzzle;
                                 break;
                             }
                         case "solitaire":
                             {
-                                cItem = new(entry.ID, Translations.Translate("Sigmar's Garden"), (CampaignItemType)3, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.fanfare_solving1, campaign);
+                                cItem = new(entry.ID, Translations.Translate("Sigmar's Garden"), CampaignItemType.Solitaire, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.fanfare_solving1, campaign);
                                 campaign.chapters[j].campaignItems.Add(cItem);
                                 break;
                             }
@@ -248,14 +248,18 @@ public class QuintessentialLoader
 
                     patch_CampaignItem conv = (patch_CampaignItem)(object)cItem;
 
-                    // todo: fix this
+                    Texture GetIcon(string path) {
+                        if (!iconCache.TryGetValue(path, out var icon)) {
+                            icon = AssetLoaderHelper.LoadTexture(path);
+                            iconCache[path] = icon;
+                        }
+                        return icon;
+                    }
 
-                    // probably not great to reload the images every time, in the case that a campaign uses the same image on every puzzle?
-                    // but these are small, and we can definitely handle the case where every puzzle has a unique icon
                     if (!string.IsNullOrWhiteSpace(entry.Icon))
-                        conv.Icon = AssetLoaderHelper.LoadTexture(entry.Icon);
+                        conv.Icon = GetIcon(entry.Icon);
                     if (!string.IsNullOrWhiteSpace(entry.IconSmall))
-                        conv.IconSmall = AssetLoaderHelper.LoadTexture(entry.IconSmall);
+                        conv.IconSmall = GetIcon(entry.IconSmall);
                 }
             }
 
@@ -274,13 +278,13 @@ public class QuintessentialLoader
 
         foreach (JournalModel journal in ModJournalModels)
         {
-            // todo: allow custom journal images?
+            // TODO: allow custom journal images?
 
             List<JournalVolume> volumes = journal.Chapters.Select(chapter =>
                 new JournalVolume
                 {
-                    issueName = Translations.Translate(chapter.Title),
-                    flavorText = Translations.Translate(chapter.Description),
+                    issueName = Translations.Translate(chapter.TitleKey),
+                    flavorText = Translations.Translate(chapter.DescriptionKey),
                     puzzles = GetJournalPuzzles(chapter,journal)
                 }).ToList();
 
@@ -332,18 +336,18 @@ public class QuintessentialLoader
         return campaignItem;
     }
     private static Puzzle[] GetJournalPuzzles(JournalChapterModel chapter, JournalModel journal) {
-        IEnumerable<Puzzle> puzzles = new List<Puzzle>();
-        foreach( var puzzleName in chapter.Puzzles) {
-            Puzzle p = TryLoadPuzzle(journal.Path, puzzleName, journal.Title, out var puzzle) ? puzzle : new Puzzle();
-            puzzles.Concat([p]);
+        List<Puzzle> puzzles = [];
+        foreach( var puzzleFileName in chapter.Puzzles) {
+            Puzzle p = TryLoadPuzzle(journal.Path, puzzleFileName, Translations.Translate(journal.TitleKey), out var puzzle) ? puzzle : new Puzzle();
+            puzzles.Add(p);
         }
-        return puzzles.ToArray();
+        return [.. puzzles];
     }
-    private static bool TryLoadPuzzle(string basePath, string puzzleName, string campaignTitle, out Puzzle puzzle)
+    private static bool TryLoadPuzzle(string basePath, string puzzleFileName, string campaignTitle, out Puzzle puzzle)
     {
         try
         {
-            string baseName = Path.Combine(basePath, puzzleName);
+            string baseName = Path.Combine(basePath, puzzleFileName);
             if (File.Exists(baseName + ".puzzle")) {
                 puzzle = Puzzle.LoadFromFile(baseName + ".puzzle");
             } else if (File.Exists(baseName + ".puzzle.jsonc")) {
@@ -353,7 +357,7 @@ public class QuintessentialLoader
             } else if (File.Exists(baseName + ".puzzle.yaml")) {
                 puzzle = PuzzleModel.FromModel(DataSerializer.Deserialize<PuzzleModel>(baseName + ".puzzle.yaml"));
             } else {
-                Logger.Log($"Puzzle \"{puzzleName}\" from \"{campaignTitle}\" doesn't exist, ignoring");
+                Logger.Log($"Puzzle \"{puzzleFileName}\" from \"{campaignTitle}\" doesn't exist, ignoring");
                 puzzle = null;
                 return false;
             }
@@ -366,7 +370,7 @@ public class QuintessentialLoader
         }
         catch (Exception e)
         {
-            Logger.Log($"Exception loading puzzle \"{puzzleName}\" from \"{campaignTitle}\", ignoring");
+            Logger.Log($"Exception loading puzzle \"{puzzleFileName}\" from \"{campaignTitle}\", ignoring");
             Logger.Log(e);
             puzzle = null;
             return false;

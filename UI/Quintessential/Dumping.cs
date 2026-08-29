@@ -1,4 +1,5 @@
-﻿using Quintessential.Serialization;
+﻿using Quintessential.Internal;
+using Quintessential.Serialization;
 using System.IO;
 
 namespace Quintessential;
@@ -19,7 +20,10 @@ public static class Dumping {
             }
         }
         Logger.Log($"Dumped puzzles to {outDir}");
-        UI.OpenScreen(new NoticeScreen("Puzzle Dumping", $"Saved puzzles to \"{outDir.Replace('\\', '/')}\""));
+        UI.OpenScreen(new NoticeScreen(
+            QuintessentialUI.Instance.Translate("dumping.puzzle"),
+            QuintessentialUI.Instance.Translate("dumping.puzzle.tooltip") + " \"" + outDir.Replace('\\', '/') + "\""
+        ));
     }
 
     internal static void DumpAtomSprites() {
@@ -30,7 +34,10 @@ public static class Dumping {
             Renderer.PngFromTexture(v.GetTarget().renderedTexture).Save(Path.Combine(outDir, atomType.QuintAtomType.ToString().Replace(":", "__") + ".png"));
         }
         Logger.Log($"Dumped atom sprites to {outDir}");
-        UI.OpenScreen(new NoticeScreen("Sprite Dumping", $"Saved atom sprites to \"{outDir.Replace('\\', '/')}\""));
+        UI.OpenScreen(new NoticeScreen(
+            QuintessentialUI.Instance.Translate("dumping.atom_sprite"),
+            QuintessentialUI.Instance.Translate("dumping.atom_sprite.tooltip") + " \"" + outDir.Replace('\\', '/') + "\""
+        ));
     }
     internal static RenderTargetHandle RenderAtomToTarget(AtomType type) {
         RenderTargetHandle renderTargetHandle = new RenderTargetHandle();

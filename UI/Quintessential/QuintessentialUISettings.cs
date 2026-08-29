@@ -8,14 +8,14 @@ public class QuintessentialUISettings {
 
     public static QuintessentialUISettings Instance => QuintessentialUI.Instance.Settings as QuintessentialUISettings;
 
-    //[SettingsLabel("Take Screenshot")]
+    //[SettingsLabelKey("Take Screenshot")]
     //public Keybinding Screenshot = new("F12");
 
-    [SettingsLabel("Dump Puzzles")]
+    [SettingsLabelKey("quintessential_ui.settings.dump_puzzles")]
     [YamlIgnore]
     public SettingsButton DumpPuzzles = Dumping.DumpVanillaPuzzles;
 
-    [SettingsLabel("Dump Atom Sprites")]
+    [SettingsLabelKey("quintessential_ui.settings.dump_atom_sprites")]
     [YamlIgnore]
     public SettingsButton DumpAtomSprites = Dumping.DumpAtomSprites;
 }

@@ -6,12 +6,12 @@ namespace Quintessential.Serialization;
 
 public class JournalModel {
 
-	public string Title { get; set; }
-	
-	public string PuzzleBackgroundLarge { get; set; }
+	public string TitleKey { get; set; }
+
+    public string PuzzleBackgroundLarge { get; set; }
 	public string PuzzleBackgroundSmall { get; set; }
 
-	public List<JournalChapterModel> Chapters = new();
+	public List<JournalChapterModel> Chapters = [];
 
 	[YamlIgnore]
 	public string Path = "";
@@ -22,9 +22,9 @@ public class JournalModel {
 
 public class JournalChapterModel {
 
-	public string Title { get; set; }
+	public string TitleKey { get; set; }
 
-	public string Description { get; set; }
+    public string DescriptionKey { get; set; }
 
-	public List<string> Puzzles = new();
+    public List<string> Puzzles = [];
 }

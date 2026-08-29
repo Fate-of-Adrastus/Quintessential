@@ -11,7 +11,7 @@ public class PuzzleOption{
     // part -> {ID}__{part ID}
 
     public Identifier ID;
-    public LocString Name, SectionName; // TODO to LocString
+    public LocString Name, SectionName;
 	public PuzzleOptionType Type;
 
 	private List<LocString> choices;

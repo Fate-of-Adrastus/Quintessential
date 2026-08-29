@@ -8,7 +8,7 @@ namespace Quintessential.Serialization;
 [DataContract]
 public class PuzzleModel {
 
-    [DataMember] public string Name { get; set; }
+    [DataMember] public string NameKey { get; set; }
     [DataMember] public string ID { get; set; }
     [DataMember] public string Author { get; set; }
     [DataMember] public List<PuzzleIoM> Inputs { get; set; } = [];
@@ -26,7 +26,7 @@ public class PuzzleModel {
 		PuzzleModel model = new(){
 			ID = puzzle.puzzleId,
 			PermissionFlags = puzzle.permissionFlags,
-			Name = puzzle.puzzleName?.GetEnglish() ?? "Unnamed",
+			NameKey = puzzle.puzzleName != null ? ((patch_LocString)(object)puzzle.puzzleName).Key : "",
 			Author = puzzle.journalAuthor.HasValue() ? puzzle.journalAuthor.GetValue() : "",
 			CustomPermissions = [..((patch_Puzzle)(object)puzzle).CustomPermissions ?? []],
 			OutputMultiplier = puzzle.outputMultiplier
@@ -56,7 +56,7 @@ public class PuzzleModel {
 	public static Puzzle FromModel(PuzzleModel model) {
 		Puzzle ret = new(){
             puzzleId = model.ID,
-            puzzleName = Translations.Translate(model.Name),
+            puzzleName = patch_Translations.TranslateByType(model.NameKey),
             inputs = [.. model.Inputs],
             outputs = [.. model.Outputs],
             permissionFlags = model.PermissionFlags,
@@ -131,12 +131,12 @@ public class PuzzleModel {
     public class MoleculeM {
         [DataMember] public List<AtomM> Atoms { get; set; } = [];
         [DataMember] public List<BondM> Bonds { get; set; } = [];
-        [DataMember] public string Name { get; set; } = "";
+        [DataMember] public string NameKey { get; set; } = "";
 
         public MoleculeM() { }
         public static implicit operator MoleculeM (Molecule mol) {
             MoleculeM toReturn = new() {
-				Name = mol.displayName.GetOrDefault(null)?.GetEnglish() ?? "", // TODO find a way to deal with this that is better for localisation
+				NameKey = mol.displayName.HasValue() ? ((patch_LocString)(object)mol.displayName.GetValue()).Key : "",
 			};
 			foreach (var atom in mol.GetMonomer().GetAtoms())
                 toReturn.Atoms.Add(new AtomM(atom.Value, atom.Key));
@@ -151,9 +151,10 @@ public class PuzzleModel {
 			foreach(var item in mol.Bonds)
                 monomer.AddBond((BondTypeEnum)item.BondBits(), item.A, item.B);
 			Molecule toReturn = Molecule.RepeatMonomer(monomer);
-			if(!mol.Name.Equals(""))
-                toReturn.displayName = Translations.Translate(mol.Name);
-			return toReturn;
+			if (!string.IsNullOrEmpty(mol.NameKey))
+				toReturn.displayName = patch_Translations.TranslateByType(mol.NameKey);
+			else toReturn.displayName = new(false, null);
+            return toReturn;
         }
     }
 
