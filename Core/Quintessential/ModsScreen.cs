@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using Quintessential.Internal;
+using Quintessential.Settings;
+using SDL2;
+using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using Quintessential.Internal;
-using Quintessential.Settings;
 
 namespace Quintessential;
 
@@ -10,8 +12,11 @@ class ModsScreen : IScreen {
 
 	private const int modButtonWidth = 300;
 	private static readonly Texture verticalBarCentreTall = AssetLoaderHelper.LoadTexture("textures/vertical_bar_centre_tall");
-	
-	private ModMeta selected = QuintessentialCore.Instance.Meta;
+
+    private int selectedIndex = 0;
+    private ModMeta Selected {
+        get => QuintessentialLoader.Mods[Utils.Clamp(selectedIndex, 0, QuintessentialLoader.Mods.Count - 1)];
+    }
 	private Scrollbar modsListScrollbar = new();
 
 	private struct DrawProgress {
@@ -45,17 +50,24 @@ class ModsScreen : IScreen {
 		if(UI.DrawAndCheckCloseButton(pos, size, new Vector2(104, 98)))
 			UI.HandleCloseButton();
 
-		// draw mod buttons
-		using(var _ = modsListScrollbar.RenderScrollbar(bgPos + new Vector2(0, 5), new(modButtonWidth + 60, (int)bgSize.Y - 10), 0, -30)){
+        if (InputManager.IsKeyHeld(SDL.SDLKey.SDLK_DOWN)) {
+            selectedIndex = Math.Min(selectedIndex + 1, QuintessentialLoader.Mods.Count - 1);
+        } else if (InputManager.IsKeyHeld(SDL.SDLKey.SDLK_UP)) {
+            selectedIndex = Math.Max(selectedIndex - 1, 0);
+        }
+
+        // draw mod buttons
+        using (var _ = modsListScrollbar.RenderScrollbar(bgPos + new Vector2(0, 5), new(modButtonWidth + 60, (int)bgSize.Y - 10), 0, -30)){
 			// clear scroll zone
 			class_226.method_600(Color.Transparent);
 			
 			int y = -(int)modsListScrollbar.scrollOffset;
 			UI.DrawHeader("Mods", new Vector2(20, size.Y - 200 - y), modButtonWidth, true, true);
-			
-			foreach(var mod in QuintessentialLoader.Mods) {
-                if (UI.DrawAndCheckSolutionButton(Translations.Translate(mod.ModId), mod.Version.ToString(), new Vector2(20, size.Y - 290 - y), modButtonWidth, selected == mod))
-                    selected = mod;
+
+            for (int i = 0; i < QuintessentialLoader.Mods.Count; i++) {
+                ModMeta mod = QuintessentialLoader.Mods[i];
+                if (UI.DrawAndCheckSolutionButton(Translations.Translate(mod.ModId), mod.Version.ToString(), new Vector2(20, size.Y - 290 - y), modButtonWidth, Selected == mod))
+                    selectedIndex = i;
                 y += 70;
             }
 			
@@ -64,7 +76,7 @@ class ModsScreen : IScreen {
 		}
 		
 		// draw mod options panel
-		DrawModOptions(pos + new Vector2(modButtonWidth + 160, -10), size - new Vector2(160, 10), selected);
+		DrawModOptions(pos + new Vector2(modButtonWidth + 160, -10), size - new Vector2(160, 10), Selected);
 	}
 
 	private void DrawModOptions(Vector2 pos, Vector2 size, ModMeta mod) {
@@ -95,9 +107,7 @@ class ModsScreen : IScreen {
 
 	private bool DrawModSettings(QuintessentialMod mod, Vector2 pos, Vector2 bgSize) {
 		var settings = mod.Settings;
-		if(settings == null)
-			return false;
-		return DrawSettingsObject(mod, settings, pos, bgSize, 170).pressed;
+		return settings == null ? false : DrawSettingsObject(mod, settings, pos, bgSize, 170).pressed;
 	}
 
 	private DrawProgress DrawSettingsObject(QuintessentialMod mod, object settings, Vector2 pos, Vector2 bgSize, float startY) {

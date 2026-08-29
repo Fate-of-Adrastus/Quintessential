@@ -215,7 +215,6 @@ public class QuintessentialLoader
                     switch (lower)
                     {
                         case "puzzle":
-                            {
                                 if (!TryLoadPuzzle(c.Path, entry.Puzzle, Translations.Translate(c.TitleKey), out var puzzle))
                                     continue;
 
@@ -234,13 +233,16 @@ public class QuintessentialLoader
                                 Array.Resize(ref Puzzles.campaignPuzzles, Puzzles.campaignPuzzles.Length + 1);
                                 Puzzles.campaignPuzzles[^1] = puzzle;
                                 break;
-                            }
                         case "solitaire":
-                            {
                                 cItem = new(entry.ID, Translations.Translate("Sigmar's Garden"), CampaignItemType.Solitaire, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.fanfare_solving1, campaign);
                                 campaign.chapters[j].campaignItems.Add(cItem);
                                 break;
-                            }
+                        case "cutscene":
+                                cItem = new(entry.ID, Translations.Translate(entry.TitleKey), CampaignItemType.Cutscene, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.fanfare_solving1, campaign);
+                                break;
+                        case "document":
+                                cItem = new(entry.ID, Translations.Translate(entry.TitleKey), CampaignItemType.Letter, MaybeHelper.empty, requirement, Assets.musicTracks.field_970, Assets.sounds.fanfare_solving1, campaign);
+                                break;
                         default:
                             Logger.Log($"Campaign entry in {c.Name} has unknown type {entry.Type}, skipping");
                             continue;

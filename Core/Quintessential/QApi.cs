@@ -9,7 +9,8 @@ public static class QApi {
 	public static readonly List<Tuple<Predicate<Part>, PartRendererDelegate>> PartRenderers = [];
 	public static readonly List<Tuple<PartType, PartType>> PanelParts = [];
 	public static readonly List<AtomType> ModAtomTypes = [];
-	public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
+    public static readonly List<Action<Sim, Part, PartSimState, bool>> ToRunDuringCycle = [];
+    public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
 	public static readonly List<Tuple<string, SolutionPayloadHandler>> SolutionPayloadHandler = [];
 	public static readonly List<PuzzleOption> PuzzleOptions = [];
 
@@ -86,11 +87,19 @@ public static class QApi {
 		AtomTypes.atoms[len - 1] = type;
 	}
 
-	/// <summary>
-	/// Runs the given action at the end of every half-cycle.
-	/// </summary>
-	/// <param name="runnable">An action to be run every half-cycle, given the sim and whether it is the start or end.</param>
-	public static void RunAfterCycle(Action<Sim, bool> runnable) {
+    /// <summary>
+    /// Runs the given action for every part on each half-cycle.
+    /// </summary>
+    /// <param name="runnable">An action to be run for every part, given the sim, part, partSimState, and whether it is the start or end.</param>
+    public static void RunDuringCycle(Action<Sim, Part, PartSimState, bool> runnable) {
+        ToRunDuringCycle.Add(runnable);
+    }
+
+    /// <summary>
+    /// Runs the given action at the end of every half-cycle.
+    /// </summary>
+    /// <param name="runnable">An action to be run every half-cycle, given the sim and whether it is the start or end.</param>
+    public static void RunAfterCycle(Action<Sim, bool> runnable) {
 		ToRunAfterCycle.Add(runnable);
 	}
 
@@ -103,14 +112,14 @@ public static class QApi {
 	/// <param name="id">The ID of the permission that is used during checks and saved to puzzle files.</param>
 	/// <param name="displayName">The name of the permission that is displayed in the UI, e.g. "Glyphs of Quintessence".</param>
 	/// <param name="sectionName">The name of the section that the permission will appear under.</param>
-	public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName = "", string sectionName = ""){
+	public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName = "", string sectionName = "", int length = 2) {
 		if (displayName == "") displayName = id;
 		var sectionNameLoc = mod.Translate(
             "permission_sections" + (sectionName == "" ? "" : "." + sectionName)
 		);
 		var displayNameLoc = mod.Translate("permissions." + displayName );
 
-        PuzzleOptions.Add(PuzzleOption.BoolOption(mod.GetIdentifier(id), displayNameLoc, sectionNameLoc));
+        PuzzleOptions.Add(PuzzleOption.BoolOption(mod.GetIdentifier(id), displayNameLoc, sectionNameLoc, length));
 	}
 
 	public static void AddPuzzleOption(PuzzleOption option){

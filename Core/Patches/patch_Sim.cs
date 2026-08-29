@@ -1,5 +1,10 @@
-﻿using MonoMod;
+﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
+using MonoMod;
+using MonoMod.Cil;
+using MonoMod.InlineRT;
 using Quintessential;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -58,4 +63,46 @@ class patch_Sim{
 		foreach(var action in QApi.ToRunAfterCycle)
 			action((Sim)(object)this, isCycleStart);
 	}
+
+    public void RunMidcycleDelegates(Sim.ReferredPart partWrapper, PartSimState pss, bool first) {
+        Part part = partWrapper.part;
+        foreach (var action in QApi.ToRunDuringCycle) {
+            action((Sim)(object)this, part, pss, first);
+        }
+    }
+
+    [MonoModILInject("RunCycleGlyphs")]
+    public static void PatchGlyphBehaviour(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching glyph Behaviour");
+        if (!method.HasBody) {
+            Console.WriteLine("Unable to patch glyph behaviour (no body)");
+            throw new Exception();
+        }
+        ILCursor gremlin = new(new ILContext(method));
+
+        if (!gremlin.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdloc(6),
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "part",
+            instr => instr.MatchCallvirt(out MethodReference m) && m.Name == "GetType",
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "bonders",
+            instr => instr.MatchLdlen()
+        )) {
+            Console.WriteLine("Unable to patch glyph behaviour (no bonder check)");
+            throw new Exception();
+        }
+
+        TypeDefinition holder = MonoModRule.Modder.FindType("Sim").Resolve();
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunMidcycleDelegates"));
+        Instruction oldTarget = gremlin.Next;
+        gremlin.Emit(OpCodes.Ldarg_0);
+        Instruction newTarget = gremlin.Previous;
+        gremlin.Emit(OpCodes.Ldloc, 6);
+        gremlin.Emit(OpCodes.Ldloc, 7);
+        gremlin.Emit(OpCodes.Ldarg_1);
+        gremlin.Emit(OpCodes.Call, to);
+        // I don't know why it never works, but MonoMod's goto and branch handling is not functional, or I don't know how it works.
+        foreach (var v in gremlin.Instrs.Where(v => v.Operand is Instruction t && t == oldTarget)) {
+            v.Operand = newTarget;
+        }
+    }
 }

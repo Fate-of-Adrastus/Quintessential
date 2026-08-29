@@ -12,17 +12,19 @@ public class PuzzleOption{
 
     public Identifier ID;
     public LocString Name, SectionName;
-	public PuzzleOptionType Type;
+	public int length;
+    public PuzzleOptionType Type;
 
 	private List<LocString> choices;
 
-	public static PuzzleOption BoolOption(Identifier id, LocString name, LocString sectionName){
+	public static PuzzleOption BoolOption(Identifier id, LocString name, LocString sectionName, int length){
 		return new PuzzleOption{
 			ID = id,
 			Name = name,
 			SectionName = sectionName,
-			Type = PuzzleOptionType.Boolean
-		};
+			Type = PuzzleOptionType.Boolean,
+            length = length,
+        };
 	}
 	
 	public static PuzzleOption MultiChoiceOption(Identifier id, LocString name, LocString sectionName, params LocString[] choices){
@@ -110,5 +112,5 @@ public enum PuzzleOptionType{
 	Boolean,
 	MultiChoice,
 	Part,
-	Atom
+	Atom,
 }

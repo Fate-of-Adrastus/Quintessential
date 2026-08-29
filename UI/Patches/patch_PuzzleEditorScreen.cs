@@ -109,7 +109,7 @@ class patch_PuzzleEditorScreen {
 					var idx = 0;
 					foreach (var option in category) {
 						// ReSharper disable once PossibleLossOfFraction
-						Vector2 selectorPos = cursor + new Vector2(ruleSize.X * (idx % 4) + 5, ruleSize.Y * (idx / 4 + 1.5f));
+						Vector2 selectorPos = cursor + new Vector2(ruleSize.X / 2f * (idx % 8) + 5, ruleSize.Y * (idx / 4 + 1.5f));
 						// TODO: other option types
 						if (option.Type == PuzzleOptionType.Boolean) {
 							bool enabled = conv.CustomPermissions.Contains(option.ID);
@@ -119,26 +119,26 @@ class patch_PuzzleEditorScreen {
 								else
 									conv.CustomPermissions.Add(option.ID);
                                 puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
-							}
-						} else if (option.Type == PuzzleOptionType.Atom) {
-							var currentChoice = option.AtomIn(puzzle);
-							if (DrawAtomSelector(selectorPos, option.Name, currentChoice ?? AtomTypes.repeat))
-								UI.OpenScreen(new AtomSelectScreen(QuintessentialUI.Instance.Translate("editor.select_option") + " " + option.Name, type => {
-									option.SetAtomIn(puzzle, type);
+                            }
+                            if (option.length == 0) idx += 2;
+                            else idx += option.length;
+                        } else if (option.Type == PuzzleOptionType.Atom) {
+                            var currentChoice = option.AtomIn(puzzle);
+                            if (DrawAtomSelector(selectorPos, option.Name, currentChoice ?? AtomTypes.repeat))
+                                UI.OpenScreen(new AtomSelectScreen(QuintessentialUI.Instance.Translate("editor.select_option") + " " + option.Name, type => {
+                                    option.SetAtomIn(puzzle, type);
                                     puzzle.SaveToFile(GameLogic.instance.workshopManager.CustomPuzzlePath(puzzle));
-								}, currentChoice));
-						}
+                                }, currentChoice));
+                            idx++;
+                        }
+                    }
+                    var rows = (int)Math.Ceiling(idx / 8f);
+                    cursor += new Vector2(0, ruleSize.Y * (rows + 2));
+                }
 
-						idx++;
-					}
-
-					var rows = (int)Math.Ceiling(idx / 4f);
-					cursor += new Vector2(0, ruleSize.Y * (rows + 2));
-				}
-
-			// expand the scroll area to cover the entire displayed area
-			// we're off by one row
-			scrollbar.SetHeightAndClamp(nCorner.Y - cursor.Y + panelSize.Height - ruleSize.Y + 24);
+            // expand the scroll area to cover the entire displayed area
+            // we're off by one row
+            scrollbar.SetHeightAndClamp(nCorner.Y - cursor.Y + panelSize.Height - ruleSize.Y + 24);
 		}
 	}
 
