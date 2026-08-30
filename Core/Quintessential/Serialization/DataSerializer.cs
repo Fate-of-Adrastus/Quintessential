@@ -26,73 +26,89 @@ public static class DataSerializer {
         MultilineFormat = multilineFormat;
     }
     public static object Deserialize(string filePath, Type type) {
-        string filename = Path.GetFileName(filePath);
+        try {
+            string filename = Path.GetFileName(filePath);
 
-        if (filename.EndsWith(".yaml")) {
-            using StreamReader reader = new(filePath);
-            return YamlHelper.Deserializer.Deserialize(reader, type);
+            if (filename.EndsWith(".yaml")) {
+                using StreamReader reader = new(filePath);
+                return YamlHelper.Deserializer.Deserialize(reader, type);
+            }
+
+            if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
+                string data = File.ReadAllText(filePath, Encoding.UTF8);
+                if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
+
+                return JsonSerializer.Deserialize(data, type, MultilineFormat ? multilineOptions : compactOptions);
+            }
+
+        } catch (Exception ex) {
+            throw new SerializationException("Failed to deserialize file: " + filePath, ex);
         }
-
-        if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
-            string data = File.ReadAllText(filePath, Encoding.UTF8);
-            if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
-
-            return JsonSerializer.Deserialize(data, type, MultilineFormat ? multilineOptions : compactOptions);
-        }
-
         throw new SerializationException("Invalid file extension at: " + filePath);
     }
     public static T Deserialize<T>(string filePath) {
-        string filename = Path.GetFileName(filePath);
+        try {
+            string filename = Path.GetFileName(filePath);
 
-        if (filename.EndsWith(".yaml")) {
-            using StreamReader reader = new(filePath);
-            return YamlHelper.Deserializer.Deserialize<T>(reader);
+            if (filename.EndsWith(".yaml")) {
+                using StreamReader reader = new(filePath);
+                return YamlHelper.Deserializer.Deserialize<T>(reader);
+            }
+
+            if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
+                string data = File.ReadAllText(filePath, Encoding.UTF8);
+                if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
+
+                return JsonSerializer.Deserialize<T>(data, MultilineFormat ? multilineOptions : compactOptions);
+            }
+
+        } catch (Exception ex) {
+            throw new SerializationException("Failed to deserialize file: " + filePath, ex);
         }
-
-        if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
-            string data = File.ReadAllText(filePath, Encoding.UTF8);
-            if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
-
-            return JsonSerializer.Deserialize<T>(data, MultilineFormat ? multilineOptions : compactOptions);
-        }
-
         throw new SerializationException("Invalid file extension at: " + filePath);
     }
     public static T Deserialize<T>(Stream fileDataStream, string filePath) {
-        string filename = Path.GetFileName(filePath);
+        try {
+            string filename = Path.GetFileName(filePath);
 
-        if (filename.EndsWith(".yaml")) {
-            using StreamReader reader = new(fileDataStream);
-            return YamlHelper.Deserializer.Deserialize<T>(reader);
+            if (filename.EndsWith(".yaml")) {
+                using StreamReader reader = new(fileDataStream);
+                return YamlHelper.Deserializer.Deserialize<T>(reader);
+            }
+
+            if (filename.EndsWith(".jsonc") || filename.EndsWith(".jsonc")) {
+                using var reader = new StreamReader(fileDataStream, Encoding.UTF8);
+                string data = reader.ReadToEnd();
+                if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
+
+                return JsonSerializer.Deserialize<T>(data, MultilineFormat ? multilineOptions : compactOptions);
+            }
+
+        } catch (Exception ex) {
+            throw new SerializationException("Failed to deserialize file: " + filePath, ex);
         }
-
-        if (filename.EndsWith(".jsonc") || filename.EndsWith(".jsonc")) {
-            using var reader = new StreamReader(fileDataStream, Encoding.UTF8);
-            string data = reader.ReadToEnd();
-            if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
-
-            return JsonSerializer.Deserialize<T>(data, MultilineFormat ? multilineOptions : compactOptions);
-        }
-
         throw new SerializationException("Invalid file extension while reading from stream.");
     }
 
     public static void Serialize<T>(this T data, string filePath) {
-        string filename = Path.GetFileName(filePath);
+        try {
+            string filename = Path.GetFileName(filePath);
 
-        if (filename.EndsWith(".yaml")) {
-            string serializedData = YamlHelper.Serializer.Serialize(data);
-            File.WriteAllText(filePath, serializedData);
-            return;
+            if (filename.EndsWith(".yaml")) {
+                string serializedData = YamlHelper.Serializer.Serialize(data);
+                File.WriteAllText(filePath, serializedData);
+                return;
+            }
+
+            if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
+                using FileStream fileStream = new(filePath, FileMode.OpenOrCreate);
+                JsonSerializer.Serialize(fileStream, data, MultilineFormat ? multilineOptions : compactOptions);
+                return;
+            }
+
+        } catch (Exception ex) {
+            throw new SerializationException("Failed to serialize file: " + filePath, ex);
         }
-
-        if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
-            using FileStream fileStream = new(filePath, FileMode.OpenOrCreate);
-            JsonSerializer.Serialize(fileStream, data, MultilineFormat ? multilineOptions : compactOptions);
-            return;
-        }
-
         throw new SerializationException("Invalid file extension while serializing: " + filePath);
     }
 
