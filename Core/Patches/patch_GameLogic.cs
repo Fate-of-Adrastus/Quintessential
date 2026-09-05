@@ -33,22 +33,7 @@ class patch_GameLogic{
 
 	public void ContentInit(){
         orig_ContentInit();
-
-        Logger.Log("Starting content loading.");
-        foreach (var mod in QuintessentialLoader.CodeMods)
-            mod.LoadContent();
-        foreach (var mod in QuintessentialLoader.CodeMods)
-            mod.LoadCompatContent();
-
-        Logger.Log("Loading campaigns and journals.");
-        QuintessentialLoader.LoadCampaigns();
-        QuintessentialLoader.LoadJournals();
-
-        Logger.Log("Finalising content.");
-        foreach (var mod in QuintessentialLoader.CodeMods)
-            mod.FinaliseContent();
-
-        Logger.Log("Finished content loading.");
+        QuintessentialLoader.ModContentInit();
     }
 
     [MonoModILInject("ContentInit")]

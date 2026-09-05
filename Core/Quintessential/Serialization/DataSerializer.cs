@@ -2,21 +2,28 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Quintessential.Serialization;
 
 public static class DataSerializer {
 
     private static bool MultilineFormat;
+    internal static bool WasInit = false;
 
+    private static readonly JsonSerializerOptions initOptions = new() {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        AllowTrailingCommas = true,
+    };
     private static readonly JsonSerializerOptions compactOptions = new() {
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         AllowTrailingCommas = true,
         WriteIndented = false,
     };
     private static readonly JsonSerializerOptions multilineOptions = new() {
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         AllowTrailingCommas = true,
         WriteIndented = true,
@@ -25,6 +32,11 @@ public static class DataSerializer {
     public static void SetMultilineFormat(bool multilineFormat) {
         MultilineFormat = multilineFormat;
     }
+    public static void AssignConverter(JsonConverter converter) {
+        compactOptions.Converters.Add(converter);
+        multilineOptions.Converters.Add(converter);
+    }
+
     public static object Deserialize(string filePath, Type type) {
         try {
             string filename = Path.GetFileName(filePath);
@@ -38,7 +50,7 @@ public static class DataSerializer {
                 string data = File.ReadAllText(filePath, Encoding.UTF8);
                 if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
 
-                return JsonSerializer.Deserialize(data, type, MultilineFormat ? multilineOptions : compactOptions);
+                return JsonSerializer.Deserialize(data, type, GetCurrentOption());
             }
 
         } catch (Exception ex) {
@@ -59,7 +71,7 @@ public static class DataSerializer {
                 string data = File.ReadAllText(filePath, Encoding.UTF8);
                 if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
 
-                return JsonSerializer.Deserialize<T>(data, MultilineFormat ? multilineOptions : compactOptions);
+                return JsonSerializer.Deserialize<T>(data, GetCurrentOption());
             }
 
         } catch (Exception ex) {
@@ -81,7 +93,7 @@ public static class DataSerializer {
                 string data = reader.ReadToEnd();
                 if (filename.EndsWith(".jsonc")) data = PreparseJsonc(data);
 
-                return JsonSerializer.Deserialize<T>(data, MultilineFormat ? multilineOptions : compactOptions);
+                return JsonSerializer.Deserialize<T>(data, GetCurrentOption());
             }
 
         } catch (Exception ex) {
@@ -102,7 +114,7 @@ public static class DataSerializer {
 
             if (filename.EndsWith(".json") || filename.EndsWith(".jsonc")) {
                 using FileStream fileStream = new(filePath, FileMode.OpenOrCreate);
-                JsonSerializer.Serialize(fileStream, data, MultilineFormat ? multilineOptions : compactOptions);
+                JsonSerializer.Serialize(fileStream, data, GetCurrentOption());
                 return;
             }
 
@@ -157,6 +169,9 @@ public static class DataSerializer {
             }
         }
         return jsonData.ToString();
+    }
+    private static JsonSerializerOptions GetCurrentOption() {
+        return WasInit ? MultilineFormat ? multilineOptions : compactOptions : initOptions;
     }
 
     public class SerializationException : Exception {

@@ -5,7 +5,12 @@ using System;
 namespace MonoMod;
 
 [MonoModCustomAttribute(nameof(MonoModRules.RemoveReadOnly))]
-class RemoveReadOnly : Attribute { }
+[AttributeUsage(AttributeTargets.Field)]
+class MonoModRemoveReadOnly : Attribute { }
+
+[MonoModCustomAttribute(nameof(MonoModRules.Internal))]
+[AttributeUsage(AttributeTargets.Field)]
+class MonoModInternal : Attribute { }
 
 static class MonoModRules {
 
@@ -15,5 +20,8 @@ static class MonoModRules {
 
     public static void RemoveReadOnly(FieldDefinition field, CustomAttribute attrib) {
         field.IsInitOnly = false;
+    }
+    public static void Internal(FieldDefinition field, CustomAttribute attrib) {
+        field.IsAssembly = true;
     }
 }

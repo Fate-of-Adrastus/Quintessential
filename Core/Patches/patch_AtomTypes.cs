@@ -1,9 +1,15 @@
 ﻿#pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
 
-class patch_AtomTypes{
-	
-	public static extern void orig_Init();
+using Quintessential;
+using System.Linq;
 
+class patch_AtomTypes{
+
+	public static AtomType GetByID(Identifier id) {
+		return AtomTypes.atoms.First(atom => ((patch_AtomType)(object)atom).QuintAtomType == id);
+	}
+
+	public static extern void orig_Init();
 	public static void Init(){
         orig_Init();
 		((patch_AtomType)(object)AtomTypes.salt).QuintAtomType = "om:salt";

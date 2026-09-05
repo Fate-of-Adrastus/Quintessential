@@ -24,9 +24,13 @@ class patch_Sim{
 	public List<Molecule> molecules;
 	[MonoModPublic]
 	public List<Sim.Collider> additionalCollisions;
-	
-	// Hold onto held grippers
-	public List<Part> HeldGrippers;
+
+    [MonoModPublic]
+    [MonoModIgnore]
+    private extern Maybe<AtomReference> GetAtomReference(Part part, HexIndex offset, List<Part> holdingParts, bool allowPartAttachedAtoms);
+
+    // Hold onto held grippers
+    public List<Part> HeldGrippers;
 
 	// Helper methods to find held or unheld atoms
 	public Maybe<AtomReference> FindAtomRelative(Part part, HexIndex offset){
@@ -103,6 +107,46 @@ class patch_Sim{
         // I don't know why it never works, but MonoMod's goto and branch handling is not functional, or I don't know how it works.
         foreach (var v in gremlin.Instrs.Where(v => v.Operand is Instruction t && t == oldTarget)) {
             v.Operand = newTarget;
+        }
+    }
+
+    [MonoModILInject("RunCycleGlyphs")]
+    static void PatchWasActivated(MethodDefinition method, CustomAttribute attribute) {
+
+        if (!method.HasBody) {
+            throw new Exception("Unable to patch Recipe System init. (no body)");
+        }
+        ILCursor cursor = new(new ILContext(method));
+        TypeDefinition recipeType = MonoModRule.Modder.FindType("PartSimState").Resolve();
+        FieldDefinition recipesField = recipeType.Fields.First(f => f.Name.Equals("wasActivated"));
+
+        cursor.GotoNext(MoveType.After, instr => instr.MatchStloc(7));
+        cursor.EmitLdloc(7);
+        cursor.EmitLdcI4(0);
+        cursor.EmitStfld(recipesField);
+
+        while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld("PartSimState", "isProcessing"), instr => instr.OpCode == OpCodes.Brtrue)) {
+            var toEdit = cursor.Prev;
+            cursor.Goto((Instruction)cursor.Prev.Operand, MoveType.Before);
+            if (cursor.Previous.OpCode != OpCodes.Br) continue;
+            var exitTarget = (Instruction)cursor.Prev.Operand;
+            cursor.EmitLdloc(7);
+            var newTarget = cursor.Prev;
+            cursor.EmitLdfld(recipesField);
+            cursor.Emit(OpCodes.Brtrue, exitTarget);
+            cursor.EmitLdloc(7);
+            cursor.EmitLdcI4(1);
+            cursor.EmitStfld(recipesField);
+            cursor.Goto(toEdit, MoveType.Before);
+            cursor.Next.Operand = newTarget;
+        }
+
+        cursor.Index = 0;
+        while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "PlaySound"))) {
+            if (cursor.Previous.Previous.MatchLdfld("SoundAssets", "solution")) continue;
+            cursor.EmitLdloc(7);
+            cursor.EmitLdcI4(1);
+            cursor.EmitStfld(recipesField);
         }
     }
 }

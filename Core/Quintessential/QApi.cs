@@ -1,5 +1,4 @@
-﻿using Quintessential.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Quintessential;
@@ -52,6 +51,7 @@ public static class QApi {
 	/// </summary>
 	/// <param name="type">The part type to be added.</param>
 	public static void AddPartType(this QuintessentialMod mod, PartType type, string id) {
+        ((patch_PartType)(object)type).Id = mod.GetIdentifier(id);
 		type.id = mod.GetIdentifier(id);
         type.name = mod.Translate("parts." + id);
         type.description = mod.Translate("parts." + id + ".description");
