@@ -25,7 +25,7 @@ Tasks:
 * run -args "-devEnv -pseudoLang" --attachDebugger --readLogs
 
 AutoExit:
-  false
+  true
 
 # CopyTasksPath:
 # D:\C#_projects\Quintessential

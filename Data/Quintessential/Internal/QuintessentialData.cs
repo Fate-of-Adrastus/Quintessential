@@ -8,7 +8,7 @@ internal class QuintessentialData : QuintessentialMod, IDataMod {
     public static QuintessentialData Instance { get; }
 
     public override void Load() {
-        DataSerializer.AssignConverter(new AtomTag.AtomTagJsonConverter());
+        DataSerializer.AssignConverter(AtomTagJsonConverter.Get());
     }
 
     public override void LoadContent() {

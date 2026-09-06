@@ -13,9 +13,9 @@ public interface IDataMod {
     }
 
     public static sealed void LoadTagsFromFile(QuintessentialMod mod) {
-        if (File.Exists(Path.Combine(mod.Meta.PathToDirectory, "Content", "tags", "atomtags.jsonc"))) {
-            DataSerializer.Deserialize<Dictionary<Identifier, AtomTag>>(Path.Combine(mod.Meta.PathToDirectory, "Content", "tags", "atomtags.jsonc"));
-            Logger.Log($"Loaded atomtags.jsonc from '{mod.ModId}'");
+        if (File.Exists(Path.Combine(mod.Meta.PathToDirectory, "Content", "tags", AtomTag.FileName))) {
+            DataSerializer.Deserialize<Dictionary<Identifier, AtomTag>>(Path.Combine(mod.Meta.PathToDirectory, "Content", "tags", AtomTag.FileName));
+            Logger.Log($"Loaded {AtomTag.FileName} from '{mod.ModId}'");
         }
     }
 }
