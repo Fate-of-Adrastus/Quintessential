@@ -17,3 +17,4 @@ public class Payloads
 
     public List<Payload> SolutionInitialization = [];
 }
+// TODO figure out how does this work and improve it
