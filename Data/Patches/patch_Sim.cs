@@ -8,6 +8,7 @@ using MonoMod.InlineRT;
 using Quintessential;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 public class patch_Sim : Sim {
@@ -51,143 +52,139 @@ public class patch_Sim : Sim {
         ILCursor cursor = new(new ILContext(method));
 
 
-        // Replace loc0 with field
+        // --- Replace loc0 with field
         FieldDefinition holdingParts = MonoModRule.Modder.FindType("Sim").Resolve().Fields.First(f => f.Name.Equals("HoldingParts"));
         cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "SpawnMolecules"));
         cursor.EmitLdarg0();
         cursor.EmitLdloc0();
         cursor.EmitStfld(holdingParts);
 
-        if (!cursor.TryGotoNext(MoveType.Before,
+        cursor.TryGotoNext(MoveType.After,
             instr => instr.MatchLdarg0(),
-            instr => instr.MatchCallvirt("Sim","GetSolution"),
+            instr => instr.MatchCallvirt("Sim", "GetSolution"),
             instr => instr.MatchLdfld("Solution", "parts"),
             instr => instr.OpCode == OpCodes.Callvirt,
             instr => instr.MatchStloc2(),
-            instr => instr.OpCode == OpCodes.Br
-        )) {
-            throw new Exception("Unable to patch Recipe System init. (no target)");
-        }
-        Instruction loopEnd = null;
-        while (cursor.Prev.OpCode != OpCodes.Br) {
-            cursor.Index++;
-            if (loopEnd == null && cursor.Prev.OpCode == OpCodes.Br) loopEnd = (Instruction)cursor.Prev.Operand;
-        }
-        TypeDefinition recipeType = MonoModRule.Modder.FindType("Quintessential.GlyphRecipe").Resolve();
-        FieldDefinition recipesField = recipeType.Fields.First(f => f.Name.Equals("GlyphRecipes"));
+            instr => instr.OpCode == OpCodes.Br);
 
-        // Get the reference for the code
+        // --- General setup
+        Instruction loopEnd = (Instruction)cursor.Prev.Operand;
+        Instruction upperHead = null; // the current position of the edits ( need this since we have to jump around a lot )
         MethodDefinition referenceCode = MonoModRule.Modder.FindType("Sim").Resolve().Methods.First(f => f.Name.Equals("PatchRecipeSystemCodeReference"));
         ILCursor referenceCulsor = new(new ILContext(referenceCode));
-        TypeReference enumeratorType = referenceCode.Body.Variables[0].VariableType;
-        MethodReference getEnumeratior = null;
-        MethodReference moveNextEnumeratior = null;
-        TypeReference currentValueType = referenceCode.Body.Variables[1].VariableType;
-        MethodReference getCurrent = null;
-        referenceCulsor.TryGotoNext(instr => instr.MatchCallvirt(out getEnumeratior));
-        referenceCulsor.TryGotoNext(instr => instr.MatchCall(out moveNextEnumeratior));
-        referenceCulsor.TryGotoNext(instr => instr.MatchCall(out getCurrent));
+
         cursor.TryGotoNext(MoveType.Before,
             instr => instr.MatchLdloc(6),
             instr => instr.MatchLdfld("Sim/ReferredPart", "part"),
             instr => instr.MatchCallvirt("Part", "GetType"),
             instr => instr.MatchLdsfld("PartTypes", "calcificationGlyph"));
 
-        // --- Create new local eumerator & start creating the loop
+        // --- Get the list of recipes for the part
+        TypeReference recipeDictionaryType = referenceCode.Body.Variables[0].VariableType;
+        method.Body.Variables.Add(new VariableDefinition(recipeDictionaryType));
+        var recipeDictionary = method.Body.Variables[^1];
+        FieldReference recipesField = null;
+        referenceCulsor.TryGotoNext(instr => instr.MatchLdsfld(out recipesField));
+        MethodReference tryGetValueRef = null;
+        referenceCulsor.TryGotoNext(instr => instr.MatchCallvirt(out tryGetValueRef));
+        cursor.EmitLdsfld(recipesField);
+            // * Go and fetch `referredPart.part.GetType().Id`
+            upperHead = cursor.Prev; // > Save position
+            cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld("Sim/ReferredPart", "part"), instr => instr.MatchCallvirt("Part", "GetType"));
+            FieldReference referencePart = (FieldReference)cursor.Previous.Previous.Operand;
+            MethodReference getPartType = (MethodReference)cursor.Previous.Operand;
+            cursor.Goto(upperHead, MoveType.After); // > Restore position
+            cursor.EmitLdloc(6);
+            cursor.EmitLdfld(referencePart);
+            cursor.EmitCallvirt(getPartType);
+            MethodDefinition partTypeId = MonoModRule.Modder.FindType("PartType").Resolve().Methods.First(f => f.Name.Equals("get_Id"));
+            cursor.EmitCall(partTypeId);
+        cursor.EmitLdloca(recipeDictionary);
+        cursor.EmitCallvirt(tryGetValueRef);
+        cursor.Emit(OpCodes.Brfalse, loopEnd);
+
+        // --- Get the reference for the loop code
+        TypeReference enumeratorType = referenceCode.Body.Variables[2].VariableType;
+        MethodReference getEnumeratior = null;
+        referenceCulsor.TryGotoNext(instr => instr.MatchCallvirt(out getEnumeratior));
+        MethodReference moveNextEnumeratior = null;
+        referenceCulsor.TryGotoNext(instr => instr.MatchCall(out moveNextEnumeratior));
+        MethodReference getCurrent = null;
+        referenceCulsor.TryGotoNext(instr => instr.MatchCall(out getCurrent));
+
+        // --- Create new local dictionary &  Start creating the loop
         method.Body.Variables.Add(new VariableDefinition(enumeratorType));
         var enumeratorVar = method.Body.Variables[^1];
 
-        cursor.EmitLdsfld(recipesField);
-        var first = cursor.Prev;
+        cursor.EmitLdloc(recipeDictionary);
+        // var first = cursor.Prev;
         cursor.EmitCallvirt(getEnumeratior);
         cursor.EmitStloc(enumeratorVar);
-        // We should cursor.EmitBr(); but first get the target instruction Set
-        var upperHead = cursor.Prev;
-        cursor.Goto(loopEnd);
+            // * We should cursor.EmitBr(); but first get the target instruction
+            // * Meanwhile doing the back of the loop
+            upperHead = cursor.Prev; // > Save position
+            cursor.Goto(loopEnd);
 
-        Instruction continueTarget = (Instruction)cursor.Next.Next.Next.Operand; // BrtrueS
-        //var dispose = (MethodReference)cursor.Next.Next.Next.Next.Next.Next.Next.Operand; // call virt
+            Instruction continueTarget = (Instruction)cursor.Next.Next.Next.Operand; // BrtrueS
+            MethodReference dispose = (MethodReference)cursor.Next.Next.Next.Next.Next.Next.Next.Operand; // call virt
 
-        cursor.EmitLdloca(enumeratorVar);
-        Instruction last = cursor.Prev;
-        int lastIndex = cursor.Index;
-        cursor.EmitCall(moveNextEnumeratior);
-        cursor.Emit(OpCodes.Brtrue, continueTarget); // Target willbe set later
-        var breakTarget = cursor.Next; // TODO must fix after adding finally block
-        //  TODO get the finally block working, does that bastard allways throw unfixable errors?
-        //  Hopefully commenting this out won't blow up anyones computer...
-        //cursor.Emit(OpCodes.Leave, loopEnd);
-        //cursor.EmitLdloca(enumeratorVar);
-        //var tryEnd_handleStart = cursor.Prev;
-        //cursor.EmitConstrained(enumeratorType);
-        //cursor.EmitCallvirt(dispose.Resolve());
-        //cursor.EmitEndfinally();
-        //var handleEnd = cursor.Next;
+            cursor.EmitLdloca(enumeratorVar);
+            Instruction last = cursor.Prev; // > Start of the foreach loop end section
+            int lastIndex = cursor.Index;
+            cursor.EmitCall(moveNextEnumeratior);
+            cursor.Emit(OpCodes.Brtrue, continueTarget); // Target will be set later
+            var breakTarget = cursor.Next; // Must fix after adding finally block
+            // TODO get the finally block working, does that bastard allways throw unfixable errors?
+            // Hopefully commenting this out won't blow up anyones computer...
+            //cursor.Emit(OpCodes.Leave, loopEnd);
+            //cursor.EmitLdloca(enumeratorVar);
+            //var tryEnd_handleStart = cursor.Prev;
+            //cursor.EmitConstrained(enumeratorType);
+            //cursor.EmitCallvirt(dispose.Resolve());
+            //cursor.EmitEndfinally();
+            //var handleEnd = cursor.Next;
+            //method.Body.ExceptionHandlers.Insert(1, new(ExceptionHandlerType.Finally) {
+            //    TryStart = tryStart,
+            //    TryEnd = tryEnd_handleStart,
+            //    HandlerStart = tryEnd_handleStart,
+            //    HandlerEnd = handleEnd
+            //});
 
-        cursor.Goto(upperHead, MoveType.After); // Add Br to start
-        cursor.Emit(OpCodes.Br, last);
+            cursor.Goto(upperHead, MoveType.After); // > Restore position
+            cursor.Emit(OpCodes.Br, last);
         //var tryStart = cursor.Prev;
         cursor.TryGotoNext(MoveType.Before, instr => instr.OpCode == OpCodes.Brfalse && instr.Operand == loopEnd); // Fix a problem in the middle of the iteration
         cursor.Next.Operand = last;
-
-        cursor.Goto(upperHead, MoveType.After); // Finished with the loop creation
+        cursor.Goto(upperHead, MoveType.After); // > Restore position
         cursor.Index++;
+        // Finished with the loop creation
 
-        //cursor.Goto(upperHead, MoveType.After);   // use to clear the entire loop if needed
-        //cursor.RemoveRange(lastIndex - cursor.Index + 3);
-
-        //method.Body.ExceptionHandlers.Insert(1, new(ExceptionHandlerType.Finally) {
-        //    TryStart = tryStart,
-        //    TryEnd = tryEnd_handleStart,
-        //    HandlerStart = tryEnd_handleStart,
-        //    HandlerEnd = handleEnd
-        //});
-
+        TypeReference currentValueType = referenceCode.Body.Variables[3].VariableType;
         method.Body.Variables.Add(new VariableDefinition(currentValueType)); // Add local for varriable
         var recipePairVar = method.Body.Variables[^1];
         cursor.EmitLdloca(enumeratorVar);
         var newBegining = cursor.Prev;
         cursor.EmitCall(getCurrent);
         cursor.EmitStloc(recipePairVar);
-        upperHead = cursor.Prev;
-
-        cursor.Goto(loopEnd); // Change the start of the main loop to include the new instructions
-        cursor.TryGotoPrev(MoveType.Before, instr => instr.OpCode == OpCodes.Brtrue);
-        cursor.Next.Operand = newBegining;
-        cursor.Goto(upperHead, MoveType.After);
+            // * Change the start of the foreach loop to include the new instructions
+            upperHead = cursor.Prev; // > Save position
+            cursor.Goto(loopEnd); 
+            cursor.TryGotoPrev(MoveType.Before, instr => instr.OpCode == OpCodes.Brtrue);
+            cursor.Next.Operand = newBegining;
+            cursor.Goto(upperHead, MoveType.After); // > Restore position
 
         // --- Add break conditions
         cursor.EmitLdloc(7);
         cursor.EmitLdfld(MonoModRule.Modder.FindType("PartSimState").Resolve().Fields.First(f => f.Name.Equals("wasActivated")));
         cursor.Emit(OpCodes.Brtrue, breakTarget); // break;
+        upperHead = cursor.Prev; // > Save position
 
-        // --- Add condition for recipe
-        cursor.EmitLdloc(6);
-        upperHead = cursor.Prev;
-        cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld("Sim/ReferredPart", "part"), instr => instr.MatchCallvirt("Part", "GetType"));
-        FieldReference referencePart = (FieldReference)cursor.Previous.Previous.Operand;
-        MethodReference getPartType = (MethodReference)cursor.Previous.Operand;
-        cursor.Goto(upperHead, MoveType.After);
-        cursor.EmitLdfld(referencePart);
-        cursor.EmitCallvirt(getPartType);
-        MethodDefinition partTypeId = MonoModRule.Modder.FindType("PartType").Resolve().Methods.First(f => f.Name.Equals("get_Id"));
-        cursor.EmitCall(partTypeId);
-
-        MethodReference getKey = null;
-        referenceCulsor.TryGotoNext(instr => instr.MatchCall(out getKey));
-        cursor.EmitLdloc(recipePairVar);
-        cursor.EmitCall(getKey);
-
-        MethodReference compareId = null;
-        referenceCulsor.TryGotoNext(instr => instr.MatchCall(out compareId));
-        cursor.EmitCall(compareId);
-        cursor.Emit(OpCodes.Brfalse, last);
-        upperHead = cursor.Prev;
 
         // --- Add separate variable
         MethodReference getValue = null;
         referenceCulsor.TryGotoNext(instr => instr.MatchCall(out getValue));
-        method.Body.Variables.Add(new VariableDefinition(recipeType)); // Add local for varriable
+        TypeDefinition recipeType = MonoModRule.Modder.FindType("Quintessential.GlyphRecipe").Resolve();
+        method.Body.Variables.Add(new VariableDefinition(recipeType)); // Add local for recipe
         var recipeVar = method.Body.Variables[^1];
         cursor.EmitLdloc(recipePairVar);
         cursor.EmitCall(getValue);
@@ -235,7 +232,7 @@ public class patch_Sim : Sim {
         cursor.EmitStfld(dictionaryRecipe);
 
         // Calcification
-        cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCallvirt("Sim","GetAtomReference"));
+        cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCallvirt("Sim", "GetAtomReference"));
         cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld("AtomType", "isGlassy"));
         var removeIndex = cursor.Index;
         cursor.TryGotoPrev(MoveType.Before, instr => instr.MatchLdarg0());
@@ -827,22 +824,18 @@ public class patch_Sim : Sim {
 
         referenceCode.DeclaringType.Methods.Remove(referenceCode);
     }
-    private void PatchRecipeSystemCodeReference(Sim sim, PartSimState simState) { // this method is oly used as a source to copy relevant IL code from
-        var enumerator = GlyphRecipe.GlyphRecipes.GetEnumerator();
-        enumerator.MoveNext();
-        var current = enumerator.Current;
-        var key = GetMatchingGlyphId(current);
-        #pragma warning disable CS1718 // Comparison made to same variable
-        var equality = key == key;
-        #pragma warning restore CS1718 // Comparison made to same variable
-        GetValue(current).Predicate.InvokeAndClear(null, null);
-        var @in = RecipeInputs;
-        var atomRefOut = RecipeOutputs[new HexIndex(0, 0)] as AtomReference;
-        var procAtoms = simState.processingAtoms;
-        @in.recipe = null;
-        AtomTag.AtomTags["om:calcifiable"].HasAtom(atomRefOut);
+    private void PatchRecipeSystemCodeReference(Identifier id, PartSimState simState) { // this method is oly used as a source to copy relevant IL code from
+        if (GlyphRecipe.Recipes.TryGetValue(id, out var recipes)) {
+            var enumerator = recipes.GetEnumerator();
+            enumerator.MoveNext();
+            var current = enumerator.Current;
+            GetValue(current).Predicate.InvokeAndClear(null, null);
+            var @in = RecipeInputs;
+            var atomRefOut = RecipeOutputs[new HexIndex(0, 0)] as AtomReference;
+            var procAtoms = simState.processingAtoms;
+            @in.recipe = null;
+            AtomTag.AtomTags["om:calcifiable"].HasAtom(atomRefOut);
+        }
     }
-
-    private static Identifier GetMatchingGlyphId(KeyValuePair<Identifier, GlyphRecipe> pair) => pair.Value.RecipeGlyphId; // Workaround for the weirdest internal CLR error ever
     private static GlyphRecipe GetValue(KeyValuePair<Identifier, GlyphRecipe> pair) => pair.Value; // Workaround for the weirdest internal CLR error ever
 }

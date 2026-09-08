@@ -12,59 +12,26 @@ internal class QuintessentialData : QuintessentialMod, IDataMod {
     }
 
     public override void LoadContent() {
-        this.AddRecipe(new GlyphRecipe() { RecipeGlyphId = "om:bonder" }, "om:bonder");
-        this.AddRecipe(new GlyphRecipe() { RecipeGlyphId = "om:unbonder" }, "om:unbonder");
-        this.AddRecipe(new GlyphRecipe() { RecipeGlyphId = "om:multi_bonder" }, "om:multi_bonder");
-        this.AddRecipe(new GlyphRecipe() { RecipeGlyphId = "om:triplex_bonder" }, "om:triplex_bonder");
-        this.AddRecipe(new GlyphRecipe() { RecipeGlyphId = "om:conduit" }, "om:conduit");
-        this.AddRecipe(new GlyphRecipe() { RecipeGlyphId = "om:disposal" }, "om:disposal");
+        this.AddRecipe(new GlyphRecipe(),"om:bonder", "om:bonder");
+        this.AddRecipe(new GlyphRecipe(), "om:unbonder", "om:unbonder");
+        this.AddRecipe(new GlyphRecipe(), "om:multi_bonder", "om:multi_bonder");
+        this.AddRecipe(new GlyphRecipe(), "om:triplex_bonder", "om:triplex_bonder");
+        this.AddRecipe(new GlyphRecipe(), "om:conduit", "om:conduit");
+        this.AddRecipe(new GlyphRecipe(), "om:disposal", "om:disposal");
 
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:calcification",
-            Predicate = VanillaRecipes.BasicCalcification
-        }, "om:calcification");
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:duplication",
-            Predicate = VanillaRecipes.BasicDuplication
-        }, "om:duplication");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicCalcification), "om:calcification", "om:calcification");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicDuplication), "om:duplication", "om:duplication");
 
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicProjection), "om:projection", "om:projection");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicRejection), "om:rejection", "om:rejection");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicPurification), "om:purification", "om:purification");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicDivision), "om:division", "om:division");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicProliferation), "om:proliferation", "om:proliferation");
 
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:projection",
-            Predicate = VanillaRecipes.BasicProjection
-        }, "om:projection");
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:rejection",
-            Predicate = VanillaRecipes.BasicRejection
-        }, "om:rejection");
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:purification",
-            Predicate = VanillaRecipes.BasicPurification
-        }, "om:purification");
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:division",
-            Predicate = VanillaRecipes.BasicDivision
-        }, "om:division");
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:proliferation",
-            Predicate = VanillaRecipes.BasicProliferation
-        }, "om:proliferation");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicAnimismus), "om:animismus", "om:animismus");
 
-
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:animismus",
-            Predicate = VanillaRecipes.BasicAnimismus
-        }, "om:animismus");
-
-
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:unification",
-            Predicate = VanillaRecipes.BasicUnification
-        }, "om:unification");
-        this.AddRecipe(new GlyphRecipe() {
-            RecipeGlyphId = "om:dispersion",
-            Predicate = VanillaRecipes.BasicDispersion
-        }, "om:dispersion");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicUnification), "om:unification", "om:unification");
+        this.AddRecipe(new GlyphRecipe(VanillaRecipes.BasicDispersion), "om:dispersion", "om:dispersion");
 
         //this.AddRecipe(new GlyphRecipe() {
         //    RecipeGlyphId = "om:animismus",
