@@ -6,6 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace Quintessential;
 
+/// <summary>
+/// Metadata for a mod
+/// </summary>
 public class ModMeta {
 
     public string ModId { get; set; } = "";

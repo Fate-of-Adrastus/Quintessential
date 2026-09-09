@@ -6,6 +6,10 @@ using System.Text.Json.Serialization;
 
 namespace Quintessential.Serialization;
 
+/// <summary>
+/// A class to serialize objects into data files. As of now it<br/>
+/// supports writing and reading <c>json</c>, <c>jsonc</c>, and <c>yaml</c> files.
+/// </summary>
 public static class DataSerializer {
 
     private static bool MultilineFormat;

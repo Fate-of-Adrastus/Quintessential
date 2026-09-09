@@ -1,6 +1,12 @@
 ﻿namespace Quintessential;
 
+/// <summary>
+/// A general <b>unique</b>, string convertable identifier.
+/// </summary>
 public readonly struct Identifier {
+    /// <summary>
+    /// The <see cref="Identifier"/> is formatted as <c>namespc:name</c>.
+    /// </summary>
     public readonly string namespc, name;
 
     public Identifier(string namespc, string name) {
