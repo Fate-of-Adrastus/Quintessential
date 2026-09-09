@@ -11,8 +11,8 @@ public static class QApi {
 	public static readonly List<Tuple<Predicate<Part>, PartRendererDelegate>> PartRenderers = [];
 	public static readonly List<Tuple<PartType, PartType>> PanelParts = [];
 	public static readonly List<AtomType> ModAtomTypes = [];
-    public static readonly List<Action<Sim, Part, PartSimState, bool>> ToRunDuringCycle = [];
-    public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
+  public static readonly List<Action<Sim, Part, PartSimState, bool>> ToRunDuringCycle = [];
+  public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
 	public static readonly List<Tuple<string, SolutionPayloadHandler>> SolutionPayloadHandler = [];
 	public static readonly List<PuzzleOption> PuzzleOptions = [];
 
@@ -26,12 +26,12 @@ public static class QApi {
 		AddPartTypeToPanel(type, mechanism ? PartTypes.berlosWheel : PartTypes.equilibriumGlyph);
 	}
 
-    /// <summary>
-    /// Adds a part type to the part panel after another given type, making it accessible for placement.
-    /// </summary>
-    /// <param name="type">The part type to be added.</param>
-    /// <param name="after">The part type after which the other one gets added.</param>
-    public static void AddPartTypeToPanel(PartType type, PartType after) {
+  /// <summary>
+  /// Adds a part type to the part panel after another given type, making it accessible for placement.
+  /// </summary>
+  /// <param name="type">The part type to be added.</param>
+  /// <param name="after">The part type after which the other one gets added.</param>
+  public static void AddPartTypeToPanel(PartType type, PartType after) {
 		if(type == null || after == null)
 			Logger.Log("Tried to add a null part to the parts panel, or tried to add a part after a null part, not adding.");
 		else if(type.Equals(after))
@@ -40,24 +40,25 @@ public static class QApi {
 			PanelParts.Add(new Tuple<PartType, PartType>(type, after));
 	}
 
-    // TODO check the part type before calling the delegate for performance reasons.
-    /// <summary>
-    /// Adds a PartRenderer, which renders any parts that satisfy the given predicate. Usually, this predicate simply checks the part type of the part.
-    /// </summary>
-    /// <param name="mod">The mod that adds the renderer.</param>
-    /// <param name="renderer">The PartRenderer to be added and displayed.</param>
-    /// <param name="typeChecker">A predicate that determines which parts the renderer should try to display.</param>
-    public static void AddPartTypesRenderer(this QuintessentialMod mod, PartRendererDelegate renderer, Predicate<Part> typeChecker) {
+  // TODO check the part type before calling the delegate for performance reasons.
+  /// <summary>
+  /// Adds a PartRenderer, which renders any parts that satisfy the given predicate. Usually, this predicate simply checks the part type of the part.
+  /// </summary>
+  /// <param name="mod">The mod that adds the renderer.</param>
+  /// <param name="renderer">The PartRenderer to be added and displayed.</param>
+  /// <param name="typeChecker">A predicate that determines which parts the renderer should try to display.</param>
+  public static void AddPartTypesRenderer(this QuintessentialMod mod, PartRendererDelegate renderer, Predicate<Part> typeChecker) {
 		PartRenderers.Add(new Tuple<Predicate<Part>, PartRendererDelegate>(typeChecker, renderer));
 	}
 
-    /// <summary>
-    /// Adds a part type to the list of all part types.
-    /// </summary>
-    /// <param name="mod">The mod that adds the part.</param>
-    /// <param name="type">The part type to be added.</param>
-    /// <param name="id">The <b>name</b> of the id of the part.</param>
-    public static void AddPartType(this QuintessentialMod mod, PartType type, string id) {
+  /// <summary>
+  /// Adds a part type to the list of all part types.
+  /// </summary>
+  /// <param name="mod">The mod that adds the part.</param>
+  /// <param name="type">The part type to be added.</param>
+  /// <param name="id">The <b>name</b> of the id of the part.</param>
+  public static void AddPartType(this QuintessentialMod mod, PartType type, string id) {
+    ((patch_PartType)(object)type).Id = mod.GetIdentifier(id);
 		type.id = mod.GetIdentifier(id);
         type.name = mod.Translate("parts." + id);
         type.description = mod.Translate("parts." + id + ".description");
@@ -66,14 +67,14 @@ public static class QApi {
 		PartTypes.partTypes[^1] = type;
 	}
 
-    /// <summary>
-    /// Adds a part type, adding it to the list of part types and adding a renderer for that part type.
-    /// </summary>
-    /// <param name="mod">The mod that adds the part.</param>
-    /// <param name="type">The part type to be added.</param>
-    /// <param name="id">The <b>name</b> of the id of the part.</param>
-    /// <param name="renderer">A PartRenderer to render instances of that part type.</param>
-    public static void AddPartType(this QuintessentialMod mod, PartType type, string id, PartRendererDelegate renderer) {
+  /// <summary>
+  /// Adds a part type, adding it to the list of part types and adding a renderer for that part type.
+  /// </summary>
+  /// <param name="mod">The mod that adds the part.</param>
+  /// <param name="type">The part type to be added.</param>
+  /// <param name="id">The <b>name</b> of the id of the part.</param>
+  /// <param name="renderer">A PartRenderer to render instances of that part type.</param>
+  public static void AddPartType(this QuintessentialMod mod, PartType type, string id, PartRendererDelegate renderer) {
         mod.AddPartType(type, id);
         mod.AddPartTypesRenderer(renderer, part => part.GetType() == type);
 	}
@@ -113,22 +114,22 @@ public static class QApi {
 		ToRunAfterCycle.Add(runnable);
 	}
 
-    /// <summary>
-    /// Adds a permission to the puzzle editor. These can be used by setting the `CustomPermissionCheck` field of your part type and
-    /// checking for your permission ID.
-    /// <para>
-    /// Permissions with the same section name will be grouped together. If no name is chosen, this defaults to "Other Parts &amp; Mechanisms".
+  /// <summary>
+  /// Adds a permission to the puzzle editor. These can be used by setting the `CustomPermissionCheck` field of your part type and
+  /// checking for your permission ID.
+  /// <para>
+  /// Permissions with the same section name will be grouped together. If no name is chosen, this defaults to "Other Parts &amp; Mechanisms".
 	/// </para>
-    /// </summary>
-    /// <param name="mod">The mod that adds the permission.</param>
-    /// <param name="id">The <b>name</b> of the id of the permission.</param>
-    /// <param name="displayName">An override for the key of the permission display name, the defalt is <paramref name="id"/>.</param>
-    /// <param name="sectionName">
+  /// </summary>
+  /// <param name="mod">The mod that adds the permission.</param>
+  /// <param name="id">The <b>name</b> of the id of the permission.</param>
+  /// <param name="displayName">An override for the key of the permission display name, the defalt is <paramref name="id"/>.</param>
+  /// <param name="sectionName">
 	/// An override for the key of the section display name that the permission will appear under.<br/>
 	/// The default is <b><i>permission_sections</i></b>
 	/// </param>
 	/// <param name="length"></param> // TODO What on Earth is this used for? Figure that one out already... please.
-    public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName = "", string sectionName = "", int length = 2) {
+  public static void AddPuzzlePermission(this QuintessentialMod mod, string id, string displayName = "", string sectionName = "", int length = 2) {
 		if (displayName == "") displayName = id;
 		var sectionNameLoc = mod.Translate(
             "permission_sections" + (sectionName == "" ? "" : "." + sectionName)
@@ -138,11 +139,11 @@ public static class QApi {
         PuzzleOptions.Add(PuzzleOption.BoolOption(mod.GetIdentifier(id), displayNameLoc, sectionNameLoc, length));
 	}
 
-    /// <summary>
-    /// Register a <see cref="PuzzleOption"/>.
-    /// </summary>
-    /// <param name="option">The <see cref="PuzzleOption"/> to register.</param>
-    public static void AddPuzzleOption(PuzzleOption option){
+  /// <summary>
+  /// Register a <see cref="PuzzleOption"/>.
+  /// </summary>
+  /// <param name="option">The <see cref="PuzzleOption"/> to register.</param>
+  public static void AddPuzzleOption(PuzzleOption option){
 		PuzzleOptions.Add(option);
 	}
 
@@ -159,18 +160,18 @@ public static class QApi {
 
 
 
-    /// <summary>
-    /// Adds a chamber type, used by name in production puzzle files.
-    /// </summary>
-    /// <param name="mod">The mod that adds the chamber.</param>
-    /// <param name="id">The <b>name</b> of the id of the chamber.</param>
-    /// <param name="productionChamber">The chamber type to add.</param>
-    /// <param name="autoCentre">
-    /// Whether to automatically assign a centred offset for the chamber's overlay texture.<br/>
-    /// Otherwise, the chamber's <c>field_1730</c> must have its offset<br/>
+  /// <summary>
+  /// Adds a chamber type, used by name in production puzzle files.
+  /// </summary>
+  /// <param name="mod">The mod that adds the chamber.</param>
+  /// <param name="id">The <b>name</b> of the id of the chamber.</param>
+  /// <param name="productionChamber">The chamber type to add.</param>
+  /// <param name="autoCentre">
+  /// Whether to automatically assign a centred offset for the chamber's overlay texture.<br/>
+  /// Otherwise, the chamber's <c>field_1730</c> must have its offset<br/>
 	/// assigned by <c>UI.AssignOffset</c>, or the chamber will be visually incorrect.
-    /// </param>
-    public static void AddProductionChamber(this QuintessentialMod mod, string id, ProductionChamber productionChamber, bool autoCentre = true){
+  /// </param>
+  public static void AddProductionChamber(this QuintessentialMod mod, string id, ProductionChamber productionChamber, bool autoCentre = true){
         productionChamber.name = mod.GetIdentifier(id);
 
         int length = Puzzles.prodChambers.Length;

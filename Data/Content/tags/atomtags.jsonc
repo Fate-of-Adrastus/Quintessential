@@ -1,0 +1,52 @@
+{
+  "om:calcifiable": [
+    "om:air",
+    "om:fire",
+    "om:water",
+    "om:earth"
+  ],
+  "om:duplicatable": [
+    "om:air",
+    "om:fire",
+    "om:water",
+    "om:earth"
+  ],
+  "om:$successor": {
+    "om:lead": "om:tin",
+    "om:tin": "om:iron",
+    "om:iron": "om:copper",
+    "om:copper": "om:silver",
+    "om:silver": "om:gold"
+  },
+  "om:$predecessor": {
+    "om:tin": "om:lead",
+    "om:iron": "om:tin",
+    "om:copper": "om:iron",
+    "om:silver": "om:copper",
+    "om:gold": "om:silver"
+  },
+  "om:$purified": {
+    "om:lead": "om:tin",
+    "om:tin": "om:iron",
+    "om:iron": "om:copper",
+    "om:copper": "om:silver",
+    "om:silver": "om:gold"
+  },
+  "om:proliferatable": [
+    "om:lead",
+    "om:tin",
+    "om:iron",
+    "om:copper",
+    "om:silver",
+    "om:gold"
+  ],
+  "om:indisposable": [
+
+  ],
+  "om:basic_bonder_disallow": [ // These two will probably change because of the future bonder API
+
+  ],
+  "om:triplex_bonder_allow": [
+    "om:fire"
+  ]
+}

@@ -87,7 +87,8 @@ public class QuintessentialLoader
             // Add mod content
             foreach (var mod in CodeMods)
                 mod.Load();
-            Logger.Log($"Finished pre-init loading - {Mods.Count} mods loaded; {ModContentDirectories.Count} content directories, and {ModCampaignModels.Count} custom campaigns found.");
+            Logger.Log($"Finished pre-init loading - {Mods.Count} mods loaded, {CodeMods.Count} of them are code mods; {ModContentDirectories.Count} content directories, and {ModCampaignModels.Count} custom campaigns found.");
+            DataSerializer.WasInit = true;
         }
         catch (Exception e)
         {
@@ -98,6 +99,25 @@ public class QuintessentialLoader
             }
             throw;
         }
+    }
+    public static void ModContentInit() {
+        Logger.Log("Starting content loading.");
+        foreach (var mod in CodeMods)
+            mod.LoadContent();
+
+        // This is where DataContentInit ( Recipe & Tag )" gets injected
+        foreach (var mod in CodeMods)
+            mod.LoadCompatContent();
+
+        Logger.Log("Loading campaigns and journals.");
+        LoadCampaigns();
+        LoadJournals();
+
+        Logger.Log("Finalising content.");
+        foreach (var mod in CodeMods)
+            mod.FinaliseContent();
+
+        Logger.Log("Finished content loading.");
     }
     public static void PostInit()
     {
