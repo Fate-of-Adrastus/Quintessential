@@ -8,8 +8,8 @@ using MonoMod.InlineRT;
 using Quintessential;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using static Quintessential.PartCycleDelegate;
 
 public class patch_Sim : Sim {
 
@@ -17,7 +17,7 @@ public class patch_Sim : Sim {
     public RecipeOutputDictionary<HexIndex, IRecipeOutput> RecipeOutputs;
     public List<Part> HoldingParts;
 
-    private void InitRecileDictionaries() {
+    private void InitRecipeDictionaries() {
         this.RecipeInputs = new(this);
         this.RecipeOutputs = new(this);
     }
@@ -37,7 +37,7 @@ public class patch_Sim : Sim {
             throw new Exception("Unable to patch Sim init. (no body)");
         }
         ILCursor cursor = new(new ILContext(method));
-        MethodReference init = MonoModRule.Modder.FindType("Sim").Resolve().Methods.First(f => f.Name.Equals("InitRecileDictionaries"));
+        MethodReference init = MonoModRule.Modder.FindType("Sim").Resolve().Methods.First(f => f.Name.Equals("InitRecipeDictionaries"));
         cursor.EmitLdarg0();
         cursor.EmitCall(init);
     }
@@ -838,4 +838,66 @@ public class patch_Sim : Sim {
         }
     }
     private static GlyphRecipe GetValue(KeyValuePair<Identifier, GlyphRecipe> pair) => pair.Value; // Workaround for the weirdest internal CLR error ever
+
+
+    public void RunCycleDelegate(ReferredPart referredPart, PartSimState simState, bool isCycleStart, GlyphRecipe recipe, CycleExecutionType executionType) {
+        PartCycleDelegate cycleDelegate = ((patch_PartType)(object)referredPart.part.GetType()).CycleDelegate;
+        if (cycleDelegate != null && cycleDelegate.ExecutionType == executionType) {
+            cycleDelegate.Delegate.Invoke(this, referredPart.part, simState, recipe, isCycleStart);
+        }
+    }
+
+    [MonoModILInject("RunCycleGlyphs")]
+    public static void PatchGlyphBehaviour(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching glyph Behaviour");
+        if (!method.HasBody) {
+            Console.WriteLine("Unable to patch glyph behaviour (no body)");
+            throw new Exception();
+        }
+        ILCursor cursor = new(new ILContext(method));
+
+        if (!cursor.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdloc(6),
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "part",
+            instr => instr.MatchCallvirt(out MethodReference m) && m.Name == "GetType",
+            instr => instr.MatchLdfld(out FieldReference f) && f.Name == "bonders",
+            instr => instr.MatchLdlen()
+        )) {
+            Console.WriteLine("Unable to patch glyph behaviour (no bonder check)");
+            throw new Exception();
+        }
+
+        TypeDefinition holder = MonoModRule.Modder.FindType("Sim").Resolve();
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunCycleDelegate"));
+        VariableReference recipe = method.Body.Variables.First(var => var.VariableType.FullName == "Quintessential.GlyphRecipe");
+        Instruction oldTarget = cursor.Next;
+        cursor.EmitLdarg0();
+        Instruction newTarget = cursor.Previous;
+        cursor.EmitLdloc(6);
+        cursor.EmitLdloc(7);
+        cursor.EmitLdarg1();
+        cursor.EmitLdloc(recipe);
+        cursor.EmitLdcI4(1);
+        cursor.EmitCall(to);
+        // I don't know why it never works, but MonoMod's goto and branch handling is not functional, or I don't know how it works.
+        // -- Whoever wrote this didn't understand IL cursor branch handling. -- Fate
+        foreach (var v in cursor.Instrs.Where(v => v.Operand is Instruction t && t == oldTarget)) {
+            v.Operand = newTarget;
+        }
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.OpCode == OpCodes.Brfalse);
+        Instruction toEdit = cursor.Previous;
+        cursor.Goto((Instruction)cursor.Previous.Operand, MoveType.Before);
+        cursor.EmitLdarg0();
+        newTarget = cursor.Previous;
+        cursor.EmitLdloc(6);
+        cursor.EmitLdloc(7);
+        cursor.EmitLdarg1();
+        cursor.EmitLdloc(recipe);
+        cursor.EmitLdcI4(2);
+        cursor.EmitCall(to);
+
+        cursor.Goto(toEdit);
+        cursor.Next.Operand = newTarget;
+    }
 }

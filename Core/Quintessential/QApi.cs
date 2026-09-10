@@ -11,7 +11,6 @@ public static class QApi {
 	public static readonly List<Tuple<Predicate<Part>, PartRendererDelegate>> PartRenderers = [];
 	public static readonly List<Tuple<PartType, PartType>> PanelParts = [];
 	public static readonly List<AtomType> ModAtomTypes = [];
-	public static readonly List<Action<Sim, Part, PartSimState, bool>> ToRunDuringCycle = [];
 	public static readonly List<Action<Sim, bool>> ToRunAfterCycle = [];
 	public static readonly List<Tuple<string, SolutionPayloadHandler>> SolutionPayloadHandler = [];
 	public static readonly List<PuzzleOption> PuzzleOptions = [];
@@ -102,9 +101,8 @@ public static class QApi {
 	/// Runs the given action for every part on each half-cycle.
 	/// </summary>
 	/// <param name="runnable">An action to be run for every part, given the sim, part, partSimState, and whether it is the start or end.</param>
-	public static void RunDuringCycle(Action<Sim, Part, PartSimState, bool> runnable) {
-		ToRunDuringCycle.Add(runnable);
-	}
+	[Obsolete("Use BindGlyphCylce instead from the Data Module of Quintessential.")]
+	public static void RunDuringCycle(Action<Sim, Part, PartSimState, bool> runnable) { }
 
 	/// <summary>
 	/// Runs the given action at the end of every half-cycle.
