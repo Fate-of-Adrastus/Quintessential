@@ -18,8 +18,8 @@ public class patch_Sim : Sim {
     public List<Part> HoldingParts;
 
     private void InitRecipeDictionaries() {
-        this.RecipeInputs = new(this);
-        this.RecipeOutputs = new(this);
+        RecipeInputs = [];
+        RecipeOutputs = [];
     }
 
     public bool GetAtomReference(Part part, HexIndex offset, bool allowPartAttachedAtoms, out AtomReference atomReference) {

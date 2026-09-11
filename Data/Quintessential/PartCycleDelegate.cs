@@ -2,15 +2,48 @@
 
 namespace Quintessential;
 
+/// <summary>
+/// A delegate corresponding to part's cycle specific transmutation code.<br/>
+/// This delegate should handle the non-visual elements only.
+/// </summary>
+/// <param name="executionType">The specific timing this delegate is meant to be invoked with in the list of all part cycles.</param>
+/// <param name="delegate">The delegate to execute.</param>
 public class PartCycleDelegate(CycleExecutionType executionType, RecipeCallDelegate @delegate) {
-
-    public readonly CycleExecutionType ExecutionType = executionType;
-    public readonly RecipeCallDelegate Delegate = @delegate;
     
+    /// <summary>
+    /// The specific timing this delegate is meant to be invoked with in the list of all part cycles.
+    /// </summary>
+    public readonly CycleExecutionType ExecutionType = executionType;
+    /// <summary>
+    /// A delegate corresponding to part's cycle specific transmutation code.
+    /// </summary>
+    public readonly RecipeCallDelegate Delegate = @delegate;
+
+    /// <summary>
+    /// Timing for part's self-contained execution order.
+    /// </summary>
     public enum CycleExecutionType {
+        /// <summary>
+        /// The delegate will never be invoked.
+        /// </summary>
         None = 0,
-        Normal,
-        AfterBonder,
+        /// <summary>
+        /// The delegate will be invoked before the bonders on the given part.
+        /// </summary>
+        Normal = 1,
+        /// <summary>
+        /// The delegate will be invoked after the bonders on the given part.
+        /// </summary>
+        AfterBonder = 2,
     }
+    // TODO link to online documentation
+    /// <summary>
+    /// The delegate that should contain the given part's cycle specific code. Will be invoked once in each half cycle.
+    /// </summary>
+    /// <param name="sim">The current simulation.</param>
+    /// <param name="part">The specific instance of the part.</param>
+    /// <param name="simState">The simulation state of the <paramref name="part"/>.</param>
+    /// <param name="recipe">The recipe the part should attempt to check.<br/> See <seealso cref="GlyphRecipe.Predicate"/> to check if the recipe applies.</param>
+    /// <param name="isCycleStart">Wheter it is the invocation in the first half of the cycle.</param>
     public delegate void RecipeCallDelegate(patch_Sim sim, Part part, PartSimState simState, GlyphRecipe recipe, bool isCycleStart);
 }

@@ -3,16 +3,20 @@ using System.Collections.Generic;
 
 namespace Quintessential;
 
-public class RecipeInputDictionary<TKey, TValue>(Sim sim) : RecipeIODictionary<TKey, TValue>(sim) where TValue : IRecipeInput {
+///  <inheritdoc cref="RecipeIODictionary{TKey, TValue}"/>
+public class RecipeInputDictionary<TKey, TValue> : RecipeIODictionary<TKey, TValue> where TValue : IRecipeInput {
     protected override string Name { get; init; } = "inputs";
 }
-public class RecipeOutputDictionary<TKey, TValue>(Sim sim) : RecipeIODictionary<TKey, TValue>(sim) where TValue : IRecipeOutput {
+///  <inheritdoc cref="RecipeIODictionary{TKey, TValue}"/>
+public class RecipeOutputDictionary<TKey, TValue> : RecipeIODictionary<TKey, TValue> where TValue : IRecipeOutput {
     protected override string Name { get; init; } = "outputs";
 }
 
-public abstract class RecipeIODictionary<TKey, TValue>(Sim sim) : Dictionary<TKey, TValue> {
+/// <summary>
+/// A dictionary with better recipe-specific error handling.
+/// </summary>
+public abstract class RecipeIODictionary<TKey, TValue> : Dictionary<TKey, TValue> {
     protected abstract string Name { get; init; }
-    public readonly Sim sim = sim;
     public GlyphRecipe recipe;
 
     public new TValue this[TKey key] {
