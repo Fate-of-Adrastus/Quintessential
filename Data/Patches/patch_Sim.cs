@@ -843,7 +843,8 @@ public class patch_Sim : Sim {
     public void RunCycleDelegate(ReferredPart referredPart, PartSimState simState, bool isCycleStart, GlyphRecipe recipe, CycleExecutionType executionType) {
         PartCycleDelegate cycleDelegate = ((patch_PartType)(object)referredPart.part.GetType()).CycleDelegate;
         if (cycleDelegate != null && cycleDelegate.ExecutionType == executionType) {
-            cycleDelegate.Delegate.Invoke(this, referredPart.part, simState, recipe, isCycleStart);
+            bool delegateActivated = cycleDelegate.Delegate.Invoke(this, referredPart.part, simState, recipe, isCycleStart);
+            simState.wasActivated = delegateActivated || simState.wasActivated;
         }
     }
 

@@ -11,7 +11,7 @@
     "om:water",
     "om:earth"
   ],
-  "om:$successor": {
+  "om:$successor_proj": {
     "om:lead": "om:tin",
     "om:tin": "om:iron",
     "om:iron": "om:copper",
@@ -25,7 +25,7 @@
     "om:silver": "om:copper",
     "om:gold": "om:silver"
   },
-  "om:$purified": {
+  "om:$successor_purif": {
     "om:lead": "om:tin",
     "om:tin": "om:iron",
     "om:iron": "om:copper",
@@ -42,11 +42,5 @@
   ],
   "om:indisposable": [
 
-  ],
-  "om:basic_bonder_disallow": [ // These two will probably change because of the future bonder API
-
-  ],
-  "om:triplex_bonder_allow": [
-    "om:fire"
   ]
 }

@@ -26,7 +26,7 @@ internal static class VanillaRecipes {
 
     public static bool BasicProjection(patch_Sim sim, Part part) {
         if (!sim.GetAtomReference(part, new HexIndex(1, 0), false, out var projected) ||
-            !AtomTag.AtomTags["om:$successor"].HasAtom(projected, out var result) ||
+            !AtomTag.AtomTags["om:$successor_proj"].HasAtom(projected, out var result) ||
             !(7 < projected.atomType.byteId && projected.atomType.byteId <= 12) || // Check if atom is an OM metal
             !sim.GetAtomReference(part, new HexIndex(0, 0), false, out var consumed) ||
             consumed.isHeldByArm || consumed.inMultiAtomMolecule || consumed.atomType != AtomTypes.quicksilver) return false;
@@ -50,7 +50,7 @@ internal static class VanillaRecipes {
     public static bool BasicPurification(patch_Sim sim, Part part) {
         if (!sim.GetAtomReference(part, new HexIndex(0, 0), false, out var purified0) ||
             purified0.inMultiAtomMolecule || purified0.isHeldByArm ||
-            !AtomTag.AtomTags["om:$purified"].HasAtom(purified0, out var result) ||
+            !AtomTag.AtomTags["om:$successor_purif"].HasAtom(purified0, out var result) ||
             !sim.GetAtomReference(part, new HexIndex(1, 0), false, out var purified1) ||
             purified1.inMultiAtomMolecule || purified1.isHeldByArm ||
             purified0.atomType != purified1.atomType ||

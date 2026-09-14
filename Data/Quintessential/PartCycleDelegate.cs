@@ -45,5 +45,9 @@ public class PartCycleDelegate(CycleExecutionType executionType, RecipeCallDeleg
     /// <param name="simState">The simulation state of the <paramref name="part"/>.</param>
     /// <param name="recipe">The recipe the part should attempt to check.<br/> See <seealso cref="GlyphRecipe.Predicate"/> to check if the recipe applies.</param>
     /// <param name="isCycleStart">Wheter it is the invocation in the first half of the cycle.</param>
-    public delegate void RecipeCallDelegate(patch_Sim sim, Part part, PartSimState simState, GlyphRecipe recipe, bool isCycleStart);
+    /// <returns>
+    /// Return true if the glyph should not be activated more times this half cycle.<br/>
+    /// Do this if the glyph was triggered by a <see cref="GlyphRecipe"/>, or if <see cref="PartSimState.isProcessing"/> was resolved.
+    /// </returns>
+    public delegate bool RecipeCallDelegate(patch_Sim sim, Part part, PartSimState simState, GlyphRecipe recipe, bool isCycleStart);
 }
