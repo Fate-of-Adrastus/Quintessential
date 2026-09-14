@@ -6,6 +6,7 @@ using MonoMod.InlineRT;
 using Quintessential;
 using SDL2;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
@@ -64,38 +65,28 @@ class patch_GameLogic {
         SDL.SDL_SetWindowPosition(window.window, settingsData.windowXPos.Get(), settingsData.windowYPos.Get());
     }
 
-    [MonoModILInject("GameInit")]
-    public static void PatchWindowPositionSet(MethodDefinition method, CustomAttribute attribute) {
-
-        MonoModRule.Modder.Log("Patching window position set");
-
+    [MonoModILInject("method_944")]
+    static void PatchWindowPositionSet1(MethodDefinition method, CustomAttribute attribute) {
         if (!method.HasBody) {
-            throw new Exception("Unable to patch window position set. (no body)");
+            throw new Exception("Unable to patch window position set1. (no body)");
         }
-
-        ILCursor cursor = new(new ILContext(method));
-
-        if (!cursor.TryGotoNext(MoveType.After,
-            instr => instr.MatchCallvirt("GameLogic", "CreateWindow"),
-            instr => instr.MatchStfld("GameLogic", "gameWindow")
-        )) {
-            throw new Exception("Unable to patch window position set. (no call)");
-        }
-        FieldReference window = (FieldReference)cursor.Prev.Operand;
-
         TypeDefinition holder = MonoModRule.Modder.FindType("GameLogic").Resolve();
         MethodDefinition call = holder.Methods.First((f) => f.Name == "SetWindowOffsetsToDefaults");
 
+        ILCursor cursor = new(new ILContext(method));
+
+        FieldReference window = null;
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Window", "ShowWindow"));
+        cursor.TryGotoPrev(MoveType.Before, instr => instr.MatchLdfld(out window));
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Window", "ShowWindow"));
         cursor.EmitLdarg0();
         cursor.EmitLdarg0();
         cursor.EmitLdfld(window);
         cursor.EmitCallvirt(call);
     }
+
     [MonoModILInject("method_959")]
-    public static void PatchWindowPositionSet2(MethodDefinition method, CustomAttribute attribute) {
-
-        MonoModRule.Modder.Log("Patching window position set2");
-
+    static void PatchWindowPositionSet2(MethodDefinition method, CustomAttribute attribute) {
         if (!method.HasBody) {
             throw new Exception("Unable to patch window position set2. (no body)");
         }
@@ -117,13 +108,47 @@ class patch_GameLogic {
         cursor.EmitLdarg0();
     }
 
-    [MonoModILInject("GameLoop")]
-    public static void PatchWindowPositionSetOnExit(MethodDefinition method, CustomAttribute attribute) {
-
-        MonoModRule.Modder.Log("Patching window position set");
-
+    [MonoModILInject("CreateWindow")]
+    static void PatchWindowCreate(MethodDefinition method, CustomAttribute attribute) {
         if (!method.HasBody) {
-            throw new Exception("Unable to patch window position set. (no body)");
+            throw new Exception("Unable to patch window create. (no body)");
+        }
+        TypeDefinition holder = MonoModRule.Modder.FindType("GameLogic").Resolve();
+        FieldDefinition settings = holder.Fields.First((f) => f.Name == "settingsData");
+        FieldDefinition windowXPos = settings.FieldType.Resolve().Fields.First((f) => f.Name == "windowXPos");
+        FieldDefinition windowYPos = settings.FieldType.Resolve().Fields.First((f) => f.Name == "windowYPos");
+
+        MethodDefinition setDefault = holder.Methods.First((f) => f.Name == "SetWindowOffsetsToDefaults");
+        ILCursor referenceCursor = new(new ILContext(setDefault));
+        MethodReference get = null;
+        referenceCursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt(out get));
+
+        ILCursor cursor = new(new ILContext(method));
+        cursor.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdarg(4 - 1),
+            instr => instr.MatchCall("SDL2.SDL", "SDL_WINDOWPOS_CENTERED_DISPLAY")
+        );
+        cursor.RemoveRange(2);
+        cursor.EmitLdarg0();
+        cursor.EmitLdfld(settings);
+        cursor.EmitLdfld(windowXPos);
+        cursor.EmitCallvirt(get);
+
+        cursor.TryGotoNext(MoveType.Before,
+            instr => instr.MatchLdarg(4 - 1),
+            instr => instr.MatchCall("SDL2.SDL", "SDL_WINDOWPOS_CENTERED_DISPLAY")
+        );
+        cursor.RemoveRange(2);
+        cursor.EmitLdarg0();
+        cursor.EmitLdfld(settings);
+        cursor.EmitLdfld(windowYPos);
+        cursor.EmitCallvirt(get);
+    }
+
+    [MonoModILInject("GameLoop")]
+    static void PatchWindowPositionSaveOnExit(MethodDefinition method, CustomAttribute attribute) {
+        if (!method.HasBody) {
+            throw new Exception("Unable to patch window position set save. (no body)");
         }
 
         ILCursor cursor = new(new ILContext(method));

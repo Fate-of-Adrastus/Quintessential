@@ -11,10 +11,12 @@ internal class patch_Window : Window {
     [MonoModIgnore] public patch_Window(nint window, nint renderWindow) : base(window, renderWindow) { }
 
     public void FixWindowAboveGrabRange() {
-        SDL.SDL_GetWindowPosition(window, out int x, out int y);
+        int x = ((patch_Settings)(object)GameLogic.instance.settingsData).windowXPos.Get();
+        int y = ((patch_Settings)(object)GameLogic.instance.settingsData).windowYPos.Get();
+        //SDL.SDL_GetWindowPosition(window, out int x, out int y);
         if (y < 5) {
             SDL.SDL_SetWindowPosition(window, x, y + 5);
-            ((patch_Settings)(object)GameLogic.instance.settingsData).SaveWindowPosToCurrent(this);
+            ((patch_Settings)(object)GameLogic.instance.settingsData).SaveWindowPosAsValue(x, y + 5);
         }
     }
 
