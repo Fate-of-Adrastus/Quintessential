@@ -1,4 +1,5 @@
-﻿using static Quintessential.PartCycleDelegate;
+﻿using System;
+using static Quintessential.PartCycleDelegate;
 
 namespace Quintessential;
 
@@ -6,14 +7,18 @@ namespace Quintessential;
 /// A delegate corresponding to part's cycle specific transmutation code.<br/>
 /// This delegate should handle the non-visual elements only.
 /// </summary>
-/// <param name="executionType">The specific timing this delegate is meant to be invoked with in the list of all part cycles.</param>
+/// <param name="executionType">
+/// The specific timing this delegate is meant to be invoked with in the list of all part cycles.<br/>
+/// Supports enum flags.
+/// </param>
 /// <param name="delegate">The delegate to execute.</param>
-public class PartCycleDelegate(CycleExecutionType executionType, RecipeCallDelegate @delegate) {
-    
+public class PartCycleDelegate(PartCycleExecutionType executionType, RecipeCallDelegate @delegate) {
+
     /// <summary>
-    /// The specific timing this delegate is meant to be invoked with in the list of all part cycles.
+    /// The specific timing this delegate is meant to be invoked with in the list of all part cycles.<br/>
+    /// Supports enum flags.
     /// </summary>
-    public readonly CycleExecutionType ExecutionType = executionType;
+    public readonly PartCycleExecutionType ExecutionType = executionType;
     /// <summary>
     /// A delegate corresponding to part's cycle specific transmutation code.
     /// </summary>
@@ -22,7 +27,8 @@ public class PartCycleDelegate(CycleExecutionType executionType, RecipeCallDeleg
     /// <summary>
     /// Timing for part's self-contained execution order.
     /// </summary>
-    public enum CycleExecutionType {
+    [Flags]
+    public enum PartCycleExecutionType {
         /// <summary>
         /// The delegate will never be invoked.
         /// </summary>

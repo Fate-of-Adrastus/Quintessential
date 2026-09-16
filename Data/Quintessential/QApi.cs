@@ -38,6 +38,10 @@ public static class QApi {
         ((patch_PartType)(object)partType).CycleDelegate = cycleDelegate;
     }
 
+    public static void AddCycleEvent(CycleEvent cycleEvent) {
+        patch_Sim.CycleEvents.Add(cycleEvent);
+    }
+
 
     /// <summary>
     /// Invokes a recipe clearing and setting <see cref="patch_Sim.RecipeInputs"/> and <see cref="patch_Sim.RecipeOutputs"/>.<br/>

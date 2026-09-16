@@ -9,6 +9,7 @@ using Quintessential;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Quintessential.CycleEvent;
 using static Quintessential.PartCycleDelegate;
 
 public class patch_Sim : Sim {
@@ -840,9 +841,9 @@ public class patch_Sim : Sim {
     private static GlyphRecipe GetValue(KeyValuePair<Identifier, GlyphRecipe> pair) => pair.Value; // Workaround for the weirdest internal CLR error ever
 
 
-    public void RunCycleDelegate(ReferredPart referredPart, PartSimState simState, bool isCycleStart, GlyphRecipe recipe, CycleExecutionType executionType) {
+    public void RunPartCycleDelegate(ReferredPart referredPart, PartSimState simState, bool isCycleStart, GlyphRecipe recipe, PartCycleExecutionType executionType) {
         PartCycleDelegate cycleDelegate = ((patch_PartType)(object)referredPart.part.GetType()).CycleDelegate;
-        if (cycleDelegate != null && cycleDelegate.ExecutionType == executionType) {
+        if (cycleDelegate != null && cycleDelegate.ExecutionType.HasFlag(executionType)) {
             bool delegateActivated = cycleDelegate.Delegate.Invoke(this, referredPart.part, simState, recipe, isCycleStart);
             simState.wasActivated = delegateActivated || simState.wasActivated;
         }
@@ -869,7 +870,7 @@ public class patch_Sim : Sim {
         }
 
         TypeDefinition holder = MonoModRule.Modder.FindType("Sim").Resolve();
-        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunCycleDelegate"));
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunPartCycleDelegate"));
         VariableReference recipe = method.Body.Variables.First(var => var.VariableType.FullName == "Quintessential.GlyphRecipe");
         Instruction oldTarget = cursor.Next;
         cursor.EmitLdarg0();
@@ -878,7 +879,7 @@ public class patch_Sim : Sim {
         cursor.EmitLdloc(7);
         cursor.EmitLdarg1();
         cursor.EmitLdloc(recipe);
-        cursor.EmitLdcI4(1);
+        cursor.EmitLdcI4(1); // PartCycleExecutionType - 1
         cursor.EmitCall(to);
         // I don't know why it never works, but MonoMod's goto and branch handling is not functional, or I don't know how it works.
         // -- Whoever wrote this didn't understand IL cursor branch handling. -- Fate
@@ -895,10 +896,82 @@ public class patch_Sim : Sim {
         cursor.EmitLdloc(7);
         cursor.EmitLdarg1();
         cursor.EmitLdloc(recipe);
-        cursor.EmitLdcI4(2);
+        cursor.EmitLdcI4(2); // PartCycleExecutionType - 2
         cursor.EmitCall(to);
 
         cursor.Goto(toEdit);
         cursor.Next.Operand = newTarget;
+    }
+
+
+    public static List<CycleEvent> CycleEvents = [];
+    public void RunCycleEvents(CycleEventExecutionType executionType) {
+        foreach (var cycleDelegate in CycleEvents) {
+            if (cycleDelegate.ExecutionType.HasFlag(executionType)) {
+                cycleDelegate.Delegate.Invoke(this, executionType);
+            }
+        }
+    }
+
+    [MonoModILInject("BeginCycle")]
+    public static void PatchCycleEventsBegin(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching Cycle Events");
+        if (!method.HasBody) {
+            Console.WriteLine("Unable to patch Cycle Events (no body)");
+            throw new Exception();
+        }
+        ILCursor cursor = new(new ILContext(method));
+        TypeDefinition holder = MonoModRule.Modder.FindType("Sim").Resolve();
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunCycleEvents"));
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "ResetSimStates"));
+        cursor.EmitLdarg0();
+        cursor.EmitLdcI4(1); // CycleEventExecutionType - 1
+        cursor.EmitCall(to);
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "RunCycleInstructions"));
+        cursor.EmitLdarg0();
+        cursor.EmitLdcI4(2); // CycleEventExecutionType - 2
+        cursor.EmitCall(to);
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "RunCycleGlyphs"));
+        cursor.EmitLdarg0();
+        cursor.EmitLdcI4(4); // CycleEventExecutionType - 4
+        cursor.EmitCall(to);
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "RunCycleInstructions"));
+        cursor.EmitLdarg0();
+        cursor.EmitLdcI4(8); // CycleEventExecutionType - 8
+        cursor.EmitCall(to);
+    }
+    [MonoModILInject("EndCycle")]
+    public static void PatchCycleEventsEnd(MethodDefinition method, CustomAttribute attrib) {
+        MonoModRule.Modder.Log("Patching Cycle Events");
+        if (!method.HasBody) {
+            Console.WriteLine("Unable to patch Cycle Events (no body)");
+            throw new Exception();
+        }
+        ILCursor cursor = new(new ILContext(method));
+        TypeDefinition holder = MonoModRule.Modder.FindType("Sim").Resolve();
+        MethodDefinition to = holder.Methods.First(m => m.Name.Equals("RunCycleEvents"));
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.OpCode == OpCodes.Brtrue_S);
+        Instruction toEdit = cursor.Previous;
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchThrow());
+        cursor.EmitLdarg0();
+        toEdit.Operand = cursor.Previous;
+        cursor.EmitLdcI4(16); // CycleEventExecutionType - 16
+        cursor.EmitCall(to);
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "RunCycleGlyphs"));
+        cursor.EmitLdarg0();
+        cursor.EmitLdcI4(32); // CycleEventExecutionType - 32
+        cursor.EmitCall(to);
+
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("Sim", "MeasureArmFootprint"));
+        cursor.EmitLdarg0();
+        cursor.EmitLdcI4(64); // CycleEventExecutionType - 64
+        cursor.EmitCall(to);
     }
 }
