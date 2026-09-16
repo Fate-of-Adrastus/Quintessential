@@ -38,6 +38,10 @@ public static class QApi {
         ((patch_PartType)(object)partType).CycleDelegate = cycleDelegate;
     }
 
+    /// <summary>
+    /// Add an event to be called each simulation cycle.
+    /// </summary>
+    /// <param name="cycleEvent">The event to be called.</param>
     public static void AddCycleEvent(CycleEvent cycleEvent) {
         patch_Sim.CycleEvents.Add(cycleEvent);
     }
