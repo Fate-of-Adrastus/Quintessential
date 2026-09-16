@@ -29,19 +29,19 @@ public class AtomTag : Tag {
     /// Corresponding to the specified atom.
     /// </summary>
     /// <param name="atom">The atom to get the id for.</param>
-    public bool HasAtom(AtomType atom) => HasEntry(atom.QuintAtomType);
+    public bool HasAtom(AtomType atom) => HasEntry(atom.Id);
     /// <summary>
     /// <inheritdoc cref="Tag.HasEntry(Identifier)"/><br/>
     /// Corresponding to the specified atom.
     /// </summary>
     /// <param name="atom">The atom to get the id for.</param>
-    public bool HasAtom(Atom atom) => HasEntry(atom.atomType.QuintAtomType);
+    public bool HasAtom(Atom atom) => HasEntry(atom.atomType.Id);
     /// <summary>
     /// <inheritdoc cref="Tag.HasEntry(Identifier)"/><br/>
     /// Corresponding to the specified atom.
     /// </summary>
     /// <param name="atom">The atom to get the id for.</param>
-    public bool HasAtom(AtomReference atom ) => HasEntry(atom.atomType.QuintAtomType);
+    public bool HasAtom(AtomReference atom ) => HasEntry(atom.atomType.Id);
     /// <summary>
     /// <inheritdoc cref="Tag.HasEntry(Identifier)"/><br/>
     /// Corresponding to the specified atom.<br/>
@@ -49,7 +49,7 @@ public class AtomTag : Tag {
     /// </summary>
     /// <param name="atom">The atom to get the id for.</param>
     /// <param name="mapped"><inheritdoc cref="Tag.HasEntry(Identifier, out Identifier?)"/></param>
-    public bool HasAtom(AtomType atom, out Identifier? mapped) => HasEntry(atom.QuintAtomType, out mapped);
+    public bool HasAtom(AtomType atom, out Identifier? mapped) => HasEntry(atom.Id, out mapped);
     /// <summary>
     /// <inheritdoc cref="Tag.HasEntry(Identifier)"/><br/>
     /// Corresponding to the specified atom.<br/>
@@ -57,7 +57,7 @@ public class AtomTag : Tag {
     /// </summary>
     /// <param name="atom">The atom to get the id for.</param>
     /// <param name="mapped"><inheritdoc cref="Tag.HasEntry(Identifier, out Identifier?)"/></param>
-    public bool HasAtom(Atom atom, out Identifier? mapped) => HasEntry(atom.atomType.QuintAtomType, out mapped);
+    public bool HasAtom(Atom atom, out Identifier? mapped) => HasEntry(atom.atomType.Id, out mapped);
     /// <summary>
     /// <inheritdoc cref="Tag.HasEntry(Identifier)"/><br/>
     /// Corresponding to the specified atom.<br/>
@@ -65,10 +65,10 @@ public class AtomTag : Tag {
     /// </summary>
     /// <param name="atom">The atom to get the id for.</param>
     /// <param name="mapped"><inheritdoc cref="Tag.HasEntry(Identifier, out Identifier?)"/></param>
-    public bool HasAtom(AtomReference atom, out Identifier? mapped) => HasEntry(atom.atomType.QuintAtomType, out mapped);
-    public Identifier? GetMapped(AtomType atom) => GetMapped(atom.QuintAtomType);
-    public Identifier? GetPair(Atom atom) => GetMapped(atom.atomType.QuintAtomType);
-    public Identifier? GetMapped(AtomReference atom) => GetMapped(atom.atomType.QuintAtomType);
+    public bool HasAtom(AtomReference atom, out Identifier? mapped) => HasEntry(atom.atomType.Id, out mapped);
+    public Identifier? GetMapped(AtomType atom) => GetMapped(atom.Id);
+    public Identifier? GetPair(Atom atom) => GetMapped(atom.atomType.Id);
+    public Identifier? GetMapped(AtomReference atom) => GetMapped(atom.atomType.Id);
 
 }
 

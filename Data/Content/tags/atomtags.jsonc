@@ -32,6 +32,20 @@
     "om:copper": "om:silver",
     "om:silver": "om:gold"
   },
+  "om:$division_upper": {
+    "om:tin": "om:lead",
+    "om:iron": "om:tin",
+    "om:copper": "om:tin",
+    "om:silver": "om:iron",
+    "om:gold": "om:iron"
+  },
+  "om:$division_lower": {
+    "om:tin": "om:lead",
+    "om:iron": "om:lead",
+    "om:copper": "om:tin",
+    "om:silver": "om:tin",
+    "om:gold": "om:iron"
+  },
   "om:proliferatable": [
     "om:lead",
     "om:tin",

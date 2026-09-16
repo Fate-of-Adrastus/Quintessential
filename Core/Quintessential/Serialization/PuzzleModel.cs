@@ -165,7 +165,7 @@ public class PuzzleModel {
 
         public AtomM() { }
         public AtomM(Atom atom, HexIndexM hex) {
-			AtomType = ((patch_AtomType)(object)atom.atomType).QuintAtomType;
+			AtomType = ((patch_AtomType)(object)atom.atomType).Id;
 			Position = hex;
 		}
         public static implicit operator Atom (AtomM model) {
@@ -173,7 +173,7 @@ public class PuzzleModel {
 				throw new NullReferenceException("Missing atom type!");
 
 			return new Atom(
-				AtomTypes.atoms.FirstOrDefault(k => model.AtomType.Equals(((patch_AtomType)(object)k).QuintAtomType))
+				AtomTypes.atoms.FirstOrDefault(k => model.AtomType.Equals(((patch_AtomType)(object)k).Id))
 				?? throw new Exception($"Atom type \"{model.AtomType}\" does not exist!")
 			);
 		}

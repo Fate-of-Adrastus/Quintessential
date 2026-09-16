@@ -24,6 +24,7 @@ internal static class VanillaRecipes {
         return true;
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public static bool BasicProjection(patch_Sim sim, Part part) {
         if (!sim.GetAtomReference(part, new HexIndex(1, 0), false, out var projected) ||
             !AtomTag.AtomTags["om:$successor_proj"].HasAtom(projected, out var result) ||
@@ -47,6 +48,7 @@ internal static class VanillaRecipes {
         sim.RecipeOutputs.Add(new HexIndex(1, 0), (patch_AtomType)(object)AtomTypes.quicksilver);
         return true;
     }
+#pragma warning restore CS0618 // Type or member is obsolete
     public static bool BasicPurification(patch_Sim sim, Part part) {
         if (!sim.GetAtomReference(part, new HexIndex(0, 0), false, out var purified0) ||
             purified0.inMultiAtomMolecule || purified0.isHeldByArm ||
@@ -64,13 +66,14 @@ internal static class VanillaRecipes {
     public static bool BasicDivision(patch_Sim sim, Part part) {
         if (!sim.GetAtomReference(part, new HexIndex(0, 0), false, out var dividend) ||
             dividend.inMultiAtomMolecule || dividend.isHeldByArm ||
-            !dividend.atomType.metalDivision.HasValue() ||
+            !AtomTag.AtomTags["om:$division_upper"].HasAtom(dividend, out var upper) ||
+            !AtomTag.AtomTags["om:$division_lower"].HasAtom(dividend, out var lower) ||
             sim.HasAtomAt(part, new HexIndex(-1, 0), false) ||
             sim.HasAtomAt(part, new HexIndex(1, 0), false)) return false;
 
         sim.RecipeInputs.Add(new HexIndex(0, 0), (patch_AtomReference)(object)dividend);
-        sim.RecipeOutputs.Add(new HexIndex(-1, 0), (patch_AtomType)(object)dividend.atomType.metalDivision.GetValue().upper);
-        sim.RecipeOutputs.Add(new HexIndex(1, 0), (patch_AtomType)(object)dividend.atomType.metalDivision.GetValue().lower);
+        sim.RecipeOutputs.Add(new HexIndex(-1, 0), (patch_AtomType)(object)AtomTypes.GetByID(upper.Value));
+        sim.RecipeOutputs.Add(new HexIndex(1, 0), (patch_AtomType)(object)AtomTypes.GetByID(lower.Value));
         return true;
     }
     public static bool BasicProliferation(patch_Sim sim, Part part) {

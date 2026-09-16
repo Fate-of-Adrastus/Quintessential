@@ -124,7 +124,7 @@ public class PuzzleOption{
     public AtomType AtomIn(Puzzle from){
 		string choice = ChoiceIn(from);
 		foreach(AtomType type in AtomTypes.atoms)
-			if(((patch_AtomType)(object)type).QuintAtomType.Equals(choice))
+			if(((patch_AtomType)(object)type).Id.Equals(choice))
 				return type;
 
 		return null;
@@ -159,7 +159,7 @@ public class PuzzleOption{
     /// <param name="from">The puzzle to set for.</param>
     /// <param name="atom">The new atom.</param>
     public void SetAtomIn(Puzzle from, AtomType atom){
-		SetChoiceIn(from, ((patch_AtomType)(object)atom).QuintAtomType);
+		SetChoiceIn(from, ((patch_AtomType)(object)atom).Id);
 	}
 
     /// <summary>

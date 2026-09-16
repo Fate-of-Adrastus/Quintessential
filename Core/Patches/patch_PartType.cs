@@ -13,6 +13,7 @@ class patch_PartType{
 	public bool IsForced = false;
 
     [MonoModInternal]
+    [Obsolete("This shouldn't be used. Use `Id` instead.")]
     public string id;
 
     public Identifier Id {

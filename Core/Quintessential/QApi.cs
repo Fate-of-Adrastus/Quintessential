@@ -86,7 +86,7 @@ public static class QApi {
 	/// <param name="id">The <b>name</b> of the id of the atom.</param>
 	public static void AddAtomType(this QuintessentialMod mod, AtomType type, string id) {
 		type.byteId = 255; // doesn't really matter - should not overlap vanilla atom ids
-		((patch_AtomType)(object)type).QuintAtomType = mod.GetIdentifier(id);
+		((patch_AtomType)(object)type).Id = mod.GetIdentifier(id);
 		type.name = mod.Translate("atoms." + id);
 		type.elementalName = mod.Translate("atoms." + id + ".elemental");
 		type.defaultName = mod.Translate("atoms." + id).locDictionary[Language.English];
