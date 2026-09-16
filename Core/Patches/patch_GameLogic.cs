@@ -175,4 +175,22 @@ class patch_GameLogic {
         cursor.EmitLdfld(window);
         cursor.Emit(OpCodes.Callvirt, call);
     }
+
+    [MonoModILInject("CreateWindow")]
+    static void PatchWindowsDPIMode(MethodDefinition method, CustomAttribute attribute) {
+        if (!method.HasBody) {
+            throw new Exception("Unable to patch window create ( DPI fix ). (no body)");
+        }
+
+        ILCursor cursor = new(new ILContext(method));
+        cursor.TryGotoNext(MoveType.After,
+            instr => instr.MatchLdsfld("class_269", "field_2098")
+        );
+        FieldReference opSys = cursor.Previous.Operand as FieldReference;
+        cursor.Index++;
+        Instruction target = cursor.Next.Next;
+        cursor.Emit(OpCodes.Beq_S, target);
+        cursor.EmitLdsfld(opSys);
+        cursor.EmitLdcI4(1);
+    }
 }
