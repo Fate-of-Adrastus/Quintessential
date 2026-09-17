@@ -8,6 +8,7 @@ using MonoMod.InlineRT;
 using Quintessential;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static Quintessential.CycleEvent;
 using static Quintessential.PartCycleDelegate;
@@ -840,6 +841,31 @@ public class patch_Sim : Sim {
     }
     private static GlyphRecipe GetValue(KeyValuePair<Identifier, GlyphRecipe> pair) => pair.Value; // Workaround for the weirdest internal CLR error ever
 
+    [MonoModILInject("ProcessInputs")]
+    public static void PatchProcessInputsRejection(MethodDefinition method, CustomAttribute attrib) {
+        ILCursor cursor = new(new ILContext(method));
+
+        cursor.GotoNext(MoveType.Before, instr => instr.MatchLdfld("Sim", "simulationDict"));
+        FieldReference simulationDict = cursor.Next.Operand as FieldReference;
+        VariableReference part = cursor.Next.Next.Operand as VariableReference;
+        MethodReference getItem = cursor.Next.Next.Next.Operand as MethodReference;
+        FieldDefinition wasActivated = MonoModRule.Modder.FindType("PartSimState").Resolve().Fields.First(field => field.Name == "wasActivated");
+
+        cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCallvirt("Sim", "GetAtomReference"));
+        cursor.TryGotoPrev(MoveType.After, instr => instr.MatchLdarg0());
+        Instruction start = cursor.Prev;
+        cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld("AtomType", "predecessorMetal"));
+        cursor.TryGotoNext(MoveType.Before, instr => instr.OpCode == OpCodes.Brfalse_S);
+        int removeIndex = cursor.Index;
+        cursor.Goto(start);
+        cursor.RemoveRange(removeIndex - cursor.Index);
+
+        cursor.EmitLdarg0();
+        cursor.EmitLdfld(simulationDict);
+        cursor.EmitLdloc(part);
+        cursor.EmitCallvirt(getItem);
+        cursor.EmitLdfld(wasActivated);
+    }
 
     public void RunPartCycleDelegate(ReferredPart referredPart, PartSimState simState, bool isCycleStart, GlyphRecipe recipe, PartCycleExecutionType executionType) {
         PartCycleDelegate cycleDelegate = ((patch_PartType)(object)referredPart.part.GetType()).CycleDelegate;

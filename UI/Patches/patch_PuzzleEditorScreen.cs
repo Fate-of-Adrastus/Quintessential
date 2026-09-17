@@ -144,7 +144,7 @@ class patch_PuzzleEditorScreen {
 
 	private void VanillaEditorRender(bool isPersonal, Vector2 pos, Bounds2 bounds, Puzzle puzzle) {
 
-        PuzzleEditorScreen.PuzzleCont puzzleCont = new() {
+        PuzzleEditorScreen.PuzzleContainer puzzleCont = new() {
             field_4622 = puzzle
         };
         UIUtils.RenderScreenTitle(Translations.Translate("Products"), pos + new Vector2(489f, 774f), 904, false, true);
