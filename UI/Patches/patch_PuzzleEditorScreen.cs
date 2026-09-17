@@ -109,7 +109,7 @@ class patch_PuzzleEditorScreen {
 					var idx = 0;
 					foreach (var option in category) {
 						// ReSharper disable once PossibleLossOfFraction
-						Vector2 selectorPos = cursor + new Vector2(ruleSize.X / 2f * (idx % 8) + 5, ruleSize.Y * (idx / 4 + 1.5f));
+						Vector2 selectorPos = cursor + new Vector2(ruleSize.X / 2f * (idx % 8) + 5, ruleSize.Y * (idx / 8 + 1.5f));
 						// TODO: other option types
 						if (option.Type == PuzzleOptionType.Boolean) {
 							bool enabled = conv.CustomPermissions.Contains(option.ID);

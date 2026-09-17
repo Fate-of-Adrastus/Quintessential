@@ -18,7 +18,7 @@ class patch_SolutionEditorPartsPanelSection {
 	public void AddTypeToToolbar(List<PartTypeForToolbar> partToolbar, PartType partType) {
 		// find the puzzle we're in
 		DynamicData selfData = new(partsPanel);
-		var sol = selfData.Get<SolutionEditorScreen>("solEditScr");
+		var sol = selfData.Get<SolutionEditorScreen>("solEditScrn");
 		Puzzle puzzle = sol.GetSolution().GetPuzzle();
 		// check if we have the appropriate custom permissions
 		var perms = ((patch_Puzzle)(object)puzzle).CustomPermissions ??= [];
