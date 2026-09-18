@@ -101,7 +101,7 @@ public static class QApi {
 	/// Runs the given action for every part on each half-cycle.
 	/// </summary>
 	/// <param name="runnable">An action to be run for every part, given the sim, part, partSimState, and whether it is the start or end.</param>
-	[Obsolete("Use BindGlyphCylce instead from the Data Module of Quintessential.")]
+	[Obsolete("Use BindGlyphCycle instead from the Data Module of Quintessential.")]
 	public static void RunDuringCycle(Action<Sim, Part, PartSimState, bool> runnable) { }
 
 	/// <summary>
