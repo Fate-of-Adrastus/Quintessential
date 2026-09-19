@@ -22,9 +22,9 @@ Tasks:
 * devMerge --onlyOnChange -id "quintessential_core" -nameOverride "DevLightning_Core.dll" --mergeXML
 * devMerge --onlyOnChange -id "quintessential_ui" -nameOverride "DevLightning_UI.dll" --mergeXML
 * merge ---onlyOnChange --asNamed
-# export -name "QuintessentialCore" -outputPath "D:\C#_projects\Quintessential\TestEnvironment\_builds"
-# export -name "QuintessentialData" -outputPath "D:\C#_projects\Quintessential\TestEnvironment\_builds"
-# export -name "QuintessentialUI" -outputPath "D:\C#_projects\Quintessential\TestEnvironment\_builds"
+* export -name "QuintessentialCore" -outputPath "D:\C#_projects\Quintessential\TestEnvironment\_builds"
+* export -name "QuintessentialData" -outputPath "D:\C#_projects\Quintessential\TestEnvironment\_builds"
+* export -name "QuintessentialUI" -outputPath "D:\C#_projects\Quintessential\TestEnvironment\_builds"
 * run -args "-devEnv -pseudoLang" --attachDebugger --readLogs
 
 AutoExit:

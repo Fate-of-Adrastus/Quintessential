@@ -6,7 +6,6 @@ using MonoMod.InlineRT;
 using Quintessential;
 using SDL2;
 using System;
-using System.Diagnostics;
 using System.Linq;
 
 #pragma warning disable CS0626 // Method, operator, or accessor is marked external and has no attributes on it
@@ -37,28 +36,6 @@ class patch_GameLogic {
 	public void ContentInit(){
         orig_ContentInit();
         QuintessentialLoader.ModContentInit();
-    }
-
-    [MonoModILInject("ContentInit")]
-    static void ContentInitBondTypeInit(MethodDefinition method, CustomAttribute attrib) {
-        MonoModRule.Modder.Log("Patching bond type init");
-
-        if (!method.HasBody) {
-            throw new Exception("Unable to patch bond types init. (no body)");
-        }
-
-        ILCursor cursor = new(new ILContext(method));
-
-        if (!cursor.TryGotoNext(MoveType.After,
-            instr => instr.MatchCall("BondTextures", "Init")
-        )) {
-            throw new Exception("Unable to patch bond types init. (no call)");
-        }
-
-        TypeDefinition holder = MonoModRule.Modder.FindType("Quintessential.BondAPI.BondTypes").Resolve();
-        MethodDefinition call = holder.Methods.First((f) => f.Name == "InitBonds");
-
-        cursor.Emit(OpCodes.Call, call);
     }
 
     public void SetWindowOffsetsToDefaults(Window window) {
