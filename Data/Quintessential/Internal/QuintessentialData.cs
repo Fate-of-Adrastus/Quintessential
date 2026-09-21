@@ -1,5 +1,4 @@
-﻿
-using Quintessential.Serialization;
+﻿using Quintessential.Serialization;
 
 namespace Quintessential.Internal;
 
@@ -128,7 +127,11 @@ internal class QuintessentialData : QuintessentialMod, IDataMod {
         //    })
         //}, GetIdentifier("quix_duplication"));
     }
-    public override void LoadCompatContent() { }
+    public override void LoadCompatContent() {
+        //new CodecsBenchmark().Test(1000, false);
+        //new CodecsBenchmark().Test(10000, false);
+        //new CodecsBenchmark().Test(100000, false);
+    }
     public override void FinaliseContent() { }
 
     public override void PostLoad() { }

@@ -11,7 +11,7 @@ public class GlyphRecipe {
     public GlyphRecipe(RecipePredicate predicate) { Predicate = predicate; }
 
     /// <summary>
-    /// The collection of all recipes sorted by glyh then recipe <see cref="Identifier"/>.
+    /// The collection of all recipes sorted by glyph then recipe <see cref="Identifier"/>.
     /// </summary>
     public static Dictionary<Identifier, OrderedDictionary<Identifier, GlyphRecipe>> Recipes = [];
 
