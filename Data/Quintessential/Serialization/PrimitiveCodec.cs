@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
-using YamlDotNet.Core.Tokens;
 
 namespace Quintessential.Serialization;
 
@@ -179,5 +176,21 @@ internal class ModMetaCodec : PrimitiveCodec<ModMeta> {
     }
     public override TData Encode<TData>(CodecMap<TData> map, ModMeta item) {
         return map.WriteString(item.ModId);
+    }
+}
+internal class VersionCodec : PrimitiveCodec<Version> {
+    public override Version Decode<TData>(CodecMap<TData> map, TData encoding) {
+        return Version.Parse(map.ReadString(encoding));
+    }
+    public override TData Encode<TData>(CodecMap<TData> map, Version item) {
+        return map.WriteString(item.ToString());
+    }
+}
+internal class VersionRangeCodec : PrimitiveCodec<VersionRange> {
+    public override VersionRange Decode<TData>(CodecMap<TData> map, TData encoding) {
+        return VersionRange.Parse(map.ReadString(encoding));
+    }
+    public override TData Encode<TData>(CodecMap<TData> map, VersionRange item) {
+        return map.WriteString(item.ToString());
     }
 }

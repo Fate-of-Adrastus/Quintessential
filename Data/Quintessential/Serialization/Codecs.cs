@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Quintessential.Serialization;
 
@@ -62,6 +63,8 @@ public static class Codecs {
     public static readonly Codec<PuzzlePermissions> PERMISSIONS = EnumCodec<PuzzlePermissions>.Create(true);
 
     public static readonly Codec<ModMeta> MOD = new ModMetaCodec();
+    public static readonly Codec<Version> VERSION = new VersionCodec();
+    public static readonly Codec<VersionRange> VERSIONRANGE = new VersionRangeCodec();
     public static readonly Codec<GlyphRecipe> RECIPE = Codec<GlyphRecipe>.Create(
         ID.Seal("GlyphId", (GlyphRecipe r) => r.RecipeGlyphId),
         ID.Seal("RecipeId", (GlyphRecipe r) => r.RecipeId),
@@ -85,7 +88,6 @@ public static class Codecs {
  * Puzzle,
  * Tip,
  * 
- * Version,
  * PuzzleOption
  */
 
