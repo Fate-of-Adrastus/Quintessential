@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Quintessential.Serialization;
 
@@ -100,6 +102,7 @@ public class CodecsBenchmark {
             static int0 =>
                 new IntHolder(int0)
         );
+        primitiveTupleCodec = new ElementalTestCodec();
         tupleCodec = Codec<Tuple<float, int>>.Create(
             Codecs.FLOAT.Seal("Float", (Tuple<float, int> I) => I.Item1),
             Codecs.INT.Seal("Int", (Tuple<float, int> I) => I.Item2),
@@ -114,11 +117,35 @@ public class CodecsBenchmark {
                 new ListTest(id, data)
         );
     }
+    internal class ElementalTestCodec : PrimitiveCodec<Tuple<float, int>> {
+        public override Tuple<float, int> Decode<TData>(CodecMap<TData> map, TData encoding) {
+            var obj = map.ReadObject(encoding);
+            float f = map.ReadFloat(obj["Float"]);
+            int i = map.ReadInt(obj["Int"]);
+            return new(f, i);
+        }
+        public override TData Encode<TData>(CodecMap<TData> map, Tuple<float, int> item) {
+            Dictionary<string, TData> obj = new() {
+                ["Float"] = map.WriteFloat(item.Item1),
+                ["Int"] = map.WriteInt(item.Item2)
+            };
+            return map.WriteObject(obj);
+        }
+    }
+
     internal record IntHolder(int A);
     internal record ListTest(byte Id, List<Tuple<float, int>> Data);
     Codec<IntHolder> holderCodec;
     Codec<Tuple<float, int>> tupleCodec;
+    Codec<Tuple<float, int>> primitiveTupleCodec;
     Codec<ListTest> complexCodec;
+    public void TestCompareDynamic(int N, bool logObjects) {
+        static Tuple<float, int> T(float f, int i) => new(f, i);
+        Tuple<float, int> tuple = T(2.71828f, 6);
+        Console.WriteLine($"\n----- Benchmark for {N} iterations:");
+        Test(primitiveTupleCodec, tuple, N, logObjects);
+        Test(tupleCodec, tuple, N, logObjects);
+    }
     public void Test(int N, bool logObjects) {
         (double, double) totalT = (0, 0);
         void R((double, double) b) => totalT = (totalT.Item1 + b.Item1, totalT.Item2 + b.Item2);
