@@ -33,25 +33,29 @@ public static class patch_Editor {
     }
 
     private static readonly Dictionary<IReadOnlyList<BondType>, Tuple<Texture, Index2, Texture, bool>> RenderedBondTextures = new(new BondTypesComparer());
-    private static readonly RenderTargetHandle BondRenderTarget = new();
-    private static readonly RenderTargetHandle BondNormalMapRenderTarget = new();
-
 
     [MonoModIgnore] // # Unsafe to use, assumes no mod patches RenderMolecule before QuintData.
     public static extern void layer_0_RenderBond(patch_Bond bond, Vector2 offset, HexIndex hexOffset, float rotationAngle, float opacityMultiplier, float height, SolutionEditorBase solutionEditor);
     [MonoModReplace]
     public static void RenderBond(patch_Bond bond, Vector2 offset, HexIndex hexOffset, float rotationAngle, float opacityMultiplier, float height, SolutionEditorBase solutionEditor) {
         if (!RenderedBondTextures.TryGetValue(bond.GetBondTypes(), out Tuple<Texture, Index2, Texture, bool> textures)) {
+            Logger.Log("New bond created");
             var textureSizes = bond.GetBondTypes().Select(t => t.bondTexture.texture.size);
             Index2 textureSize = new(textureSizes.Max(vec => vec.X), textureSizes.Max(vec => vec.Y));
-            BondRenderTarget.targetSize = textureSize;
+            RenderTargetHandle BondRenderTarget = new()
+            {
+                targetSize = textureSize
+            };
             using (class_226.method_596(BondRenderTarget.GetTarget())) {
                 class_226.method_600(Color.Transparent);
                 foreach (var bondType in bond.GetBondTypes()) {
                     TextureRenderer.Render(bondType.bondTexture.texture, (textureSize.ToVector2() - bondType.bondTexture.texture.size.ToVector2()) / 2f);
                 }
             }
-            BondNormalMapRenderTarget.targetSize = textureSize;
+            RenderTargetHandle BondNormalMapRenderTarget = new()
+            {
+                targetSize = textureSize
+            };
             bool noNormals = true;
             using (class_226.method_596(BondNormalMapRenderTarget.GetTarget())) {
                 class_226.method_600(Color.Black);
